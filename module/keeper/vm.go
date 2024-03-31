@@ -1,5 +1,9 @@
 package keeper
 
-// VMKEeper is just a stub
+import (
+	movekeeper "github.com/initia-labs/initia/x/move/keeper"
+)
+
 type VMKeeper struct {
+	movekeeper.Keeper
 }
