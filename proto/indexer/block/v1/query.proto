@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package indexer.block.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "indexer/block/v1/types.proto";
+
+option go_package = "github.com/initia-labs/indexer/v2/submodule/block/types";
+//option (gogoproto.goproto_getters_all) = false;
+//option (gogoproto.equal_all)           = true;
+
+// Query provides defines the gRPC querier service.
+service Query {
+  rpc Blocks(BlocksRequest)
+      returns (BlocksResponse) {
+    option (google.api.http) = {
+      get : "/indexer/block/v1/blocks"
+    };
+  }
+  rpc AvgBlockTime(AvgBlockTimeRequest)
+      returns (AvgBlockTimeResponse) {
+    option (google.api.http) = {
+      get : "/indexer/block/v1/avg_blocktime"
+    };
+  }
+}
+
+message BlocksRequest {
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message BlocksResponse {
+  repeated Block blocks = 1;
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message AvgBlockTimeRequest {}
+
+message AvgBlockTimeResponse {
+  double avg_block_time = 1;
+}

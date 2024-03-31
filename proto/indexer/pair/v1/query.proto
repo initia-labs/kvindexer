@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package indexer.pair.v1;
+
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos_proto/cosmos.proto";
+import "indexer/pair/v1/types.proto";
+
+option go_package = "github.com/initia-labs/indexer/v2/submodule/pair/types";
+
+// Query provides the service definition for the Token Pairs
+service Query {
+	// Pairs queries all the collections of an account
+	rpc Pairs(QueryPairsRequest) returns (QueryPairsResponse) {
+		option (google.api.http) = {
+			get : "/indexer/pair/v1/pairs"
+		};
+	}
+}
+
+// QueryPairsRequest is the request type for the Query/Pairs RPC method
+message QueryPairsRequest {
+	bool is_fungible = 1;
+	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryPairsResponse is the response type for the Query/Pairs RPC method
+message QueryPairsResponse {
+	repeated Pair pairs = 1;
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+

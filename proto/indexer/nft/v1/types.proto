@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package indexer.nft.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+
+
+option go_package = "github.com/initia-labs/indexer/v2/submodule/nft/types";
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.equal_all)           = true;
+
+// Collections
+
+// IndexedCollection is wrapped Collection with its object address
+message IndexedCollection {
+	string object_addr = 1; // [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	Collection collection = 2;
+}
+
+// Collection is the message for a collection of NFTs
+message Collection {
+	string creator = 1;
+	string description = 2;
+	string name = 3;
+	string uri = 4;
+	TokenHandle nfts = 5;
+}
+
+// TokenHandle is an embedded message for CollectionData
+message TokenHandle {
+	string handle = 1;
+	string length = 2;
+}
+
+// NFTs
+
+// IndexedToken is wrapped NFT with its object address and collection address
+message IndexedToken {
+	string object_addr = 1; // [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	string collection_addr = 2; // [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	string collection_name = 3;
+	string owner_addr = 4; // [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	Token nft = 5;
+}
+
+// NFT is the message for a single NFT
+message Token {
+	InnerCollection collection = 1;
+	string description = 2;
+	string token_id = 3;
+	string uri = 4;
+}
+
+// InnerCollection is inner data of NFT
+message InnerCollection {
+	string inner = 1;
+}
