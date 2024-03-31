@@ -3,6 +3,7 @@ package pair
 import (
 	"errors"
 	"fmt"
+	"sync/atomic"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/initia-labs/kvindexer/config"
@@ -20,17 +21,17 @@ var Cronjob = keeper.Cronjob{
 var croncfg *cronConfig
 
 const (
-	bridgeIdConfigKey      = "bridge_id"
-	ibcChannelConfigKey    = "ibc_channel"
-	ibcNftChannelConfigKey = "ibc_nft_channel"
-	l1LcdUrlConfigKey      = "l1_lcd_url"
-	l1QueryPatternKey      = "l1_query_pattern"
+	bridgeIdConfigKey = "bridge_id"
+	l1ChainId         = "l1_chain_id"
+	l1LcdUrlConfigKey = "l1_lcd_url"
+	l1QueryPatternKey = "l1_query_pattern"
 )
 
 type cronConfig struct {
 	bridgeId       uint64
-	ibcChannel     string
-	ibcNftChannel  string
+	l1ChainId      string
+	ibcChannels    atomic.Value
+	ibcNftChannels atomic.Value
 	l1LcdUrl       string
 	l1QueryPattern string
 }
@@ -38,25 +39,20 @@ type cronConfig struct {
 func getCronConfigFromSubmoduleConfig(smcfg config.SubmoduleConfig) (*cronConfig, error) {
 	cfg := cronConfig{}
 
-	cfg.l1QueryPattern = cast.ToString(smcfg[l1QueryPatternKey])
-	if cfg.l1QueryPattern == "" {
-		return nil, errors.New("l1_query_pattern is required")
-	}
-
 	// bridgeId base is 1, so if it's 0, it's not set
 	cfg.bridgeId = cast.ToUint64(smcfg[bridgeIdConfigKey])
 	if cfg.bridgeId == 0 {
 		return nil, errors.New("bridge_id is required")
 	}
 
-	cfg.ibcChannel = cast.ToString(smcfg[ibcChannelConfigKey])
-	if cfg.ibcChannel == "" {
-		return nil, errors.New("ibc_channel is required")
+	cfg.l1ChainId = cast.ToString(smcfg[l1ChainId])
+	if cfg.l1ChainId == "" {
+		return nil, errors.New("l1_chain_id is required")
 	}
 
-	cfg.ibcNftChannel = cast.ToString(smcfg[ibcNftChannelConfigKey])
-	if cfg.ibcChannel == "" {
-		return nil, errors.New("ibc_nft_channel is required")
+	cfg.l1QueryPattern = cast.ToString(smcfg[l1QueryPatternKey])
+	if cfg.l1QueryPattern == "" {
+		return nil, errors.New("l1_query_pattern is required")
 	}
 
 	cfg.l1LcdUrl = cast.ToString(smcfg[l1LcdUrlConfigKey])
