@@ -33,6 +33,9 @@ func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig)
 		return err
 	}
 
+	if k.IBCKeeper == nil {
+		return errors.New("ibc keeper is not set")
+	}
 	if k.TransferKeeper == nil {
 		return errors.New("transfer keeper is not set")
 	}
@@ -71,6 +74,11 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	height = req.Height
 	timestamp = req.Time
 
+	if err := updateIBCChannels(k, ctx); err != nil {
+		// don't return error
+		k.Logger(ctx).Info("updateIBCChannels", "error", err)
+	}
+
 	if err := collectIbcTokenPairs(k, ctx); err != nil {
 		return err
 	}
@@ -85,6 +93,7 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 
 	return nil
 }
+
 func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair, cfg config.SubmoduleConfig) error {
 	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
 
