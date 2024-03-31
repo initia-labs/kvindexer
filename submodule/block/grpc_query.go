@@ -7,8 +7,8 @@ import (
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/initia-labs/indexer/v2/module/keeper"
-	"github.com/initia-labs/indexer/v2/submodule/block/types"
+	"github.com/initia-labs/kvindexer/module/keeper"
+	"github.com/initia-labs/kvindexer/submodule/block/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

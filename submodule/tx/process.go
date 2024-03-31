@@ -14,8 +14,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	tx "github.com/cosmos/cosmos-sdk/types/tx"
 
-	"github.com/initia-labs/indexer/v2/config"
-	"github.com/initia-labs/indexer/v2/module/keeper"
+	"github.com/initia-labs/kvindexer/config"
+	"github.com/initia-labs/kvindexer/module/keeper"
 )
 
 func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock, cfg config.SubmoduleConfig) error {

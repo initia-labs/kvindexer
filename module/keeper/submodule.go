@@ -11,7 +11,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 
-	"github.com/initia-labs/indexer/v2/config"
+	"github.com/initia-labs/kvindexer/config"
 )
 
 type Submodule struct {

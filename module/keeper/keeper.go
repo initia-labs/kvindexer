@@ -19,9 +19,9 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
-	"github.com/initia-labs/indexer/v2/config"
-	"github.com/initia-labs/indexer/v2/module/types"
-	"github.com/initia-labs/indexer/v2/store"
+	"github.com/initia-labs/kvindexer/config"
+	"github.com/initia-labs/kvindexer/module/types"
+	"github.com/initia-labs/kvindexer/store"
 )
 
 const StoreName = "indexer"

@@ -8,8 +8,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/initia-labs/indexer/v2/module/keeper"
-	"github.com/initia-labs/indexer/v2/submodule/tx/types"
+	"github.com/initia-labs/kvindexer/module/keeper"
+	"github.com/initia-labs/kvindexer/submodule/tx/types"
 )
 
 const submoduleName = "tx"

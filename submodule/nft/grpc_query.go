@@ -9,9 +9,9 @@ import (
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/initia-labs/indexer/v2/module/keeper"
-	"github.com/initia-labs/indexer/v2/submodule/nft/types"
-	"github.com/initia-labs/indexer/v2/submodule/pair"
+	"github.com/initia-labs/kvindexer/module/keeper"
+	"github.com/initia-labs/kvindexer/submodule/nft/types"
+	"github.com/initia-labs/kvindexer/submodule/pair"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

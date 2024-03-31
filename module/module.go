@@ -6,8 +6,8 @@ import (
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/initia-labs/indexer/v2/module/keeper"
-	"github.com/initia-labs/indexer/v2/module/types"
+	"github.com/initia-labs/kvindexer/module/keeper"
+	"github.com/initia-labs/kvindexer/module/types"
 )
 
 var (

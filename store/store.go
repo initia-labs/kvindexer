@@ -7,7 +7,7 @@ import (
 	"cosmossdk.io/store/dbadapter"
 
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/initia-labs/indexer/v2/store/goleveldb"
+	"github.com/initia-labs/kvindexer/store/goleveldb"
 	"github.com/spf13/viper"
 )
 

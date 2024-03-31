@@ -4,8 +4,8 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/initia-labs/indexer/v2/config"
-	"github.com/initia-labs/indexer/v2/module/keeper"
+	"github.com/initia-labs/kvindexer/config"
+	"github.com/initia-labs/kvindexer/module/keeper"
 )
 
 type Indexer struct {

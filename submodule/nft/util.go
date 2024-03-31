@@ -2,7 +2,7 @@ package nft
 
 import (
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/initia-labs/indexer/v2/submodule/nft/types"
+	"github.com/initia-labs/kvindexer/submodule/nft/types"
 )
 
 // filter out events that are not related to move and have attribute named type_tag and data

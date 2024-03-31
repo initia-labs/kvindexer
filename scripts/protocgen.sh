@@ -22,5 +22,5 @@ done
 cd ..
 
 # move proto files to the right places
-cp -pr github.com/initia-labs/indexer/v2/* ./
+cp -pr github.com/initia-labs/kvindexer/* ./
 rm -rf github.com

@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cast"
 	"github.com/spf13/viper"
 
-	"github.com/initia-labs/indexer/v2/store"
+	"github.com/initia-labs/kvindexer/store"
 )
 
 const (

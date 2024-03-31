@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/go-co-op/gocron"
-	"github.com/initia-labs/indexer/v2/config"
+	"github.com/initia-labs/kvindexer/config"
 	"github.com/pkg/errors"
 )
 

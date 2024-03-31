@@ -7,9 +7,9 @@ import (
 	"cosmossdk.io/collections/indexes"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/indexer/v2/config"
-	"github.com/initia-labs/indexer/v2/module/keeper"
-	"github.com/initia-labs/indexer/v2/submodule/nft/types"
+	"github.com/initia-labs/kvindexer/config"
+	"github.com/initia-labs/kvindexer/module/keeper"
+	"github.com/initia-labs/kvindexer/submodule/nft/types"
 )
 
 //

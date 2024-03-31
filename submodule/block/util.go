@@ -5,8 +5,8 @@ import (
 
 	"github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types/tx"
-	"github.com/initia-labs/indexer/v2/module/keeper"
-	blocktypes "github.com/initia-labs/indexer/v2/submodule/block/types"
+	"github.com/initia-labs/kvindexer/module/keeper"
+	blocktypes "github.com/initia-labs/kvindexer/submodule/block/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

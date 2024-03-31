@@ -7,7 +7,7 @@ import "gogoproto/gogo.proto";
 import "google/api/annotations.proto";
 import "indexer/dashboard/v1/types.proto";
 
-option go_package = "github.com/initia-labs/indexer/v2/submodule/dashboard/types";
+option go_package = "github.com/initia-labs/kvindexer/submodule/dashboard/types";
 //option (gogoproto.goproto_getters_all) = false;
 //option (gogoproto.equal_all)           = true;
 
