@@ -19,6 +19,8 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
+
 	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/types"
 	"github.com/initia-labs/kvindexer/store"
@@ -38,11 +40,11 @@ type Keeper struct {
 	CommunityPoolKeeper types.CommunityPoolKeeper
 
 	// required keepers
-	AccountKeeper *authkeeper.AccountKeeper
-	BankKeeper    types.BankKeeper
-	OracleKeeper  types.OracleKeeper
-	VMKeeper      VMKeeper
-
+	AccountKeeper     *authkeeper.AccountKeeper
+	BankKeeper        types.BankKeeper
+	OracleKeeper      types.OracleKeeper
+	VMKeeper          VMKeeper
+	IBCKeeper         *ibckeeper.Keeper
 	TransferKeeper    types.TransferKeeper
 	NftTransferKeeper types.NftTransferKeeper
 	OPChildKeeper     types.OPChildKeeper
@@ -78,6 +80,7 @@ func NewKeeper(
 	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
 	communityPoolKeeper types.CommunityPoolKeeper, // can be nil, if staking not used
 	vmKeeper VMKeeper,
+	IbcKeeper *ibckeeper.Keeper, // can be nil, if ibc not used
 	TransferKeeper types.TransferKeeper, // can be nil, if transfer not used
 	NftTransferKeeper types.NftTransferKeeper,
 	OPChildKeeper types.OPChildKeeper,
@@ -98,6 +101,7 @@ func NewKeeper(
 		RewardKeeper:        rewardKeeper,
 		CommunityPoolKeeper: communityPoolKeeper,
 		VMKeeper:            vmKeeper,
+		IBCKeeper:           IbcKeeper,
 		TransferKeeper:      TransferKeeper,
 		NftTransferKeeper:   NftTransferKeeper,
 		OPChildKeeper:       OPChildKeeper,

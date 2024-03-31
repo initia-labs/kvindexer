@@ -12,6 +12,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/gofiber/fiber/v2"
 
+	exportedibc "github.com/cosmos/ibc-go/v8/modules/core/exported"
+	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/pair/types"
 )
@@ -28,25 +30,33 @@ const (
 
 func collectIbcTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	ibcChannels := croncfg.ibcChannels.Load().([]string)
+	if len(ibcChannels) == 0 {
+		return nil
+	}
 
 	traces := k.TransferKeeper.GetAllDenomTraces(sdkCtx)
-	for _, trace := range traces {
-		if trace.Path != fmt.Sprintf("%s/%s", ibcTransferPort, croncfg.ibcChannel) {
-			continue
-		}
 
-		prevDenom, err := fungiblepairsMap.Get(ctx, trace.IBCDenom())
-		if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return err
-		}
-		// prevDenom should be empty string if not found, or already set
-		if prevDenom == trace.BaseDenom {
-			continue
-		}
+	for _, ibcChannel := range ibcChannels {
+		for _, trace := range traces {
 
-		err = fungiblepairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
-		if err != nil {
-			return err
+			if trace.Path != fmt.Sprintf("%s/%s", ibcTransferPort, ibcChannel) {
+				continue
+			}
+
+			prevDenom, err := fungiblepairsMap.Get(ctx, trace.IBCDenom())
+			if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
+				continue
+			}
+			// prevDenom should be empty string if not found, or already set
+			if prevDenom == trace.BaseDenom {
+				continue
+			}
+
+			err = fungiblepairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -134,47 +144,50 @@ func collectOpTokenPairsFromL1(client *fiber.Client, cfg *cronConfig) (err error
 }
 
 func collectNftTokensFromL2(k *keeper.Keeper, ctx context.Context) (err error) {
-	if croncfg.ibcNftChannel == "" {
-		return errors.New("nft channel is not set")
+	ibcNftChannels := croncfg.ibcNftChannels.Load().([]string)
+	if len(ibcNftChannels) == 0 {
+		return nil
 	}
 
 	traces, err := k.NftTransferKeeper.GetAllClassTraces(ctx)
 	if err != nil {
 		return err
 	}
-	for _, trace := range traces {
-		// only from allowed channel
-		if trace.Path != fmt.Sprintf("%s/%s", ibcNftTransferPort, croncfg.ibcNftChannel) {
-			continue
-		}
-
-		// only gather move based class
-		splitted := strings.Split(trace.BaseClassId, "/")
-		if splitted[0] != "move" || len(splitted) < 2 {
-			continue
-		}
-
-		classId := trace.IBCClassId()
-		l2collAddr := "0x" + splitted[1]
-		l1collName, ok := nonFungiblePairsFromL2.Load(classId)
-		if !ok {
-			// insert them into nft syncmap if not exists
-			nonFungiblePairsFromL2.Store(classId, l2collAddr)
-		} else {
-			if l1collName == "" || l1collName == l2collAddr {
-				continue
-			}
-			_, err := nonFungiblepairsMap.Get(ctx, classId)
-			if !cosmoserr.IsOf(err, collections.ErrNotFound) || err == nil {
+	for _, ibcNftChannel := range ibcNftChannels {
+		for _, trace := range traces {
+			// only from allowed channel
+			if trace.Path != fmt.Sprintf("%s/%s", ibcNftTransferPort, ibcNftChannel) {
 				continue
 			}
 
-			err = nonFungiblepairsMap.Set(ctx, classId, l1collName.(string))
-			if err != nil {
-				return err
+			// only gather move based class
+			splitted := strings.Split(trace.BaseClassId, "/")
+			if splitted[0] != "move" || len(splitted) < 2 {
+				continue
 			}
 
-			nonFungiblePairsFromL2.Store(classId, "")
+			classId := trace.IBCClassId()
+			l2collAddr := "0x" + splitted[1]
+			l1collName, ok := nonFungiblePairsFromL2.Load(classId)
+			if !ok {
+				// insert them into nft syncmap if not exists
+				nonFungiblePairsFromL2.Store(classId, l2collAddr)
+			} else {
+				if l1collName == "" || l1collName == l2collAddr {
+					continue
+				}
+				_, err := nonFungiblepairsMap.Get(ctx, classId)
+				if !cosmoserr.IsOf(err, collections.ErrNotFound) || err == nil {
+					continue
+				}
+
+				err = nonFungiblepairsMap.Set(ctx, classId, l1collName.(string))
+				if err != nil {
+					return err
+				}
+
+				nonFungiblePairsFromL2.Store(classId, "")
+			}
 		}
 	}
 
@@ -184,8 +197,12 @@ func collectNftTokensFromL2(k *keeper.Keeper, ctx context.Context) (err error) {
 // get OPinit token pairs from L1 and insert them into the syncmap
 // data in syncmap will be used by collecOpTokenPairs()
 func collectNftTokenPairsFromL1(client *fiber.Client, cfg *cronConfig) (err error) {
-	if cfg.l1LcdUrl == "" || cfg.ibcNftChannel == "" {
-		return errors.New("l1LcdUrl or nftChannel is not set")
+	if cfg.l1LcdUrl == "" {
+		return errors.New("l1LcdUrl is not set")
+	}
+	ibcNftChannels := cfg.ibcNftChannels.Load().([]string)
+	if len(ibcNftChannels) == 0 {
+		return nil
 	}
 
 	nonFungiblePairsFromL2.Range(func(key, value interface{}) bool {
@@ -210,6 +227,8 @@ func collectNftTokenPairsFromL1(client *fiber.Client, cfg *cronConfig) (err erro
 
 	return nil
 }
+
+// query collection name from L1
 func getCollectionNameFromL1(client *fiber.Client, cfg *cronConfig, addr string) (collectionName string, err error) {
 	queryStr := fmt.Sprintf(queryCollectionFmt, cfg.l1LcdUrl, addr, collectionStructTag)
 	code, body, errs := client.Get(queryStr).Bytes()
@@ -236,4 +255,56 @@ func getCollectionNameFromL1(client *fiber.Client, cfg *cronConfig, addr string)
 	}
 
 	return name, nil
+}
+
+func updateIBCChannels(k *keeper.Keeper, ctx context.Context) error {
+
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	chKeeper := k.IBCKeeper.ChannelKeeper
+
+	// get all channels
+	channels := chKeeper.GetAllChannels(sdkCtx)
+
+	ibcChannels := []string{}
+	ibcNftChannels := []string{}
+	for _, channel := range channels {
+		if channel.PortId != ibcTransferPort && channel.PortId != ibcNftTransferPort {
+			continue
+		}
+
+		_ /*clientId*/, cs, err := chKeeper.GetChannelClientState(sdkCtx, channel.PortId, channel.ChannelId)
+		if err != nil {
+			k.Logger(ctx).Warn("GetChannelClientState", "error", err)
+		}
+		counterpartyChainId := getChainIdFromClientState(cs)
+		if counterpartyChainId == "" {
+			k.Logger(ctx).Warn("channel id is nil")
+			continue
+		}
+		if counterpartyChainId != croncfg.l1ChainId {
+			continue
+		}
+		if channel.PortId == ibcTransferPort {
+			ibcChannels = append(ibcChannels, channel.ChannelId)
+		} else {
+			ibcNftChannels = append(ibcNftChannels, channel.ChannelId)
+		}
+
+	}
+
+	croncfg.ibcChannels.Store(ibcChannels)
+	croncfg.ibcNftChannels.Store(ibcNftChannels)
+
+	return nil
+}
+
+func getChainIdFromClientState(csi exportedibc.ClientState) string {
+	if csi == nil {
+		return ""
+	}
+	cs, ok := csi.(*ibctm.ClientState)
+	if !ok {
+		return ""
+	}
+	return cs.ChainId
 }
