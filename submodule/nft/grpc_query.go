@@ -38,7 +38,6 @@ func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionReque
 	if !enabled {
 		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
 	}
-	q.Logger(ctx).Warn("[DEBUG] QueryCollection", "req", req)
 
 	collectionAddr, err := getVMAddress(q.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
