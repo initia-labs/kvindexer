@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"cosmossdk.io/collections"
+	cosmoserr "cosmossdk.io/errors"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -20,6 +21,16 @@ var _ types.QueryServer = (*Querier)(nil)
 
 type Querier struct {
 	*keeper.Keeper
+}
+
+func handleCollectionErr(err error) error {
+	if err == nil {
+		return nil
+	}
+	if cosmoserr.IsOf(err, collections.ErrNotFound) {
+		return status.Error(codes.NotFound, err.Error())
+	}
+	return status.Error(codes.Internal, err.Error())
 }
 
 // Collection implements types.QueryServer.
@@ -37,7 +48,7 @@ func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionReque
 
 	collection, err := collectionMap.Get(ctx, collectionSdkAddr)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	return &types.QueryCollectionResponse{
@@ -78,7 +89,7 @@ func (q Querier) Collections(ctx context.Context, req *types.QueryCollectionsReq
 	for _, collectionSdkAddr := range collectionSdkAddrs {
 		collection, err := collectionMap.Get(ctx, collectionSdkAddr)
 		if err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, handleCollectionErr(err)
 		}
 		collections = append(collections, &collection)
 	}
@@ -119,7 +130,7 @@ func (q Querier) Tokens(ctx context.Context, req *types.QueryTokensRequest) (*ty
 		// query by owner, collection and token id
 		fn = getTokensByOwnerCollectionAndTokenId
 	default:
-		return nil, status.Error(codes.InvalidArgument, "invalid query")
+		return nil, status.Error(codes.InvalidArgument, "invalid query parameter")
 	}
 
 	return fn(q.Keeper, ctx, req)
@@ -151,7 +162,7 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 		},
 	)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	return &types.QueryTokensResponse{
@@ -184,7 +195,10 @@ func getTokensByCollectionAndOwner(k *keeper.Keeper, ctx context.Context, req *t
 		},
 	)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, handleCollectionErr(err)
+	}
+	if len(res) == 0 {
+		return nil, status.Error(codes.NotFound, "tokens not found")
 	}
 
 	return &types.QueryTokensResponse{
@@ -202,7 +216,7 @@ func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req 
 
 	token, err := tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	return &types.QueryTokensResponse{
@@ -237,7 +251,7 @@ func getTokensByOwner(k *keeper.Keeper, ctx context.Context, req *types.QueryTok
 		}, /* constructor */
 	)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	return &types.QueryTokensResponse{
@@ -255,11 +269,11 @@ func getTokensByOwnerCollectionAndTokenId(k *keeper.Keeper, ctx context.Context,
 
 	token, err := tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	if token.OwnerAddr != req.Owner {
-		return nil, status.Error(codes.NotFound, "token not found")
+		return nil, status.Error(codes.Unauthenticated, "invalid owner address")
 	}
 
 	return &types.QueryTokensResponse{
