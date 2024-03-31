@@ -1,5 +1,9 @@
 package keeper
 
-// VMKEeper is just a stub
+import (
+	evmkeeper "github.com/initia-labs/minievm/x/evm/keeper"
+)
+
 type VMKeeper struct {
+	*evmkeeper.Keeper
 }
