@@ -75,6 +75,7 @@ func (i TokenIndex) IndexesList() []collections.Index[collections.Pair[sdk.AccAd
 }
 
 func newTokensIndex(k *keeper.Keeper) TokenIndex {
+	cdc := k.GetAddressCodec()
 	return TokenIndex{
 		TokenAddress: indexes.NewUnique(
 			k.GetSchemaBilder(),     // schema builder
@@ -83,7 +84,11 @@ func newTokensIndex(k *keeper.Keeper) TokenIndex {
 			sdk.AccAddressKey,       // refCodec
 			collections.PairKeyCodec(sdk.AccAddressKey, collections.StringKey), // pkCodec
 			func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (sdk.AccAddress, error) {
-				return sdk.AccAddressFromBech32(v.ObjectAddr)
+				vmAddr, err := getVMAddress(cdc, v.ObjectAddr)
+				if err != nil {
+					return sdk.AccAddress{}, err
+				}
+				return getCosmosAddress(vmAddr), nil
 			}, // getRefKeyFunc
 		),
 		OwnerAddress: indexes.NewMulti(

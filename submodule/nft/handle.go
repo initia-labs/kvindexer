@@ -87,13 +87,14 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 		}
 	}
 
-	err = applyCollectionOwnerMap(k, ctx, creatorSdkAddr, collectionSdkAddr, true)
+	err = applyCollectionOwnerMap(k, ctx, collectionSdkAddr, creatorSdkAddr, true)
 	if err != nil {
 		return errors.New("failed to insert collection into collectionOwnersMap")
 	}
 
 	err = tokenMap.Set(ctx, collections.Join(collectionSdkAddr, token.Nft.TokenId), *token)
 	if err != nil {
+		k.Logger(ctx).Error("failed to insert token into tokenMap", "collection-addr", collectionSdkAddr, "token-id", token.Nft.TokenId, "error", err, "token", token)
 		return errors.New("failed to insert token into tokenMap")
 	}
 
