@@ -25,12 +25,13 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 	lastTxCount, err := txCountByDate.Get(ctx, date)
 	if err != nil {
 		if errors.IsOf(err, collections.ErrNotFound) {
-			lastTxCount = 0
+			lastTxCount = prevCount
 		} else {
 			return errors.Wrap(err, "failed to get tx count by date")
 		}
 	}
-	if err = txCountByDate.Set(ctx, date, prevCount+lastTxCount+curTxsCount); err != nil {
+
+	if err = txCountByDate.Set(ctx, date, lastTxCount+curTxsCount); err != nil {
 		return errors.Wrap(err, "failed to set tx count by date")
 	}
 	return nil
