@@ -38,10 +38,6 @@ func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig)
 	if supplyByDate, err = keeper.AddMap(k, prefixSupplyByDate, supplyByDateKeyName, collections.StringKey, collections.Uint64Value); err != nil {
 		return err
 	}
-	if txTotalCountByDate, err = keeper.AddMap(k, prefixTxTotalCountByDate, txTotalCountByDateKeyName, collections.StringKey, collections.Uint64Value); err != nil {
-		return err
-	}
-
 	return nil
 }
 
