@@ -29,13 +29,16 @@ func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig)
 	if newAccountCountMapByDate, err = keeper.AddMap(k, prefixAccountCountMapByDate, newAccsCountByDateName, collections.StringKey, collections.Uint64Value); err != nil {
 		return err
 	}
-	if totalAccountCountByDate, err = keeper.AddMap(k, prefixTotalAccountCountByDate, totalAccsCountByDateName, collections.StringKey, collections.Uint64Value); err != nil {
+	if totalAccountBaseCountByDate, err = keeper.AddMap(k, prefixTotalAccountCountByDate, totalAccsCountByDateName, collections.StringKey, collections.Uint64Value); err != nil {
 		return err
 	}
 	if txCountByDate, err = keeper.AddMap(k, prefixTxCountByDate, txCountByDateKeyName, collections.StringKey, collections.Uint64Value); err != nil {
 		return err
 	}
 	if supplyByDate, err = keeper.AddMap(k, prefixSupplyByDate, supplyByDateKeyName, collections.StringKey, collections.Uint64Value); err != nil {
+		return err
+	}
+	if lastAccountNumber, err = keeper.AddItem(k, prefixLastAccountNumber, lastAccountNumberName, collections.Uint64Value); err != nil {
 		return err
 	}
 	return nil

@@ -21,10 +21,10 @@ var Cronjob = keeper.Cronjob{
 var croncfg *cronConfig
 
 const (
-	bridgeIdConfigKey = "bridge_id"
-	l1ChainId         = "l1_chain_id"
-	l1LcdUrlConfigKey = "l1_lcd_url"
-	l1QueryPatternKey = "l1_query_pattern"
+	bridgeIdConfigKey = "op-bridge-id"
+	l1ChainId         = "l1-chain-id"
+	l1LcdUrlConfigKey = "l1-lcd-url"
+	l1QueryPatternKey = "l1-query-pattern"
 )
 
 type cronConfig struct {

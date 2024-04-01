@@ -74,22 +74,42 @@ func processAccounts(k *keeper.Keeper, ctx context.Context, res abci.ResponseCom
 		}
 	}
 
-	// set cumulative number of accounts
-	prev := timestamp.AddDate(0, 0, -1)
-	prevCount, err := totalAccountCountByDate.Get(ctx, timeToDateString(prev))
+	err := updateTotalBaseAccountByDate(k, ctx)
 	if err != nil {
-		prevCount = 0 // fail to get previous total number of accounts by date
+		return errors.Wrap(err, "failed to update total base account by date")
+	}
+	return nil
+}
+
+func updateTotalBaseAccountByDate(k *keeper.Keeper, ctx context.Context) error {
+	// set cumulative number of accounts
+	lastAccNum, err := getLastAccountNumber(ctx)
+	if err != nil {
+		return err
 	}
 
-	n, _ := k.AccountKeeper.AccountNumber.Peek(ctx)
-	rng := new(collections.Range[uint64]).StartExclusive(prevCount).EndInclusive(n)
+	date := timeToDateString(timestamp)
+	count, err := totalAccountBaseCountByDate.Get(ctx, date)
+	if err != nil {
+		if errors.IsOf(err, collections.ErrNotFound) {
+			prev := timestamp.AddDate(0, 0, -1)
+			prevCount, err := totalAccountBaseCountByDate.Get(ctx, timeToDateString(prev))
+			if err != nil {
+				prevCount = 0 // fail to get previous total number of accounts by date
+			}
+			count = prevCount
+		} else {
+			return errors.Wrap(err, "failed to get total accounts by date")
+		}
+	}
+
+	currentAccNum, _ := k.AccountKeeper.AccountNumber.Peek(ctx)
+	rng := new(collections.Range[uint64]).StartInclusive(lastAccNum).EndExclusive(currentAccNum)
 	iter, err := k.AccountKeeper.Accounts.Indexes.Number.Iterate(ctx, rng)
 	if err != nil {
 		return err
 	}
 	defer iter.Close()
-
-	var count = 0
 	_ = indexes.ScanValues(ctx, k.AccountKeeper.Accounts, iter, func(acc sdk.AccountI) bool {
 		if _, ok := acc.(*authtypes.BaseAccount); ok {
 			count += 1
@@ -97,8 +117,24 @@ func processAccounts(k *keeper.Keeper, ctx context.Context, res abci.ResponseCom
 		return false
 	})
 
-	if err = totalAccountCountByDate.Set(ctx, date, uint64(count)); err != nil {
+	if err = totalAccountBaseCountByDate.Set(ctx, date, uint64(count)); err != nil {
 		return errors.Wrap(err, "failed to set total accounts by date")
 	}
+
+	err = lastAccountNumber.Set(ctx, currentAccNum)
+	if err != nil {
+		return errors.Wrap(err, "failed to set last account number")
+	}
 	return nil
+}
+
+func getLastAccountNumber(ctx context.Context) (uint64, error) {
+	num, err := lastAccountNumber.Get(ctx)
+	if err != nil {
+		if errors.IsOf(err, collections.ErrNotFound) {
+			return 0, nil
+		}
+		return 0, errors.Wrap(err, "failed to get last account number")
+	}
+	return num, nil
 }
