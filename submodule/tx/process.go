@@ -22,6 +22,7 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 	// key: address, value: txs slice
 	accTxMap := map[string][]string{}
 
+	txHashes := []string{}
 	for idx, txBytes := range req.Txs {
 		tx, err := parseTx(k, txBytes)
 		if err != nil {
@@ -57,6 +58,7 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 		for _, addr := range addrs {
 			accTxMap[addr] = uniqueAppend(accTxMap[addr], txHashStr)
 		}
+		txHashes = append(txHashes, txHashStr)
 	}
 
 	// store tx/account pair into txAccMap
@@ -66,7 +68,7 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 			return err
 		}
 	}
-	return nil
+	return storeIndices(ctx, req.Height, txHashes)
 }
 
 func uniqueAppend(slice []string, elem string) []string {
@@ -126,6 +128,27 @@ func storeAccTxs(ctx context.Context, addr string, txHashes []string) error {
 	}
 	if err := accountSequenceMap.Set(ctx, acc, seq+uint64(len(txHashes)+1)); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func storeIndices(ctx context.Context, height int64, txHashes []string) error {
+
+	for i, txHash := range txHashes {
+		err := txhashesByHeight.Set(ctx, collections.Join(height, uint64(i)), txHash)
+		if err != nil {
+			return err
+		}
+
+		seq, err := sequence.Next(ctx)
+		if err != nil {
+			return err
+		}
+		err = txhashesBySequence.Set(ctx, seq, txHash)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

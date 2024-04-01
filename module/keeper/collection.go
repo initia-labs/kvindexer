@@ -23,7 +23,7 @@ func AddMap[K, V any](k *Keeper, prefix col.Prefix, name string, kc ccdc.KeyCode
 }
 
 // AddSequence adds a sequence collection to the keeper
-func AddSequence[K any](k *Keeper, prefix col.Prefix, name string, kc ccdc.KeyCodec[K]) (*col.Sequence, error) {
+func AddSequence(k *Keeper, prefix col.Prefix, name string) (*col.Sequence, error) {
 	if k.IsSealed() {
 		return nil, errors.New("cannot add collection to sealed keeper")
 	}
