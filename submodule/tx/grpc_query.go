@@ -49,17 +49,32 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 			req.Pagination.Limit = limit
 		}
 	}
-	acc, err := accAddressFromString(req.Address)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
+
+	var err error
+	var txHashes []*string
+	var pageRes *query.PageResponse
+
+	if req.Address != "" {
+		acc, err := accAddressFromString(req.Address)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+
+		txHashes, pageRes, err = query.CollectionPaginate(ctx, txhashesByAccountMap, req.Pagination,
+			func(_ collections.Pair[sdk.AccAddress, uint64], value string) (*string, error) {
+				return &value, nil
+			},
+			query.WithCollectionPaginationPairPrefix[sdk.AccAddress, uint64](acc),
+		)
+
+	} else {
+		txHashes, pageRes, err = query.CollectionPaginate(ctx, txhashesByAccountMap, req.Pagination,
+			func(_ collections.Pair[sdk.AccAddress, uint64], value string) (*string, error) {
+				return &value, nil
+			},
+		)
 	}
 
-	txHashes, pageRes, err := query.CollectionPaginate(ctx, txhashesByAccountMap, req.Pagination,
-		func(_ collections.Pair[sdk.AccAddress, uint64], value string) (*string, error) {
-			return &value, nil
-		},
-		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, uint64](acc),
-	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
