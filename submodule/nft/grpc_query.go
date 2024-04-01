@@ -87,9 +87,6 @@ func (q Querier) Collections(ctx context.Context, req *types.QueryCollectionsReq
 		},
 		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, sdk.AccAddress](accountSdkAddr),
 	)
-	if len(collectionSdkAddrs) == 0 {
-		return nil, status.Error(codes.NotFound, "collections not found")
-	}
 
 	collections := []*types.IndexedCollection{}
 	for _, collectionSdkAddr := range collectionSdkAddrs {
@@ -173,9 +170,6 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 	if err != nil {
 		return nil, handleCollectionErr(err)
 	}
-	if len(res) == 0 {
-		return nil, status.Error(codes.NotFound, "tokens not found")
-	}
 
 	return &types.QueryTokensResponse{
 		Tokens:     res,
@@ -212,9 +206,6 @@ func getTokensByCollectionAndOwner(k *keeper.Keeper, ctx context.Context, req *t
 	)
 	if err != nil {
 		return nil, handleCollectionErr(err)
-	}
-	if len(res) == 0 {
-		return nil, status.Error(codes.NotFound, "tokens not found")
 	}
 	return &types.QueryTokensResponse{
 		Tokens:     res,
