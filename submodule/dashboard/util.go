@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const dateFmt = "20060102"
+const dateFmt = "2006-01-02"
 
 func timeToDateString(t time.Time) string {
 	return t.Format(dateFmt)

@@ -22,5 +22,4 @@ message ChartData {
   int64 tx_count = 3;
   int64 active_accounts = 4;
   int64 new_accounts = 5;
-  int64 tx_total_count = 6;
 }
