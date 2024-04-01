@@ -81,7 +81,8 @@ func processAccounts(k *keeper.Keeper, ctx context.Context, res abci.ResponseCom
 		prevCount = 0 // fail to get previous total number of accounts by date
 	}
 
-	rng := new(collections.Range[uint64]).StartExclusive(prevCount)
+	n, _ := k.AccountKeeper.AccountNumber.Peek(ctx)
+	rng := new(collections.Range[uint64]).StartExclusive(prevCount).EndInclusive(n)
 	iter, err := k.AccountKeeper.Accounts.Indexes.Number.Iterate(ctx, rng)
 	if err != nil {
 		return err
