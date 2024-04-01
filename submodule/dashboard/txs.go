@@ -2,8 +2,8 @@ package dashboard
 
 import (
 	"context"
-
 	"cosmossdk.io/collections"
+
 	"cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/initia-labs/kvindexer/config"
@@ -23,9 +23,12 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 	curTxsCount := uint64(len(req.Txs))
 
 	lastTxCount, err := txCountByDate.Get(ctx, date)
-
-	if err != nil && !errors.IsOf(err, collections.ErrNotFound) {
-		return errors.Wrap(err, "failed to get tx count by date")
+	if err != nil {
+		if errors.IsOf(err, collections.ErrNotFound) {
+			lastTxCount = 0
+		} else {
+			return errors.Wrap(err, "failed to get tx count by date")
+		}
 	}
 	if err = txCountByDate.Set(ctx, date, prevCount+lastTxCount+curTxsCount); err != nil {
 		return errors.Wrap(err, "failed to set tx count by date")
