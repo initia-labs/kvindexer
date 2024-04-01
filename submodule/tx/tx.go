@@ -42,6 +42,18 @@ func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig)
 		return err
 	}
 
+	if txhashesBySequence, err = keeper.AddMap(k, prefixTxSequence, txSequenceName, collections.Uint64Key, collections.StringValue); err != nil {
+		return err
+	}
+
+	if txhashesByHeight, err = keeper.AddMap(k, prefixTxByHeight, txByHeightName, collections.PairKeyCodec(collections.Int64Key, collections.Uint64Key), collections.StringValue); err != nil {
+		return err
+	}
+
+	if sequence, err = keeper.AddSequence(k, prefixSequence, sequenceName); err != nil {
+		return err
+	}
+
 	return nil
 }
 
