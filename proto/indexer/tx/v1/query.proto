@@ -12,17 +12,31 @@ option go_package = "github.com/initia-labs/kvindexer/submodule/tx/types";
 
 // Query provides the service definition for the Txs 
 service Query {
-	// Tx queries all the collections of an account
+	// Tx queries a transaction by hash
 	rpc Tx(QueryTxRequest) returns (QueryTxResponse) {
 		option (google.api.http) = {
-			get : "/indexer/tx/v1/tx"
+			get : "/indexer/tx/v1/tx/{tx_hash}"
 		};
 	}
 
-	// Txs queries all the collections of an account
+	// Txs queries all transactions with pagination
 	rpc Txs(QueryTxsRequest) returns (QueryTxsResponse) {
 		option (google.api.http) = {
 			get : "/indexer/tx/v1/txs"
+		};
+	}
+
+	// TxsByAccount queries all the collections of given account
+	rpc TxsByAccount(QueryTxsByAccountRequest) returns (QueryTxsResponse) {
+		option (google.api.http) = {
+			get : "/indexer/tx/v1/txs/by_account/{address}"
+		};
+	}
+
+	// TxsByHeight queries all the collections of given height
+	rpc TxsByHeight(QueryTxsByHeightRequest) returns (QueryTxsResponse) {
+		option (google.api.http) = {
+			get : "/indexer/tx/v1/txs/by_height/{height}"
 		};
 	}
 }
@@ -40,13 +54,26 @@ message QueryTxResponse {
 	cosmos.base.abci.v1beta1.TxResponse tx = 1;
 }
 
-
-// QueryTxsRequest is the request type for the Query/Txs RPC method
+// QueryTxsequest is the request type for the Query/Txs RPC method
 message QueryTxsRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+
+// QueryTxsByAccountRequest is the request type for the Query/Txs RPC method
+message QueryTxsByAccountRequest {
 	// address is the address to query txs for.
 	string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
-	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+	cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+// QueryTxsByHeightRequest is the request type for the Query/Txs RPC method
+message QueryTxsByHeightRequest {
+	// height is the height to query txs for.
+	int64 height = 1;
+
+	cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 // QueryTxsResponse is the response type for the Query/Txs RPC method

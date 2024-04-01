@@ -36,7 +36,7 @@ var (
 	prefixTxTotalCountByDate      = keeper.NewPrefix(submoduleName, txTotalCountByDateKeyName)
 )
 
-// key: [height, sequence], value: address list seperated by comma
+// key: height, value: address list seperated by comma
 var accountMapByHeight *collections.Map[int64, string]
 
 // key: date string, value: new account count
