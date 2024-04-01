@@ -2,9 +2,10 @@ package block
 
 import (
 	"context"
-	"cosmossdk.io/errors"
 	"encoding/json"
 	"fmt"
+
+	"cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/kvindexer/config"
@@ -24,7 +25,7 @@ func collectBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinaliz
 	if !found {
 		return fmt.Errorf("cannot find valoper address by consensus address:%s", string(req.ProposerAddress))
 	}
-	b.Proposer = validator.String()
+	b.Proposer = validator.Moniker
 
 	var feeCoins sdk.Coins
 	for _, txBytes := range req.Txs {
