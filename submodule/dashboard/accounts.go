@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/collections/indexes"
 	"cosmossdk.io/errors"
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -75,30 +74,42 @@ func processAccounts(k *keeper.Keeper, ctx context.Context, res abci.ResponseCom
 	}
 
 	// set cumulative number of accounts
-	prev := timestamp.AddDate(0, 0, -1)
-	prevCount, err := totalAccountCountByDate.Get(ctx, timeToDateString(prev))
-	if err != nil {
-		prevCount = 0 // fail to get previous total number of accounts by date
-	}
-
-	n, _ := k.AccountKeeper.AccountNumber.Peek(ctx)
-	rng := new(collections.Range[uint64]).StartExclusive(prevCount).EndInclusive(n)
-	iter, err := k.AccountKeeper.Accounts.Indexes.Number.Iterate(ctx, rng)
-	if err != nil {
-		return err
-	}
-	defer iter.Close()
+	//prev := timestamp.AddDate(0, 0, -1)
+	//prevCount, err := totalAccountCountByDate.Get(ctx, timeToDateString(prev))
+	//if err != nil {
+	//	prevCount = 0 // fail to get previous total number of accounts by date
+	//}
+	//
+	//n, _ := k.AccountKeeper.AccountNumber.Peek(ctx)
+	//rng := new(collections.Range[uint64]).StartExclusive(prevCount).EndInclusive(n)
+	//iter, err := k.AccountKeeper.Accounts.Indexes.Number.Iterate(ctx, rng)
+	//if err != nil {
+	//	return err
+	//}
+	//defer iter.Close()
+	//
+	//var count = 0
+	//_ = indexes.ScanValues(ctx, k.AccountKeeper.Accounts, iter, func(acc sdk.AccountI) bool {
+	//	if _, ok := acc.(*authtypes.BaseAccount); ok {
+	//		count += 1
+	//	}
+	//	return false
+	//})
+	//
+	//if err = totalAccountCountByDate.Set(ctx, date, uint64(count)); err != nil {
+	//	return errors.Wrap(err, "failed to set total accounts by date")
+	//}
 
 	var count = 0
-	_ = indexes.ScanValues(ctx, k.AccountKeeper.Accounts, iter, func(acc sdk.AccountI) bool {
-		if _, ok := acc.(*authtypes.BaseAccount); ok {
-			count += 1
+	k.AccountKeeper.IterateAccounts(ctx, func(account sdk.AccountI) bool {
+		if _, ok := account.(*authtypes.BaseAccount); ok {
+			count++
 		}
 		return false
 	})
-
-	if err = totalAccountCountByDate.Set(ctx, date, uint64(count)); err != nil {
+	if err := totalAccountCountByDate.Set(ctx, date, uint64(count)); err != nil {
 		return errors.Wrap(err, "failed to set total accounts by date")
 	}
+
 	return nil
 }
