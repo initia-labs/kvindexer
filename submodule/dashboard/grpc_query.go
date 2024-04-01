@@ -148,6 +148,25 @@ func (q Querier) ChartData(ctx context.Context, req *types.ChartDataRequest) (*t
 		})
 	}
 
+	// get cumulative number of txs
+	txTotalCountIter, err := txTotalCountByDate.Iterate(ctx, rng)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	defer txTotalCountIter.Close()
+
+	var txTotalCounts []collections.KeyValue[string, int64]
+	for ; txTotalCountIter.Valid(); txTotalCountIter.Next() {
+		kv, err := txTotalCountIter.KeyValue()
+		if err != nil {
+			return nil, status.Error(codes.Internal, err.Error())
+		}
+		txTotalCounts = append(txTotalCounts, collections.KeyValue[string, int64]{
+			Key:   kv.Key,
+			Value: int64(kv.Value),
+		})
+	}
+
 	// make a return data.
 	dataMap := make(map[string]types.ChartData)
 
@@ -190,6 +209,18 @@ func (q Querier) ChartData(ctx context.Context, req *types.ChartDataRequest) (*t
 			dataMap[account.Key] = types.ChartData{
 				Date:           account.Key,
 				ActiveAccounts: account.Value,
+			}
+		}
+	}
+
+	for _, txCount := range txTotalCounts {
+		if entry, ok := dataMap[txCount.Key]; ok {
+			entry.TxTotalCount = txCount.Value
+			dataMap[txCount.Key] = entry
+		} else {
+			dataMap[txCount.Key] = types.ChartData{
+				Date:         txCount.Key,
+				TxTotalCount: txCount.Value,
 			}
 		}
 	}
