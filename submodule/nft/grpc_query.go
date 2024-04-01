@@ -7,7 +7,6 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
-	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/module/keeper"
@@ -75,14 +74,22 @@ func (q Querier) Collections(ctx context.Context, req *types.QueryCollectionsReq
 	accountAddrString := accountSdkAddr.String()
 
 	collectionSdkAddrs := []sdk.AccAddress{}
-	_, pageRes, err := query.CollectionPaginate(ctx, collectionOwnerMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (uint64, error) {
-			if k.K2().String() == accountAddrString {
-				collectionSdkAddrs = append(collectionSdkAddrs, k.K2())
+	_, pageRes, err := query.CollectionFilteredPaginate(ctx, collectionOwnerMap, req.Pagination,
+		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (bool, error) {
+			if k.K1().String() == accountAddrString {
+				return true, nil
 			}
+			return false, nil
+		},
+		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (uint64, error) {
+			collectionSdkAddrs = append(collectionSdkAddrs, k.K2())
 			return v, nil
 		},
+		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, sdk.AccAddress](accountSdkAddr),
 	)
+	if len(collectionSdkAddrs) == 0 {
+		return nil, status.Error(codes.NotFound, "collections not found")
+	}
 
 	collections := []*types.IndexedCollection{}
 	for _, collectionSdkAddr := range collectionSdkAddrs {
@@ -152,16 +159,22 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 	}
 	colSdkAddr := getCosmosAddress(collAddr)
 
-	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+	res, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenMap, req.Pagination,
+		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (bool, error) {
 			if slices.Equal(k.K1(), colSdkAddr) {
-				return &v, nil
+				return true, nil
 			}
-			return nil, nil
+			return false, nil
+		},
+		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+			return &v, nil
 		},
 	)
 	if err != nil {
 		return nil, handleCollectionErr(err)
+	}
+	if len(res) == 0 {
+		return nil, status.Error(codes.NotFound, "tokens not found")
 	}
 
 	return &types.QueryTokensResponse{
@@ -185,13 +198,17 @@ func getTokensByCollectionAndOwner(k *keeper.Keeper, ctx context.Context, req *t
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
 	ownerSdkAddrStr := ownerSdkAddr.String()
 
-	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+	res, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenMap, req.Pagination,
+		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (bool, error) {
 			if slices.Equal(k.K1(), colSdkAddr) && (v.OwnerAddr == ownerSdkAddrStr) {
-				return &v, nil
+				return true, nil
 			}
-			return nil, nil
+			return false, nil
 		},
+		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+			return &v, nil
+		},
+		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, string](colSdkAddr),
 	)
 	if err != nil {
 		return nil, handleCollectionErr(err)
@@ -199,7 +216,6 @@ func getTokensByCollectionAndOwner(k *keeper.Keeper, ctx context.Context, req *t
 	if len(res) == 0 {
 		return nil, status.Error(codes.NotFound, "tokens not found")
 	}
-
 	return &types.QueryTokensResponse{
 		Tokens:     res,
 		Pagination: pageRes,
@@ -230,27 +246,26 @@ func getTokensByOwner(k *keeper.Keeper, ctx context.Context, req *types.QueryTok
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
-	ownerSdkAddrStr := ownerSdkAddr.String()
 
-	store := k.GetStore()
-	ownerStore := prefix.NewStore(*store, prefixTokenOwnerIndex)
+	identifiers := []collections.Pair[sdk.AccAddress, string]{}
 
-	res, pageRes, err := query.GenericFilteredPaginate(
-		k.GetCodec(),   /*codec*/
-		ownerStore,     /* store */
-		req.Pagination, /* page request */
-		func(key []byte, val *types.IndexedToken) (*types.IndexedToken, error) {
-			if val.OwnerAddr != ownerSdkAddrStr {
-				return nil, nil
-			}
-			return val, nil
-		}, /* onResult */
-		func() *types.IndexedToken {
-			return &types.IndexedToken{}
-		}, /* constructor */
+	_, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenOwnerMap, req.Pagination,
+		func(k collections.Triple[sdk.AccAddress, sdk.AccAddress, string], _ bool) (bool, error) {
+			return true, nil
+		},
+		func(k collections.Triple[sdk.AccAddress, sdk.AccAddress, string], v bool) (bool, error) {
+			identifiers = append(identifiers, collections.Join(k.K2(), k.K3()))
+			return v, nil
+		},
+		WithCollectionPaginationTriplePrefix[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr),
 	)
-	if err != nil {
-		return nil, handleCollectionErr(err)
+	res := []*types.IndexedToken{}
+	for _, identifier := range identifiers {
+		token, err := tokenMap.Get(ctx, identifier)
+		if err != nil {
+			return nil, handleCollectionErr(err)
+		}
+		res = append(res, &token)
 	}
 
 	return &types.QueryTokensResponse{
@@ -278,4 +293,13 @@ func getTokensByOwnerCollectionAndTokenId(k *keeper.Keeper, ctx context.Context,
 	return &types.QueryTokensResponse{
 		Tokens: []*types.IndexedToken{&token},
 	}, nil
+}
+
+// WithCollectionPaginationTriplePrefix applies a prefix to a collection, whose key is a collection.Triple,
+// being paginated that needs prefixing.
+func WithCollectionPaginationTriplePrefix[K1, K2, K3 any](prefix K1) func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
+	return func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
+		prefix := collections.TriplePrefix[K1, K2, K3](prefix)
+		o.Prefix = &prefix
+	}
 }

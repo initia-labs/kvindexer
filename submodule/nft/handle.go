@@ -97,6 +97,11 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 		k.Logger(ctx).Error("failed to insert token into tokenMap", "collection-addr", collectionSdkAddr, "token-id", token.Nft.TokenId, "error", err, "token", token)
 		return errors.New("failed to insert token into tokenMap")
 	}
+	err = tokenOwnerMap.Set(ctx, collections.Join3(creatorSdkAddr, collectionSdkAddr, token.Nft.TokenId), true)
+	if err != nil {
+		k.Logger(ctx).Error("failed to insert into tokenOwnerSet", "owner", creatorSdkAddr, "collection-addr", collectionSdkAddr, "token-id", token.Nft.TokenId, "error", err)
+		return errors.New("failed to insert into tokenOwnerSet")
+	}
 
 	k.Logger(ctx).Info("nft minted", "collection", collection, "nft", token, "collection-sdk-addr", collectionSdkAddr, "nft-sdk-addr", tokenSdkAddr, "creator-sdk-addr", creatorSdkAddr)
 	return nil
@@ -160,7 +165,18 @@ func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.Subm
 		return errors.New("failed to increase collection count from new owner")
 	}
 
-	k.Logger(ctx).Info("nft transferred", "objectKey", "token", token, "prevOwner", data.From, "newOwner", data.To)
+	err = tokenOwnerMap.Remove(ctx, collections.Join3(fromSdkAddr, tpk.K1(), tpk.K2()))
+	if err != nil {
+		k.Logger(ctx).Error("failed to remove from tokenOwnerSet", "to", toSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
+		return errors.New("failed to insert token into tokenOwnerSet")
+	}
+	err = tokenOwnerMap.Set(ctx, collections.Join3(toSdkAddr, tpk.K1(), tpk.K2()), true)
+	if err != nil {
+		k.Logger(ctx).Error("failed to insert into tokenOwnerSet", "to", toSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
+		return errors.New("failed to insert token into tokenOwnerSet")
+	}
+
+	k.Logger(ctx).Info("nft transferred", "objectKey", tpk, "token", token, "prevOwner", data.From, "newOwner", data.To)
 	return nil
 }
 
@@ -239,10 +255,23 @@ func handleBurnEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 	if err != nil {
 		return errors.New("token's object address not found")
 	}
+	token, err := tokenMap.Get(ctx, tpk)
+	if err != nil {
+		return errors.New("failed to get nft from tokenMap")
+	}
 
 	err = tokenMap.Remove(ctx, tpk)
 	if err != nil {
 		return errors.New("failed to delete nft from tokenMap")
+	}
+
+	ownerAddr, _ := getVMAddress(cdc, token.OwnerAddr)
+	ownerSdkAddr := getCosmosAddress(ownerAddr)
+
+	err = tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
+	if err != nil {
+		k.Logger(ctx).Error("failed to remove from tokenOwnerSet", "owner", ownerSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
+		return errors.New("failed to insert token into tokenOwnerSet")
 	}
 
 	k.Logger(ctx).Info("nft burnt", "event", burnt)
