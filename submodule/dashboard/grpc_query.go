@@ -130,7 +130,7 @@ func (q Querier) ChartData(ctx context.Context, req *types.ChartDataRequest) (*t
 	}
 
 	// get cumulative number of accounts
-	accountIter, err := totalAccountCountByDate.Iterate(ctx, rng)
+	accountIter, err := totalAccountBaseCountByDate.Iterate(ctx, rng)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
