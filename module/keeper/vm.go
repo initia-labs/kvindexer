@@ -1,5 +1,9 @@
 package keeper
 
-// VMKEeper is just a stub
+import (
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+)
+
 type VMKeeper struct {
+	wasmkeeper.Keeper
 }

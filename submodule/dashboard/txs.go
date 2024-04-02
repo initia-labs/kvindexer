@@ -3,7 +3,6 @@ package dashboard
 import (
 	"context"
 
-	"cosmossdk.io/collections"
 	"cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/initia-labs/kvindexer/config"
