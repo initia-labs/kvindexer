@@ -42,22 +42,22 @@ func getCronConfigFromSubmoduleConfig(smcfg config.SubmoduleConfig) (*cronConfig
 	// bridgeId base is 1, so if it's 0, it's not set
 	cfg.bridgeId = cast.ToUint64(smcfg[bridgeIdConfigKey])
 	if cfg.bridgeId == 0 {
-		return nil, errors.New("bridge_id is required")
+		return nil, errors.New("op-bridge-id is required")
 	}
 
 	cfg.l1ChainId = cast.ToString(smcfg[l1ChainId])
 	if cfg.l1ChainId == "" {
-		return nil, errors.New("l1_chain_id is required")
+		return nil, errors.New("l1-chain-id is required")
 	}
 
 	cfg.l1QueryPattern = cast.ToString(smcfg[l1QueryPatternKey])
 	if cfg.l1QueryPattern == "" {
-		return nil, errors.New("l1_query_pattern is required")
+		return nil, errors.New("l1-query-pattern is required")
 	}
 
 	cfg.l1LcdUrl = cast.ToString(smcfg[l1LcdUrlConfigKey])
 	if cfg.l1LcdUrl == "" {
-		return nil, errors.New("l1_lcd_url is required")
+		return nil, errors.New("l1-lcd-url is required")
 	}
 
 	return &cfg, nil

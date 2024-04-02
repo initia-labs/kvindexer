@@ -41,6 +41,12 @@ func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig)
 	if lastAccountNumber, err = keeper.AddItem(k, prefixLastAccountNumber, lastAccountNumberName, collections.Uint64Value); err != nil {
 		return err
 	}
+
+	err = checkConfig(cfg)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
