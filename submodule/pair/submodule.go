@@ -34,10 +34,10 @@ var fungiblePairsFromL1 sync.Map = sync.Map{}
 var nonFungiblePairsFromL2 sync.Map = sync.Map{}
 
 // key: l2_collection_address, value: l1_collection_name
-var nonFungiblepairsMap *collections.Map[string, string]
+var nonFungiblePairsMap *collections.Map[string, string]
 
 // key: l2_denom, value: l1_denom
-var fungiblepairsMap *collections.Map[string, string]
+var fungiblePairsMap *collections.Map[string, string]
 
 func RegisterQueryHandlerClient(cc client.Context, mux *runtime.ServeMux) error {
 	return types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(cc))
