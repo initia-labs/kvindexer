@@ -44,7 +44,7 @@ func collectIbcTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 				continue
 			}
 
-			prevDenom, err := fungiblepairsMap.Get(ctx, trace.IBCDenom())
+			prevDenom, err := fungiblePairsMap.Get(ctx, trace.IBCDenom())
 			if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
 				continue
 			}
@@ -53,7 +53,7 @@ func collectIbcTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 				continue
 			}
 
-			err = fungiblepairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
+			err = fungiblePairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
 			if err != nil {
 				return err
 			}
@@ -81,7 +81,7 @@ func collecOpTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 		}
 
 		// prevDenom should be empty string if not found, or already set
-		prevDenom, err := fungiblepairsMap.Get(ctx, supply.Denom)
+		prevDenom, err := fungiblePairsMap.Get(ctx, supply.Denom)
 		if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
 			return true
 		}
@@ -89,7 +89,7 @@ func collecOpTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 		if prevDenom == l1denomAny {
 			return false
 		}
-		err = fungiblepairsMap.Set(ctx, supply.Denom, l1denom)
+		err = fungiblePairsMap.Set(ctx, supply.Denom, l1denom)
 		return err != nil
 	})
 
@@ -176,12 +176,12 @@ func collectNftTokensFromL2(k *keeper.Keeper, ctx context.Context) (err error) {
 				if l1collName == "" || l1collName == l2collAddr {
 					continue
 				}
-				_, err := nonFungiblepairsMap.Get(ctx, classId)
+				_, err := nonFungiblePairsMap.Get(ctx, classId)
 				if !cosmoserr.IsOf(err, collections.ErrNotFound) || err == nil {
 					continue
 				}
 
-				err = nonFungiblepairsMap.Set(ctx, classId, l1collName.(string))
+				err = nonFungiblePairsMap.Set(ctx, classId, l1collName.(string))
 				if err != nil {
 					return err
 				}

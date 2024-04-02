@@ -10,7 +10,7 @@ func GetPair(ctx context.Context, isFungible bool, l2key string) (string, error)
 		return "", fmt.Errorf("cannot query: %s is disabled", submoduleName)
 	}
 	if isFungible {
-		return fungiblepairsMap.Get(ctx, l2key)
+		return fungiblePairsMap.Get(ctx, l2key)
 	}
-	return nonFungiblepairsMap.Get(ctx, l2key)
+	return nonFungiblePairsMap.Get(ctx, l2key)
 }

@@ -32,10 +32,10 @@ func (q Querier) Pairs(ctx context.Context, req *types.QueryPairsRequest) (*type
 
 	pairs := []*types.Pair{}
 	var targetMap *collections.Map[string, string]
-	if req.IsFungible {
-		targetMap = fungiblepairsMap
+	if req.IsNonFungible {
+		targetMap = nonFungiblePairsMap
 	} else {
-		targetMap = nonFungiblepairsMap
+		targetMap = fungiblePairsMap
 	}
 	_, pageRes, err := query.CollectionPaginate(ctx, targetMap, req.Pagination,
 		func(key string, value string) (*string, error) {

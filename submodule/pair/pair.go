@@ -26,10 +26,10 @@ var timestamp time.Time
 func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig) (err error) {
 	enabled = true //assume that it passes handler's prepare func.
 
-	if nonFungiblepairsMap, err = keeper.AddMap(k, prefixNonFungiblePairs, nonFungiblePairMapName, collections.StringKey, collections.StringValue); err != nil {
+	if nonFungiblePairsMap, err = keeper.AddMap(k, prefixNonFungiblePairs, nonFungiblePairMapName, collections.StringKey, collections.StringValue); err != nil {
 		return err
 	}
-	if fungiblepairsMap, err = keeper.AddMap(k, prefixFungiblePairs, fungiblePairMapName, collections.StringKey, collections.StringValue); err != nil {
+	if fungiblePairsMap, err = keeper.AddMap(k, prefixFungiblePairs, fungiblePairMapName, collections.StringKey, collections.StringValue); err != nil {
 		return err
 	}
 
