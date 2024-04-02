@@ -22,7 +22,7 @@ service Query {
 
 // QueryPairsRequest is the request type for the Query/Pairs RPC method
 message QueryPairsRequest {
-	bool is_fungible = 1;
+	bool is_non_fungible = 1;
 	cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 

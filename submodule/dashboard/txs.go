@@ -2,7 +2,6 @@ package dashboard
 
 import (
 	"context"
-	"cosmossdk.io/collections"
 
 	"cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -11,28 +10,10 @@ import (
 )
 
 func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock, cfg config.SubmoduleConfig) error {
-	// set cumulative number of txs.
-	prev := timestamp.AddDate(0, 0, -1)
-	prevCount, err := txCountByDate.Get(ctx, timeToDateString(prev))
-	if err != nil {
-		prevCount = 0
-	}
-
-	date := timeToDateString(timestamp)
-
 	curTxsCount := uint64(len(req.Txs))
-
-	lastTxCount, err := txCountByDate.Get(ctx, date)
+	err := updateUint64MapByDate(ctx, txCountByDate, curTxsCount, true)
 	if err != nil {
-		if errors.IsOf(err, collections.ErrNotFound) {
-			lastTxCount = prevCount
-		} else {
-			return errors.Wrap(err, "failed to get tx count by date")
-		}
-	}
-
-	if err = txCountByDate.Set(ctx, date, lastTxCount+curTxsCount); err != nil {
-		return errors.Wrap(err, "failed to set tx count by date")
+		return errors.Wrap(err, "failed to update tx count by date")
 	}
 	return nil
 }

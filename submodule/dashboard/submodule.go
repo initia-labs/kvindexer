@@ -48,7 +48,7 @@ var totalAccountBaseCountByDate *collections.Map[string, uint64]
 // value: last account number: should be same with `k.AccountKeeper.AccountNumber.Peek(ctx)`
 var lastAccountNumber *collections.Item[uint64]
 
-// key: date string, value: tx count
+// key: date string, value: accumulative tx count
 var txCountByDate *collections.Map[string, uint64]
 
 // key: date string, value: total supply []byte
