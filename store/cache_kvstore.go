@@ -17,10 +17,7 @@ type KVStore interface {
 
 type CosmosKVStore struct {
 	store types.CacheKVStore
-	// ARCCache is a thread-safe fixed size Adaptive Replacement Cache (ARC).
-	// ARC is an enhancement over the standard LRU cache in that tracks both
-	// frequency and recency of use.
-	cache *lru.ARCCache
+	cache *lru.ARCCache //https://github.com/hashicorp/golang-lru/blob/main/arc/arc.go
 }
 
 func (c CosmosKVStore) GetStoreType() types.StoreType {
@@ -65,8 +62,7 @@ func (c CosmosKVStore) ReverseIterator(start, end []byte) types.Iterator {
 }
 
 func (c CosmosKVStore) Write() {
-	//TODO implement me
-	panic("implement me")
+	c.store.Write()
 }
 
 func NewStore(store types.KVStore, size uint) types.CacheKVStore {
