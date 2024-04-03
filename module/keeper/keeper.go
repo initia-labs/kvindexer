@@ -11,7 +11,6 @@ import (
 	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	"cosmossdk.io/store/cachekv"
 	"cosmossdk.io/store/dbadapter"
 	storetypes "cosmossdk.io/store/types"
 
@@ -32,6 +31,7 @@ const DataDir = "data"
 type Keeper struct {
 	cdc   codec.Codec
 	store storetypes.CacheKVStore
+	//store store.CosmosKVStore
 
 	// used only for staking feature
 	DistrKeeper         types.DistributionKeeper
@@ -152,7 +152,8 @@ func (k *Keeper) Seal() error {
 	k.schema = &schema
 
 	// TODO: do we need it? collections use db only..
-	k.store = cachekv.NewStore(dbadapter.Store{DB: db})
+	//k.store = cachekv.NewStore(dbadapter.Store{DB: db})
+	k.store = store.NewCosmosKVStore(dbadapter.Store{DB: db})
 	k.sealed = true
 
 	return nil
