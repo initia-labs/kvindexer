@@ -152,7 +152,7 @@ func (k *Keeper) Seal() error {
 	k.schema = &schema
 
 	//k.store = cachekv.NewStore(dbadapter.Store{DB: db}) // legacy
-	k.store = store.NewCosmosKVStore(dbadapter.Store{DB: db})
+	k.store = store.NewStore(dbadapter.Store{DB: db}, 10000)
 	k.sealed = true
 
 	return nil

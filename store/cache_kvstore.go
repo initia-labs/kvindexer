@@ -1,12 +1,11 @@
 package store
 
 import (
-	"io"
-
 	"cosmossdk.io/store/cachekv"
 	"cosmossdk.io/store/types"
-	db "github.com/cosmos/cosmos-db"
-	"github.com/patrickmn/go-cache"
+	"fmt"
+	lru "github.com/hashicorp/golang-lru"
+	"io"
 )
 
 type KVStore interface {
@@ -18,66 +17,67 @@ type KVStore interface {
 
 type CosmosKVStore struct {
 	store types.CacheKVStore
-	cache *cache.Cache
+	cache *lru.ARCCache
 }
 
-func NewCosmosKVStore(store types.KVStore) types.CacheKVStore {
-	return CosmosKVStore{
-		store: cachekv.NewStore(store),
-		cache: cache.New(cache.NoExpiration, cache.NoExpiration),
-	}
-}
-
-// CacheWrap implements types.CacheKVStore.
-func (c CosmosKVStore) CacheWrap() types.CacheWrap {
-	panic("unimplemented")
-}
-
-// CacheWrapWithTrace implements types.CacheKVStore.
-func (c CosmosKVStore) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
-	panic("unimplemented")
-}
-
-// GetStoreType implements types.CacheKVStore.
 func (c CosmosKVStore) GetStoreType() types.StoreType {
-	panic("unimplemented")
+	//TODO implement me
+	panic("implement me")
 }
 
-// Iterator implements types.CacheKVStore.
-func (c CosmosKVStore) Iterator(start []byte, end []byte) db.Iterator {
-	panic("unimplemented")
+func (c CosmosKVStore) CacheWrap() types.CacheWrap {
+	//TODO implement me
+	panic("implement me")
 }
 
-// ReverseIterator implements types.CacheKVStore.
-func (c CosmosKVStore) ReverseIterator(start []byte, end []byte) db.Iterator {
-	panic("unimplemented")
+func (c CosmosKVStore) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c CosmosKVStore) Get(key []byte) []byte {
-	if value, found := c.cache.Get(string(key)); found {
-		return value.([]byte)
-	}
-	val := c.store.Get(key)
-	c.cache.Set(string(key), val, cache.NoExpiration)
-	return val
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c CosmosKVStore) Has(key []byte) bool {
-	value := c.store.Get(key)
-	return value != nil
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c CosmosKVStore) Set(key, value []byte) {
-	c.cache.Set(string(key), value, cache.NoExpiration)
-	c.store.Set(key, value)
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c CosmosKVStore) Delete(key []byte) {
-	c.cache.Delete(string(key))
-	c.store.Delete(key)
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c CosmosKVStore) Iterator(start, end []byte) types.Iterator {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (c CosmosKVStore) ReverseIterator(start, end []byte) types.Iterator {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (c CosmosKVStore) Write() {
-	c.store.Write()
-	panic("unimplemented")
+	//TODO implement me
+	panic("implement me")
+}
+
+func NewStore(store types.KVStore, size uint) types.CacheKVStore {
+	cache, err := lru.NewARC(int(size))
+	if err != nil {
+		panic(fmt.Errorf("failed to create KVStore cache: %s", err))
+	}
+
+	return CosmosKVStore{
+		store: cachekv.NewStore(store),
+		cache: cache,
+	}
 }
