@@ -151,8 +151,7 @@ func (k *Keeper) Seal() error {
 	k.db = db
 	k.schema = &schema
 
-	// TODO: do we need it? collections use db only..
-	//k.store = cachekv.NewStore(dbadapter.Store{DB: db})
+	//k.store = cachekv.NewStore(dbadapter.Store{DB: db}) // legacy
 	k.store = store.NewCosmosKVStore(dbadapter.Store{DB: db})
 	k.sealed = true
 

@@ -3,6 +3,7 @@ package store
 import (
 	"io"
 
+	"cosmossdk.io/store/cachekv"
 	"cosmossdk.io/store/types"
 	db "github.com/cosmos/cosmos-db"
 	"github.com/patrickmn/go-cache"
@@ -20,9 +21,9 @@ type CosmosKVStore struct {
 	cache *cache.Cache
 }
 
-func NewCosmosKVStore(store types.CacheKVStore) types.CacheKVStore {
+func NewCosmosKVStore(store types.KVStore) types.CacheKVStore {
 	return CosmosKVStore{
-		store: store,
+		store: cachekv.NewStore(store),
 		cache: cache.New(cache.NoExpiration, cache.NoExpiration),
 	}
 }
