@@ -17,22 +17,22 @@ type KVStore interface {
 
 type CosmosKVStore struct {
 	store types.CacheKVStore
+	// ARCCache is a thread-safe fixed size Adaptive Replacement Cache (ARC).
+	// ARC is an enhancement over the standard LRU cache in that tracks both
+	// frequency and recency of use.
 	cache *lru.ARCCache
 }
 
 func (c CosmosKVStore) GetStoreType() types.StoreType {
-	//TODO implement me
-	panic("implement me")
+	panic("not implemented")
 }
 
 func (c CosmosKVStore) CacheWrap() types.CacheWrap {
-	//TODO implement me
-	panic("implement me")
+	return cachekv.NewStore(c)
 }
 
 func (c CosmosKVStore) CacheWrapWithTrace(w io.Writer, tc types.TraceContext) types.CacheWrap {
-	//TODO implement me
-	panic("implement me")
+	panic("not implemented")
 }
 
 func (c CosmosKVStore) Get(key []byte) []byte {
@@ -41,8 +41,9 @@ func (c CosmosKVStore) Get(key []byte) []byte {
 }
 
 func (c CosmosKVStore) Has(key []byte) bool {
-	//TODO implement me
-	panic("implement me")
+	types.AssertValidKey(key)
+	_, ok := c.cache.Get(key)
+	return ok
 }
 
 func (c CosmosKVStore) Set(key, value []byte) {
@@ -51,18 +52,16 @@ func (c CosmosKVStore) Set(key, value []byte) {
 }
 
 func (c CosmosKVStore) Delete(key []byte) {
-	//TODO implement me
-	panic("implement me")
+	c.cache.Remove(key)
+	c.store.Delete(key)
 }
 
 func (c CosmosKVStore) Iterator(start, end []byte) types.Iterator {
-	//TODO implement me
-	panic("implement me")
+	return c.store.Iterator(start, end)
 }
 
 func (c CosmosKVStore) ReverseIterator(start, end []byte) types.Iterator {
-	//TODO implement me
-	panic("implement me")
+	return c.store.ReverseIterator(start, end)
 }
 
 func (c CosmosKVStore) Write() {
