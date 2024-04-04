@@ -63,7 +63,7 @@ func (event *MintEvent) Parse(src EventWithAttributeMap) (err error) {
 	return nil
 }
 
-type TransferAndSendEvent struct {
+type TransferOrSendEvent struct {
 	Action          string         `json:"action"`
 	ContractAddress sdk.AccAddress `json:"_contract_address"`
 	Recipient       sdk.AccAddress `json:"recipient"`
@@ -72,7 +72,7 @@ type TransferAndSendEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func (event *TransferAndSendEvent) Parse(src EventWithAttributeMap) (err error) {
+func (event *TransferOrSendEvent) Parse(src EventWithAttributeMap) (err error) {
 	if event.Action, err = getStringFromMap(src, "action"); err != nil {
 		return err
 	}

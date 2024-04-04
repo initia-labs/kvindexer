@@ -157,8 +157,8 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 	colSdkAddr := getCosmosAddress(collAddr)
 
 	res, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (bool, error) {
-			if slices.Equal(k.K1(), colSdkAddr) {
+		func(key collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (bool, error) {
+			if slices.Equal(key.K1(), colSdkAddr) {
 				return true, nil
 			}
 			return false, nil

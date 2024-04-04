@@ -19,7 +19,7 @@ func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleCo
 		case "mint":
 			fn = handleMintEvent
 		case "transfer_nft", "send_nft":
-			fn = handlerTransferEvent
+			fn = handlerSendOrTransferEvent
 		case "burn":
 			fn = handleBurnEvent
 		default:
@@ -64,10 +64,11 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
 	}
 
-	token, err := getIndexedNftFromVMStore(k, ctx, data.ContractAddress, data.TokenId)
+	token, err := getIndexedNftFromVMStore(k, ctx, data.ContractAddress, data.TokenId, &data.Minter)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get token info")
 	}
+	token.CollectionName = collection.Collection.Name
 
 	err = tokenMap.Set(ctx, collections.Join(data.ContractAddress, data.TokenId), *token)
 	if err != nil {
@@ -84,12 +85,11 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 	return nil
 }
 
-func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) (err error) {
-	k.Logger(ctx).Info("transferred", "event", event)
-
-	data := types.TransferAndSendEvent{}
+func handlerSendOrTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) (err error) {
+	k.Logger(ctx).Info("sent/transferred", "event", event)
+	data := types.TransferOrSendEvent{}
 	if err := data.Parse(event); err != nil {
-		return cosmoserr.Wrap(err, "failed to parse transfer event")
+		return cosmoserr.Wrap(err, "failed to parse send/transfer event")
 	}
 
 	tpk := collections.Join[sdk.AccAddress, string](data.ContractAddress, data.TokenId)
@@ -126,7 +126,7 @@ func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.Subm
 		return errors.New("failed to insert token into tokenOwnerSet")
 	}
 
-	k.Logger(ctx).Info("nft transferred", "objectKey", tpk, "token", token, "prevOwner", data.Sender, "newOwner", data.Recipient)
+	k.Logger(ctx).Info("nft sent/transferred", "objectKey", tpk, "token", token, "prevOwner", data.Sender, "newOwner", data.Recipient)
 	return nil
 }
 

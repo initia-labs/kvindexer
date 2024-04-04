@@ -124,16 +124,20 @@ func getNftResourceFromVMStore(k *keeper.Keeper, ctx context.Context, collection
 	return &resource, nil
 }
 
-func getIndexedNftFromVMStore(k *keeper.Keeper, ctx context.Context, contractAddr sdk.AccAddress, tokenId string) (*types.IndexedToken, error) {
+func getIndexedNftFromVMStore(k *keeper.Keeper, ctx context.Context, contractAddr sdk.AccAddress, tokenId string, ownerAddr *sdk.AccAddress) (*types.IndexedToken, error) {
 	resource, err := getNftResourceFromVMStore(k, ctx, contractAddr, tokenId)
 	if err != nil {
 		return nil, err
 	}
 	indexed := types.IndexedToken{
 		Nft: &types.Token{
-			Uri: resource.TokenUri,
+			TokenId: tokenId,
+			Uri:     resource.TokenUri,
 		},
 		CollectionAddr: contractAddr.String(),
+	}
+	if ownerAddr != nil {
+		indexed.OwnerAddr = ownerAddr.String()
 	}
 
 	return &indexed, nil
