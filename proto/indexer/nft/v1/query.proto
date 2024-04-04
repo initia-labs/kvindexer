@@ -21,30 +21,25 @@ service Query {
 	}
 
 	// Collections queries all the collections of an account
-	rpc Collections(QueryCollectionsRequest) returns (QueryCollectionsResponse) {
+	rpc CollectionsByAccount(QueryCollectionsByAccountRequest) returns (QueryCollectionsResponse) {
 		option (google.api.http) = {
-			get : "/indexer/nft/v1/collections"
+			get : "/indexer/nft/v1/collections/by_account/{account}"
 		};
 	}
 
-	// Tokens queries all the NFTs of an account
-	rpc Tokens(QueryTokensRequest) returns (QueryTokensResponse) {
+	// TokensByACcount queries all the NFTs of an account
+	rpc TokensByAccount(QueryTokensByAccountRequest) returns (QueryTokensResponse) {
 		option (google.api.http) = {
-			get : "/indexer/nft/v1/tokens/{collection_addr}/{token_id}"
+			get : "/indexer/nft/v1/tokens/by_account/{account}"
 		};
 	}
-}
 
-// QueryCollectionsRequest is the request type for the Query/Collections RPC method
-message QueryCollectionsRequest {
-	string account = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
-	cosmos.base.query.v1beta1.PageRequest pagination = 2;
-}
-
-// QueryCollectionsResponse is the response type for the Query/Collections RPC method
-message QueryCollectionsResponse {
-	repeated IndexedCollection collections = 1;
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+		// TokensByCollection queries all the NFTs of a collection
+	rpc TokensByCollection(QueryTokensByCollectionRequest) returns (QueryTokensResponse) {
+		option (google.api.http) = {
+			get : "/indexer/nft/v1/tokens/by_collection/{collection_addr}"
+		};
+	}
 }
 
 // QueryCollectionRequest is the request type for the Query/Collection RPC method
@@ -57,11 +52,30 @@ message QueryCollectionResponse {
 	IndexedCollection collection = 1;
 }
 
-// QueryTokensRequest is the request type for the Query/Tokens RPC method
-message QueryTokensRequest {
+// QueryCollectionsRequest is the request type for the Query/Collections RPC method
+message QueryCollectionsByAccountRequest {
+	string account = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryCollectionsResponse is the response type for the Query/Collections RPC method
+message QueryCollectionsResponse {
+	repeated IndexedCollection collections = 1;
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryTokensByAccountRequest is the request type for the Query/Tokens RPC method
+message QueryTokensByAccountRequest {
+	string account = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	string collection_addr = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	string token_id = 3;
+	cosmos.base.query.v1beta1.PageRequest pagination = 4;
+}
+
+// QueryTokensByCollectionRequest is the request type for the Query/Tokens RPC method
+message QueryTokensByCollectionRequest {
 	string collection_addr = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 	string token_id = 2;
-	string owner = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 	cosmos.base.query.v1beta1.PageRequest pagination = 4;
 }
 
