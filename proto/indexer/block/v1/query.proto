@@ -18,7 +18,7 @@ service Query {
   rpc Block(BlockRequest)
       returns (BlockResponse) {
     option (google.api.http) = {
-      get : "/indexer/block/v1/blocks"
+      get : "/indexer/block/v1/blocks/{height}"
     };
   }
 
