@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/module/keeper"
@@ -211,37 +210,38 @@ func WithCollectionPaginationTriplePrefix[K1, K2, K3 any](prefix K1) func(o *que
 }
 
 func getTokensByOwner(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
-	ownerAddr, err := sdk.AccAddressFromBech32(req.Owner)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-	ownerAddrStr := ownerAddr.String()
-
-	store := k.GetStore()
-	ownerStore := prefix.NewStore(*store, prefixTokenOwnerIndex)
-
-	res, pageRes, err := query.GenericFilteredPaginate(
-		k.GetCodec(),   /*codec*/
-		ownerStore,     /* store */
-		req.Pagination, /* page request */
-		func(key []byte, val *types.IndexedToken) (*types.IndexedToken, error) {
-			if val.OwnerAddr != ownerAddrStr {
-				return nil, nil
-			}
-			return val, nil
-		}, /* onResult */
-		func() *types.IndexedToken {
-			return &types.IndexedToken{}
-		}, /* constructor */
-	)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	return &types.QueryTokensResponse{
-		Tokens:     res,
-		Pagination: pageRes,
-	}, nil
+	//ownerAddr, err := sdk.AccAddressFromBech32(req.Owner)
+	//if err != nil {
+	//	return nil, status.Error(codes.InvalidArgument, err.Error())
+	//}
+	//ownerAddrStr := ownerAddr.String()
+	//
+	//store := k.GetStore()
+	//ownerStore := prefix.NewStore(*store, prefixTokenOwnerIndex)
+	//
+	//res, pageRes, err := query.GenericFilteredPaginate(
+	//	k.GetCodec(),   /*codec*/
+	//	ownerStore,     /* store */
+	//	req.Pagination, /* page request */
+	//	func(key []byte, val *types.IndexedToken) (*types.IndexedToken, error) {
+	//		if val.OwnerAddr != ownerAddrStr {
+	//			return nil, nil
+	//		}
+	//		return val, nil
+	//	}, /* onResult */
+	//	func() *types.IndexedToken {
+	//		return &types.IndexedToken{}
+	//	}, /* constructor */
+	//)
+	//if err != nil {
+	//	return nil, status.Error(codes.Internal, err.Error())
+	//}
+	//
+	//return &types.QueryTokensResponse{
+	//	Tokens:     res,
+	//	Pagination: pageRes,
+	//}, nil
+	return nil, nil
 }
 
 func getTokensByOwnerCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
