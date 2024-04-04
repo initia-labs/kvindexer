@@ -24,31 +24,43 @@ func NewCacheStore(store types.KVStore, size uint) *CacheStore {
 }
 
 func (c CacheStore) Get(key []byte) ([]byte, error) {
-	//TODO implement me
-	panic("implement me - GET")
+	types.AssertValidKey(key)
+
+	v, ok := c.cache.Get(key)
+	if ok {
+		// cache hit
+		return v.([]byte), nil
+	}
+
+	// write to cache
+	value := c.store.Get(key)
+	c.cache.Add(key, value)
+
+	return value, nil
 }
 
 func (c CacheStore) Has(key []byte) (bool, error) {
-	//TODO implement me
-	panic("implement me- HAS")
+	_, ok := c.cache.Get(key)
+	return ok, nil
 }
 
 func (c CacheStore) Set(key, value []byte) error {
-	//TODO implement me
-	panic("implement me - SET")
+	types.AssertValidKey(key)
+	types.AssertValidValue(value)
+
+	c.cache.Add(string(key), value)
+	c.store.Set(key, value)
 }
 
 func (c CacheStore) Delete(key []byte) error {
-	//TODO implement me
-	panic("implement me - DELETE")
+	c.cache.Remove(string(key))
+	c.store.Delete(key)
 }
 
 func (c CacheStore) Iterator(start, end []byte) (types.Iterator, error) {
-	//TODO implement me
-	panic("implement me - ITER")
+	panic("not implemented")
 }
 
 func (c CacheStore) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	//TODO implement me
-	panic("implement me - REV")
+	panic("not implemented")
 }
