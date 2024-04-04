@@ -30,7 +30,7 @@ service Query {
 	// Tokens queries all the NFTs of an account
 	rpc Tokens(QueryTokensRequest) returns (QueryTokensResponse) {
 		option (google.api.http) = {
-			get : "/indexer/nft/v1/tokens/{collection_addr}/{token_id}"
+			get : "/indexer/nft/v1/tokens"
 		};
 	}
 }
