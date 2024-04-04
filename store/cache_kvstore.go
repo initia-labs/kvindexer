@@ -50,11 +50,15 @@ func (c CacheStore) Set(key, value []byte) error {
 
 	c.cache.Add(string(key), value)
 	c.store.Set(key, value)
+
+	return nil
 }
 
 func (c CacheStore) Delete(key []byte) error {
 	c.cache.Remove(string(key))
 	c.store.Delete(key)
+
+	return nil
 }
 
 func (c CacheStore) Iterator(start, end []byte) (types.Iterator, error) {
