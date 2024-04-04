@@ -265,8 +265,16 @@ func handleBurnEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 		return errors.New("failed to delete nft from tokenMap")
 	}
 
+	collectionAddr, _ := getVMAddress(cdc, token.CollectionAddr)
+	collectionSdkAddr := getCosmosAddress(collectionAddr)
+
 	ownerAddr, _ := getVMAddress(cdc, token.OwnerAddr)
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
+
+	err = applyCollectionOwnerMap(k, ctx, collectionSdkAddr, ownerSdkAddr, false)
+	if err != nil {
+		return err // just return err, no wrap
+	}
 
 	err = tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
 	if err != nil {
