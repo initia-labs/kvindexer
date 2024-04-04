@@ -26,7 +26,7 @@ func NewCacheStore(store types.KVStore, size uint) *CacheStore {
 func (c CacheStore) Get(key []byte) ([]byte, error) {
 	types.AssertValidKey(key)
 
-	v, ok := c.cache.Get(key)
+	v, ok := c.cache.Get(string(key))
 	if ok {
 		// cache hit
 		return v.([]byte), nil
@@ -34,13 +34,13 @@ func (c CacheStore) Get(key []byte) ([]byte, error) {
 
 	// write to cache
 	value := c.store.Get(key)
-	c.cache.Add(key, value)
+	c.cache.Add(string(key), value)
 
 	return value, nil
 }
 
 func (c CacheStore) Has(key []byte) (bool, error) {
-	_, ok := c.cache.Get(key)
+	_, ok := c.cache.Get(string(key))
 	return ok, nil
 }
 
