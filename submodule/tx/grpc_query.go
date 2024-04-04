@@ -67,9 +67,6 @@ func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountR
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	if len(txHashes) == 0 {
-		return nil, status.Error(codes.NotFound, "no txs found")
-	}
 
 	txs := []*sdk.TxResponse{}
 	for _, txHash := range txHashes {
@@ -105,9 +102,6 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
-	}
-	if len(txHashes) == 0 {
-		return nil, status.Error(codes.NotFound, "no txs found")
 	}
 
 	txs := []*sdk.TxResponse{}
@@ -145,9 +139,6 @@ func (q Querier) TxsByHeight(ctx context.Context, req *types.QueryTxsByHeightReq
 	)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
-	}
-	if len(txHashes) == 0 {
-		return nil, status.Error(codes.NotFound, "no txs found")
 	}
 
 	txs := []*sdk.TxResponse{}
