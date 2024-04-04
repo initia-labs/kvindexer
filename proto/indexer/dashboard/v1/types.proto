@@ -12,7 +12,7 @@ option (gogoproto.equal_all)           = true;
 // NOTE: not all address are guaranteed to be present in the list. it's just a representation format
 message AccountsPerHeight {
   int64 height = 1;
-  repeated string addresses = 2;
+  repeated string accounts = 2;
 }
 
 // ChartData is a struct that holds the data for the dashboard chart

@@ -30,6 +30,7 @@ var _ = time.Kitchen
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
+// Block represents a indexed block in a blockchain
 type Block struct {
 	ChainId   string                                   `protobuf:"bytes,1,opt,name=chain_id,json=chainId,proto3" json:"chain_id,omitempty"`
 	Height    int64                                    `protobuf:"varint,2,opt,name=height,proto3" json:"height,omitempty"`
