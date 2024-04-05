@@ -2,6 +2,7 @@ package block
 
 import (
 	"context"
+
 	"cosmossdk.io/collections"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
 
@@ -21,7 +22,7 @@ var (
 	prefixBlock = keeper.NewPrefix(submoduleName, blockPrefix)
 )
 
-var blockByHeight *collections.Map[uint64, []byte]
+var blockByHeight *collections.Map[int64, types.Block]
 
 func RegisterQueryHandlerClient(cc client.Context, mux *runtime.ServeMux) error {
 	return types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(cc))

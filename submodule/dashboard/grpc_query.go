@@ -43,7 +43,7 @@ func (q Querier) NewAccounts(ctx context.Context, req *types.NewAccountsRequest)
 		ctx, accountMapByHeight,
 		req.Pagination,
 		func(key int64, value string) (aph *types.AccountsPerHeight, err error) {
-			return &types.AccountsPerHeight{Height: key, Addresses: strings.Split(value, ",")}, nil
+			return &types.AccountsPerHeight{Height: key, Accounts: strings.Split(value, ",")}, nil
 		},
 	)
 	if err != nil {

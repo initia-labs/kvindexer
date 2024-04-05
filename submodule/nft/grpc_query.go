@@ -55,7 +55,7 @@ func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionReque
 }
 
 // Collections implements types.QueryServer.
-func (q Querier) Collections(ctx context.Context, req *types.QueryCollectionsRequest) (*types.QueryCollectionsResponse, error) {
+func (q Querier) CollectionsByAccount(ctx context.Context, req *types.QueryCollectionsByAccountRequest) (*types.QueryCollectionsResponse, error) {
 	if !enabled {
 		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
 	}
@@ -103,8 +103,8 @@ func (q Querier) Collections(ctx context.Context, req *types.QueryCollectionsReq
 	}, nil
 }
 
-// Tokens implements types.QueryServer.
-func (q Querier) Tokens(ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
+// TokensByCollection implements types.QueryServer.
+func (q Querier) TokensByCollection(ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
 	if !enabled {
 		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
 	}
@@ -115,28 +115,31 @@ func (q Querier) Tokens(ctx context.Context, req *types.QueryTokensRequest) (*ty
 		}
 	}
 
-	var fn func(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error)
-	switch {
-	case req.CollectionAddr != "" && req.Owner == "" && req.TokenId == "":
-		// query by collection only
-		fn = getTokensByCollection
-	case req.CollectionAddr != "" && req.Owner != "" && req.TokenId == "":
-		// query by collection and owner
-		fn = getTokensByCollectionAndOwner
-	case req.CollectionAddr != "" && req.Owner == "" && req.TokenId != "":
-		// query by collection and token id
-		fn = getTokensByCollectionAndTokenId
-	case req.CollectionAddr == "" && req.Owner != "" && req.TokenId == "":
-		// query by owner only
-		fn = getTokensByOwner
-	case req.CollectionAddr != "" && req.Owner != "" && req.TokenId != "":
-		// query by owner, collection and token id
-		fn = getTokensByOwnerCollectionAndTokenId
-	default:
-		return nil, status.Error(codes.InvalidArgument, "invalid query parameter")
+	if req.TokenId == "" {
+		return getTokensByCollection(q.Keeper, ctx, req)
+	}
+	return getTokensByCollectionAndTokenId(q.Keeper, ctx, req)
+}
+
+// TokensByAccount implements types.QueryServer.
+func (q Querier) TokensByAccount(ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+	if !enabled {
+		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
 	}
 
-	return fn(q.Keeper, ctx, req)
+	if req.Pagination != nil && limit > 0 {
+		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
+			req.Pagination.Limit = limit
+		}
+	}
+
+	if req.CollectionAddr == "" {
+		return getTokensByAccount(q.Keeper, ctx, req)
+	}
+	if req.TokenId == "" {
+		return getTokensByAccountAndCollection(q.Keeper, ctx, req)
+	}
+	return getTokensByAccountCollectionAndTokenId(q.Keeper, ctx, req)
 }
 
 // NewQuerier return new Querier instance
@@ -148,7 +151,7 @@ func getCollectionNameFromPairSubmodule(ctx context.Context, collName string) (s
 	return pair.GetPair(ctx, false, collName)
 }
 
-func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
+func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
 
 	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
@@ -178,43 +181,8 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 
 }
 
-func getTokensByCollectionAndOwner(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-	colSdkAddr := getCosmosAddress(collAddr)
-
-	ownerAddr, err := getVMAddress(k.GetAddressCodec(), req.Owner)
-	if err != nil {
-		return nil, status.Error(codes.InvalidArgument, err.Error())
-	}
-	ownerSdkAddr := getCosmosAddress(ownerAddr)
-	ownerSdkAddrStr := ownerSdkAddr.String()
-
-	res, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (bool, error) {
-			if slices.Equal(k.K1(), colSdkAddr) && (v.OwnerAddr == ownerSdkAddrStr) {
-				return true, nil
-			}
-			return false, nil
-		},
-		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
-			return &v, nil
-		},
-		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, string](colSdkAddr),
-	)
-	if err != nil {
-		return nil, handleCollectionErr(err)
-	}
-	return &types.QueryTokensResponse{
-		Tokens:     res,
-		Pagination: pageRes,
-	}, nil
-}
-
-func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
+func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
+	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -230,9 +198,8 @@ func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req 
 	}, nil
 }
 
-func getTokensByOwner(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
-
-	ownerAddr, err := getVMAddress(k.GetAddressCodec(), req.Owner)
+func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+	ownerAddr, err := sdk.AccAddressFromBech32(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -265,8 +232,38 @@ func getTokensByOwner(k *keeper.Keeper, ctx context.Context, req *types.QueryTok
 	}, nil
 }
 
-func getTokensByOwnerCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
+func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	ownerAddr, err := sdk.AccAddressFromBech32(req.Account)
+	if err != nil {
+		return nil, status.Error(codes.InvalidArgument, err.Error())
+	}
+	ownerAddrStr := ownerAddr.String()
+
+	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
+		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+			if slices.Equal(k.K1(), collAddr) && (v.OwnerAddr == ownerAddrStr) {
+				return &v, nil
+			}
+			return nil, nil
+		},
+	)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	return &types.QueryTokensResponse{
+		Tokens:     res,
+		Pagination: pageRes,
+	}, nil
+}
+
+func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -277,8 +274,8 @@ func getTokensByOwnerCollectionAndTokenId(k *keeper.Keeper, ctx context.Context,
 		return nil, handleCollectionErr(err)
 	}
 
-	if token.OwnerAddr != req.Owner {
-		return nil, status.Error(codes.Unauthenticated, "invalid owner address")
+	if token.OwnerAddr != req.Account {
+		return nil, status.Error(codes.NotFound, "token not found")
 	}
 
 	return &types.QueryTokensResponse{
