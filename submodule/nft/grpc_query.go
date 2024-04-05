@@ -182,7 +182,7 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 }
 
 func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -199,7 +199,7 @@ func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req 
 }
 
 func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	ownerAddr, err := sdk.AccAddressFromBech32(req.Account)
+	ownerAddr, err := getVMAddress(k.GetAddressCodec(), req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -263,7 +263,7 @@ func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req 
 }
 
 func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
