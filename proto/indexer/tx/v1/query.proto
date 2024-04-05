@@ -15,7 +15,7 @@ service Query {
 	// Tx queries a transaction by hash
 	rpc Tx(QueryTxRequest) returns (QueryTxResponse) {
 		option (google.api.http) = {
-			get : "/indexer/tx/v1/tx/{tx_hash}"
+			get : "/indexer/tx/v1/txs/{tx_hash}"
 		};
 	}
 

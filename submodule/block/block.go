@@ -7,8 +7,10 @@ import (
 	"cosmossdk.io/collections"
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
+	"github.com/initia-labs/kvindexer/submodule/block/types"
 	"github.com/spf13/cast"
 )
 
@@ -23,8 +25,9 @@ var timestamp time.Time
 
 func preparer(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig) (err error) {
 	enabled = true //assume that it passes handler's prepare func.
+	cdc := k.GetCodec()
 
-	if blockByHeight, err = keeper.AddMap(k, prefixBlock, blockByHeightName, collections.Uint64Key, collections.BytesValue); err != nil {
+	if blockByHeight, err = keeper.AddMap(k, prefixBlock, blockByHeightName, collections.Int64Key, codec.CollValue[types.Block](cdc)); err != nil {
 		return err
 	}
 
