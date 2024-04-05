@@ -62,9 +62,9 @@ func (c CacheStore) Delete(key []byte) error {
 }
 
 func (c CacheStore) Iterator(start, end []byte) (types.Iterator, error) {
-	panic("not implemented")
+	return c.store.Iterator(start, end), nil
 }
 
 func (c CacheStore) ReverseIterator(start, end []byte) (types.Iterator, error) {
-	panic("not implemented")
+	return c.store.ReverseIterator(start, end), nil
 }
