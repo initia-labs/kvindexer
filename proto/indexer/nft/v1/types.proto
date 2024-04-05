@@ -45,7 +45,6 @@ message IndexedToken {
 }
 
 // NFT is the message for a single NFT
-// it comes from 
 message Token {
 	InnerCollection collection = 1;
 	string description = 2;

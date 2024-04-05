@@ -24,7 +24,10 @@ func collectBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinaliz
 	if !found {
 		return fmt.Errorf("cannot find valoper address by consensus address:%s", string(req.ProposerAddress))
 	}
-	block.Proposer = validator.Moniker
+	block.Proposer = &types.Proposer{
+		Moniker:         validator.Moniker,
+		OperatorAddress: validator.OperatorAddress,
+	}
 
 	var feeCoins sdk.Coins
 	for _, txBytes := range req.Txs {
