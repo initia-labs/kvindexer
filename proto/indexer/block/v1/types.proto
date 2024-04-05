@@ -11,7 +11,7 @@ option go_package = "github.com/initia-labs/kvindexer/submodule/block/types";
 option (gogoproto.goproto_getters_all) = false;
 option (gogoproto.equal_all)           = true;
 
-
+// Block represents a indexed block in a blockchain
 message Block {
   string chain_id = 1;
   int64 height = 2;
@@ -30,5 +30,13 @@ message Block {
     (amino.encoding)         = "legacy_coins",
     (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
   ];
-  string proposer = 10;
+  Proposer proposer = 10;
+}
+
+// Proposer represents the proposer of a block: for minitia, its the L2 operator
+message Proposer {
+  string moniker = 1;
+  // actually minitias have no identity because they haven't MsgCreateValidator, but we decided to keep this field for compatibility with L1
+  string identity = 2;
+  string operator_address = 3; // [(cosmos_proto.scalar) = "cosmos.AddressString"];
 }

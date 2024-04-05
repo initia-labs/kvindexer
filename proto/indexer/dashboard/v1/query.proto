@@ -13,11 +13,11 @@ option go_package = "github.com/initia-labs/kvindexer/submodule/dashboard/types"
 
 // Query provides defines the gRPC querier service.
 service Query {
-  // NewAccounts returns the new addresses in range [from, to].
+  // NewAccounts returns the new accounts in range [from, to].
   rpc NewAccounts(NewAccountsRequest)
 	  returns (NewAccountsResponse) {
 	option (google.api.http) = {
-	  get : "/indexer/dashboard/v1/new_addresses"
+	  get : "/indexer/dashboard/v1/new_accounts"
 	};
   }
 

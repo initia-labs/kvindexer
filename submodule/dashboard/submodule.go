@@ -18,14 +18,12 @@ const newAccsCountPrefix = 0x11
 const txCountPrefix = 0x20
 const supplyPrefix = 0x21
 const totalAccsCountPrefix = 0x30
-const lastAccountNumberPrefix = 0x40
 
 const newAccsByHeightName = "new_accounts_by_height"
 const newAccsCountByDateName = "new_accounts_count_by_date"
 const txCountByDateKeyName = "tx_count_by_date"
 const supplyByDateKeyName = "supply_by_date"
 const totalAccsCountByDateName = "total_account_count_by_date"
-const lastAccountNumberName = "last_account_number"
 
 var (
 	prefixAccountMapByHeight      = keeper.NewPrefix(submoduleName, newAccsPrefix)
@@ -33,7 +31,6 @@ var (
 	prefixTxCountByDate           = keeper.NewPrefix(submoduleName, txCountPrefix)
 	prefixSupplyByDate            = keeper.NewPrefix(submoduleName, supplyPrefix)
 	prefixTotalAccountCountByDate = keeper.NewPrefix(submoduleName, totalAccsCountPrefix)
-	prefixLastAccountNumber       = keeper.NewPrefix(submoduleName, lastAccountNumberPrefix)
 )
 
 // key: height, value: address list seperated by comma
@@ -44,9 +41,6 @@ var newAccountCountMapByDate *collections.Map[string, uint64]
 
 // key: date string, value: total account count
 var totalAccountBaseCountByDate *collections.Map[string, uint64]
-
-// value: last account number: should be same with `k.AccountKeeper.AccountNumber.Peek(ctx)`
-var lastAccountNumber *collections.Item[uint64]
 
 // key: date string, value: accumulative tx count
 var txCountByDate *collections.Map[string, uint64]
