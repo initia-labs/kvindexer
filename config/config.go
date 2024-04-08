@@ -130,6 +130,6 @@ func DefaultConfig() IndexerConfig {
 		EnabledCronJobs:   []string{},
 		SubmoduleConfigs:  map[string]SubmoduleConfig{},
 		CronjobConfigs:    map[string]CronjobConfig{},
-		CacheSize:         1000000,
+		CacheSize:         0,
 	}
 }
