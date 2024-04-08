@@ -14,6 +14,7 @@ type IndexerConfig struct {
 	EnabledCronJobs   []string                   `mapstructure:"indexer.enabled-cronjobs"`
 	SubmoduleConfigs  map[string]SubmoduleConfig // key: submodule name, value: kv pair as a map[string]interface{}
 	CronjobConfigs    map[string]CronjobConfig   // key: cronjob name, value: kv pair as a map[string]interface{}
+	CacheSize         uint                       `mapstructure:"indexer.cache-size"`
 }
 
 const DefaultConfigTemplate = `
@@ -25,6 +26,10 @@ const DefaultConfigTemplate = `
 
 # Enable defines whether the indexer is enabled.
 enable = {{ .IndexerConfig.Enable }}
+
+# cache size defines how many objects shoud be stored.
+cache-size = 1000000
+
 
 # Enable defines a list of the indexer submodules should be enabled.
 enabled-submodules = "{{ range .IndexerConfig.EnabledSubmodules}}{{ printf "%q, " . }}{{end}}"
