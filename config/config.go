@@ -18,6 +18,7 @@ const (
 	flagIndexerEnabledCronjobs   = "indexer.enabled-cronjobs"
 	flagIndexerSubmodules        = "indexer.submodules"
 	flagIndexerCronjobs          = "indexer.cronjobs"
+	flagIndexerCacheSize         = "indexer.cache-size"
 )
 
 func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
@@ -62,6 +63,8 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 		return nil, fmt.Errorf("failed to merge backend config: %w", err)
 	}
 
+	cfg.CacheSize = cast.ToUint(appOpts.Get(flagIndexerCacheSize))
+
 	return cfg, nil
 }
 
@@ -98,6 +101,10 @@ func (c IndexerConfig) Validate() error {
 		}
 	}
 
+	if c.CacheSize <= 0 {
+		return fmt.Errorf("cache size must be set and greater than zero")
+	}
+
 	return nil
 }
 
@@ -123,5 +130,6 @@ func DefaultConfig() IndexerConfig {
 		EnabledCronJobs:   []string{},
 		SubmoduleConfigs:  map[string]SubmoduleConfig{},
 		CronjobConfigs:    map[string]CronjobConfig{},
+		CacheSize:         1000000,
 	}
 }
