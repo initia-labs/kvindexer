@@ -2,6 +2,7 @@ package nft
 
 import (
 	"context"
+	"cosmossdk.io/store/prefix"
 	"fmt"
 	"slices"
 
@@ -184,6 +185,7 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 
 	store := k.GetStore()
 	ownerStore := prefix.NewStore(*store, prefixTokenOwnerIndex)
+	//ownerStore := prefix.NewStore(runtime.KVStoreAdapter(store), prefixTokenOwnerIndex)
 
 	res, pageRes, err := query.GenericFilteredPaginate(
 		k.GetCodec(),   /*codec*/
