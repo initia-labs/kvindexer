@@ -2,7 +2,6 @@ package block
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -21,6 +20,22 @@ func NewQuerier(k *keeper.Keeper) Querier {
 	return Querier{k}
 }
 
+func (q Querier) Block(ctx context.Context, req *types.BlockRequest) (*types.BlockResponse, error) {
+	if !enabled {
+		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
+	}
+
+	block, err := blockByHeight.Get(ctx, req.Height)
+	if err != nil {
+		return nil, status.Error(codes.NotFound, err.Error())
+	}
+
+	return &types.BlockResponse{
+		Block: &block,
+	}, nil
+
+}
+
 func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.BlocksResponse, error) {
 	if !enabled {
 		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
@@ -30,12 +45,8 @@ func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.B
 		ctx,
 		blockByHeight,
 		req.Pagination,
-		func(key uint64, value []byte) (*types.Block, error) {
-			block, err := makeBlock(value)
-			if err != nil {
-				return nil, err
-			}
-			return &block, nil
+		func(key int64, v types.Block) (*types.Block, error) {
+			return &v, nil
 		},
 	)
 	if err != nil {
@@ -52,31 +63,26 @@ func (q Querier) AvgBlockTime(ctx context.Context, req *types.AvgBlockTimeReques
 	if !enabled {
 		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
 	}
-	rng := new(collections.Range[uint64]).Descending()
+	rng := new(collections.Range[int64]).Descending()
 	iter, err := blockByHeight.Iterate(ctx, rng)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	defer iter.Close()
 
-	kv, err := iter.KeyValue()
+	lastKV, err := iter.KeyValue()
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	lastBlock := lastKV.Value
 
-	var lastBlock types.Block
-	err = json.Unmarshal(kv.Value, &lastBlock)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
+	// var lastBlock types.Block
+	// err = json.Unmarshal(kv.Value, &lastBlock)
+	// if err != nil {
+	// 	return nil, status.Error(codes.Internal, err.Error())
+	// }
 
-	fb, err := blockByHeight.Get(ctx, uint64(lastBlock.Height-1000)) // error when lastBlock.Height < 1000?
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-
-	var firstBlock types.Block
-	err = json.Unmarshal(fb, &firstBlock)
+	firstBlock, err := blockByHeight.Get(ctx, lastBlock.Height-1000) // error when lastBlock.Height < 1000?
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
