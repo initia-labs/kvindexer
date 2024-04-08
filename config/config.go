@@ -101,9 +101,9 @@ func (c IndexerConfig) Validate() error {
 		}
 	}
 
-	//if c.CacheSize <= 0 {
-	//	return fmt.Errorf("cache size must be set and greater than zero")
-	//}
+	if c.CacheSize <= 0 {
+		return fmt.Errorf("cache-size must be set and greater than zero")
+	}
 
 	return nil
 }
