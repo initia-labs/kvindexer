@@ -6,7 +6,6 @@ import (
 	"slices"
 
 	"cosmossdk.io/collections"
-	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/module/keeper"
