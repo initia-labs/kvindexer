@@ -4,6 +4,7 @@ import (
 	"context"
 	"cosmossdk.io/store/prefix"
 	"fmt"
+	"github.com/cosmos/cosmos-sdk/runtime"
 	"slices"
 
 	"cosmossdk.io/collections"
@@ -184,8 +185,7 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 	ownerAddrStr := ownerAddr.String()
 
 	store := k.GetStore()
-	ownerStore := prefix.NewStore(*store, prefixTokenOwnerIndex)
-	//ownerStore := prefix.NewStore(runtime.KVStoreAdapter(store), prefixTokenOwnerIndex)
+	ownerStore := prefix.NewStore(runtime.KVStoreAdapter(store), prefixTokenOwnerIndex)
 
 	res, pageRes, err := query.GenericFilteredPaginate(
 		k.GetCodec(),   /*codec*/
