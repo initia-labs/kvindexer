@@ -11,10 +11,7 @@ import (
 	"cosmossdk.io/core/address"
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
-	"cosmossdk.io/store/cachekv"
 	"cosmossdk.io/store/dbadapter"
-	storetypes "cosmossdk.io/store/types"
-
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -31,7 +28,7 @@ const DataDir = "data"
 
 type Keeper struct {
 	cdc   codec.Codec
-	store storetypes.CacheKVStore
+	store *store.CacheStore
 
 	// used only for staking feature
 	DistrKeeper         types.DistributionKeeper
@@ -75,12 +72,12 @@ func NewKeeper(
 	accountKeeper *authkeeper.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
-	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
-	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
-	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
+	distrKeeper types.DistributionKeeper,          // can be nil, if staking not used
+	stakingKeeper types.StakingKeeper,             // can be nil, if staking not used
+	rewardKeeper types.RewardKeeper,               // can be nil, if staking not used
 	communityPoolKeeper types.CommunityPoolKeeper, // can be nil, if staking not used
 	vmKeeper VMKeeper,
-	IbcKeeper *ibckeeper.Keeper, // can be nil, if ibc not used
+	IbcKeeper *ibckeeper.Keeper,         // can be nil, if ibc not used
 	TransferKeeper types.TransferKeeper, // can be nil, if transfer not used
 	NftTransferKeeper types.NftTransferKeeper,
 	OPChildKeeper types.OPChildKeeper,
@@ -120,7 +117,7 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilderFromAccessor(
 		func(ctx context.Context) corestoretypes.KVStore {
-			return k.db
+			return k.store
 		})
 	k.schemaBuilder = sb
 
@@ -151,8 +148,7 @@ func (k *Keeper) Seal() error {
 	k.db = db
 	k.schema = &schema
 
-	// TODO: do we need it? collections use db only..
-	k.store = cachekv.NewStore(dbadapter.Store{DB: db})
+	k.store = store.NewCacheStore(dbadapter.Store{DB: db}, k.config.CacheSize)
 	k.sealed = true
 
 	return nil
@@ -166,17 +162,17 @@ func (k Keeper) GetConfig() *config.IndexerConfig {
 	return k.config
 }
 
-func (k Keeper) GetStore() *storetypes.CacheKVStore {
-	return &k.store
+func (k Keeper) GetStore() *store.CacheStore {
+	return k.store
 }
 
-func (k *Keeper) WriteStore() error {
-	if !k.IsSealed() {
-		return errors.New("keeper is not sealed")
-	}
-	k.store.Write()
-	return nil
-}
+//func (k *Keeper) WriteStore() error {
+//	if !k.IsSealed() {
+//		return errors.New("keeper is not sealed")
+//	}
+//	k.store.Write()
+//	return nil
+//}
 
 func (k Keeper) GetCodec() codec.Codec {
 	return k.cdc
