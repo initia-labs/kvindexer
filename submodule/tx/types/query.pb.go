@@ -34,7 +34,7 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // QueryTxRequest is the request type for the Query/Txs RPC method
 type QueryTxRequest struct {
-	// address is the address to query txs for.
+	// tx_hash is a hash string of the transaction to query.
 	TxHash string `protobuf:"bytes,1,opt,name=tx_hash,json=txHash,proto3" json:"tx_hash,omitempty"`
 }
 
