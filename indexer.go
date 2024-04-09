@@ -3,7 +3,6 @@ package indexer
 import (
 	"context"
 	"errors"
-	"os"
 
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
@@ -84,7 +83,6 @@ func (i Indexer) ListenFinalizeBlock(ctx context.Context, req abci.RequestFinali
 	err := i.keeper.HandleFinalizeBlock(ctx, req, res)
 	if err != nil {
 		i.logger.Error("failed to handle finalize block", "err", err)
-		os.Exit(1)
 	}
 	return err
 }
@@ -97,7 +95,6 @@ func (i Indexer) ListenCommit(ctx context.Context, res abci.ResponseCommit, chan
 	err := i.keeper.HandleCommit(ctx, res, changeSet)
 	if err != nil {
 		i.logger.Error("failed to handle commit", "err", err)
-		os.Exit(1)
 	}
 	//err = i.keeper.WriteStore()
 
