@@ -29,7 +29,7 @@ service Query {
 	// TxsByAccount queries all the collections of given account
 	rpc TxsByAccount(QueryTxsByAccountRequest) returns (QueryTxsResponse) {
 		option (google.api.http) = {
-			get : "/indexer/tx/v1/txs/by_account/{address}"
+			get : "/indexer/tx/v1/txs/by_account/{account}"
 		};
 	}
 
@@ -44,7 +44,7 @@ service Query {
 
 // QueryTxRequest is the request type for the Query/Txs RPC method
 message QueryTxRequest {
-	// address is the address to query txs for.
+	// tx_hash is a hash string of the transaction to query.
 	string tx_hash = 1 ;
 }
 
@@ -62,8 +62,8 @@ message QueryTxsRequest {
 
 // QueryTxsByAccountRequest is the request type for the Query/Txs RPC method
 message QueryTxsByAccountRequest {
-	// address is the address to query txs for.
-	string address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+	// account is the account address to query txs for.
+	string account = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
 
 	cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
