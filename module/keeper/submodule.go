@@ -31,10 +31,10 @@ type Submodule struct {
 	RegisterQueryServer RegisterQueryServerFunc
 }
 
-// NOTE: 'ctx' is NOT contain sdk context!
+// NOTE: 'ctx' does NOT contain sdk context!
 type Preparer func(keeper *Keeper, ctx context.Context, config config.SubmoduleConfig) error
 
-// NOTE: 'ctx' is NOT contain sdk context!
+// NOTE: 'ctx' does NOT contain sdk context!
 type Initializer func(keeper *Keeper, ctx context.Context, config config.SubmoduleConfig) error
 
 type FinalizeBlockHandler func(keeper *Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock, config config.SubmoduleConfig) error
