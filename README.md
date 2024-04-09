@@ -16,11 +16,10 @@ see `README.md`s for examples
 
 ### Basic Submodules
 
-* [block](https://github.com/initia-labs/indexer/tree/v2/submodule/block)
-* [tx](https://github.com/initia-labs/indexer/tree/v2/submodule/tx)
-* [dashbord](https://github.com/initia-labs/indexer/tree/v2/submodule/dashboard)
-* [nft](https://github.com/initia-labs/indexer/tree/v2/submodule/nft)
-* [pair](https://github.com/initia-labs/indexer/tree/v2/submodule/pair)
+* [block](https://github.com/initia-labs/kvindexer/tree/main/submodule/block)
+* [tx](https://github.com/initia-labs/kvindexer/tree/main/submodule/tx)
+* [nft](https://github.com/initia-labs/kvindexer/tree/main/submodule/nft)
+* [pair](https://github.com/initia-labs/kvindexer/tree/main/submodule/pair)
 
 ## Crontab
 
