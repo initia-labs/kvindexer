@@ -50,10 +50,10 @@ func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountR
 		}
 	}
 
-	if req.Address == "" {
-		return nil, status.Error(codes.InvalidArgument, "empty address")
+	if req.Account == "" {
+		return nil, status.Error(codes.InvalidArgument, "empty account")
 	}
-	acc, err := accAddressFromString(req.Address)
+	acc, err := accAddressFromString(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

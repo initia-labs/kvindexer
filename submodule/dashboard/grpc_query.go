@@ -39,7 +39,7 @@ func (q Querier) NewAccounts(ctx context.Context, req *types.NewAccountsRequest)
 		}
 	}
 
-	addresses, pageRes, err := query.CollectionPaginate(
+	accounts, pageRes, err := query.CollectionPaginate(
 		ctx, accountMapByHeight,
 		req.Pagination,
 		func(key int64, value string) (aph *types.AccountsPerHeight, err error) {
@@ -51,7 +51,7 @@ func (q Querier) NewAccounts(ctx context.Context, req *types.NewAccountsRequest)
 	}
 
 	return &types.NewAccountsResponse{
-		Addresses:  addresses,
+		Accounts:   accounts,
 		Pagination: pageRes,
 	}, err
 }
