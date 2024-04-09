@@ -28,6 +28,8 @@ const txSequenceName = "tx_sequence"
 const txByHeightName = "tx_by_height"
 const sequenceName = "sequence"
 
+var Version = "v0.0.1"
+
 var (
 	prefixTxsByAccount    = keeper.NewPrefix(submoduleName, txsByAccountPrefix)
 	prefixAccountSequence = keeper.NewPrefix(submoduleName, accountSequencePrefix)
@@ -65,6 +67,7 @@ func RegisterQueryServer(s grpc1.Server, k *keeper.Keeper) {
 
 var Submodule = keeper.Submodule{
 	Name:                       submoduleName,
+	Version:                    Version,
 	Prepare:                    preparer,
 	Initialize:                 initializer,
 	HandleFinalizeBlock:        finalizeBlock,

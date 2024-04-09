@@ -18,6 +18,8 @@ const blockPrefix = 0x10
 
 const blockByHeightName = "block_by_height"
 
+var Version = "v0.0.1"
+
 var (
 	prefixBlock = keeper.NewPrefix(submoduleName, blockPrefix)
 )
@@ -34,6 +36,7 @@ func RegisterQueryServer(s grpc1.Server, k *keeper.Keeper) {
 
 var Submodule = keeper.Submodule{
 	Name:                       submoduleName,
+	Version:                    Version,
 	Prepare:                    preparer,
 	Initialize:                 initializer,
 	HandleFinalizeBlock:        finalizeBlock,

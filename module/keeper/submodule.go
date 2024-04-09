@@ -17,6 +17,8 @@ import (
 type Submodule struct {
 	// Name must be unique
 	Name string
+	// Version is the version of the submodule
+	Version string
 	// Prepare is a function that will be called when the submodule is prepared
 	Prepare Preparer
 	// Initializer is a function that will be called when the submodule is started
