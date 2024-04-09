@@ -54,23 +54,28 @@ func (k Keeper) Validate() error {
 	return nil
 }
 
-func (k *Keeper) RegisterSubmodules(svcs ...Submodule) error {
+func (k *Keeper) RegisterSubmodules(submodules ...Submodule) error {
 	if !k.config.IsEnabled() {
 		return nil
 	}
 
-	for _, svc := range svcs {
-		if _, found := k.submodules[svc.Name]; found {
-			return fmt.Errorf("submodule %s is duplicated", svc.Name)
+	for _, submodule := range submodules {
+		if submodule.Name == "" {
+			return fmt.Errorf("submodule name must be set")
+		}
+		if submodule.Version == "" {
+			return fmt.Errorf("submodule version must be set")
+		}
+		if _, found := k.submodules[submodule.Name]; found {
+			return fmt.Errorf("submodule %s is duplicated", submodule.Name)
 		}
 
 		for prevName := range k.submodules {
-			if strings.HasPrefix(prevName, svc.Name) || strings.HasPrefix(svc.Name, prevName) {
-				return fmt.Errorf("submodule %s is overlapping with %s", svc.Name, prevName)
+			if strings.HasPrefix(prevName, submodule.Name) || strings.HasPrefix(submodule.Name, prevName) {
+				return fmt.Errorf("submodule %s is overlapping with %s", submodule.Name, prevName)
 			}
 		}
-
-		k.submodules[svc.Name] = svc
+		k.submodules[submodule.Name] = submodule
 	}
 
 	return nil

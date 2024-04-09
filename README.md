@@ -1,4 +1,4 @@
-# Indexer 
+# Indexer
 
 Indexer listens StreamingManager's stream and indices streamed data
 
