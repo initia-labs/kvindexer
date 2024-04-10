@@ -17,7 +17,6 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/initia v0.2.3
-	github.com/initia-labs/minievm v0.0.0-20240329081637-31611969d873
 	github.com/pkg/errors v0.9.1
 	github.com/skip-mev/slinky v0.2.2
 	github.com/spf13/cast v1.6.0
@@ -199,7 +198,7 @@ require (
 	go.etcd.io/bbolt v1.3.8 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.21.0
+	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
