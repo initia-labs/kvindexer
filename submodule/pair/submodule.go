@@ -20,6 +20,8 @@ const fungiblePairsPrefix = 0x11
 const nonFungiblePairMapName = "nfpair"
 const fungiblePairMapName = "fpair"
 
+var Version = "v0.0.1"
+
 var (
 	prefixNonFungiblePairs = keeper.NewPrefix(submoduleName, nonFungiblePairsPrefix)
 	prefixFungiblePairs    = keeper.NewPrefix(submoduleName, fungiblePairsPrefix)
@@ -49,6 +51,7 @@ func RegisterQueryServer(s grpc1.Server, k *keeper.Keeper) {
 
 var Submodule = keeper.Submodule{
 	Name:                       submoduleName,
+	Version:                    Version,
 	Prepare:                    preparer,
 	Initialize:                 initializer,
 	HandleFinalizeBlock:        finalizeBlock,
