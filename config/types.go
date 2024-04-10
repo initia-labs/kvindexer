@@ -30,7 +30,6 @@ enable = {{ .IndexerConfig.Enable }}
 # cache size defines how many objects shoud be stored.
 cache-size = 1000000
 
-
 # Enable defines a list of the indexer submodules should be enabled.
 enabled-submodules = "{{ range .IndexerConfig.EnabledSubmodules}}{{ printf "%q, " . }}{{end}}"
 

@@ -7,3 +7,4 @@ import (
 type VMKeeper struct {
 	wasmkeeper.Keeper
 }
+

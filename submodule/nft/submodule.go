@@ -12,6 +12,8 @@ import (
 
 const submoduleName = "nft"
 
+var Version = "v0.0.1"
+
 func RegisterQueryHandlerClient(cc client.Context, mux *runtime.ServeMux) error {
 	return types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(cc))
 }
@@ -22,6 +24,7 @@ func RegisterQueryServer(s grpc1.Server, k *keeper.Keeper) {
 
 var Submodule = keeper.Submodule{
 	Name:                       submoduleName,
+	Version:                    Version,
 	Prepare:                    preparer,
 	Initialize:                 initializer,
 	HandleFinalizeBlock:        finalizeBlock,

@@ -2,6 +2,7 @@ package nop
 
 import (
 	"context"
+
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/initia-labs/kvindexer/config"
@@ -29,6 +30,7 @@ func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, chan
 
 var Submodule = keeper.Submodule{
 	Name:                "nop",
+	Version:             "v0.0.1",
 	Prepare:             preparer,
 	Initialize:          initializer,
 	HandleFinalizeBlock: finalizeBlock,

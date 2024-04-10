@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package indexer.version;
+
+import "gogoproto/gogo.proto";
+import "amino/amino.proto";
+import "google/protobuf/timestamp.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/initia-labs/kvindexer/module/types";
+option (gogoproto.goproto_getters_all) = false;
+option (gogoproto.equal_all)           = true;
+
+// SubmoduleVersion defines the version of the submodule
+message SubmoduleVersion {
+  string submodule = 1;
+  string version = 2;
+}
