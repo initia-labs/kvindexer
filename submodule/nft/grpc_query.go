@@ -2,20 +2,20 @@ package nft
 
 import (
 	"context"
-	"cosmossdk.io/store/prefix"
 	"fmt"
-	"github.com/cosmos/cosmos-sdk/runtime"
 	"slices"
+
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
+
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	"github.com/initia-labs/kvindexer/submodule/pair"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var _ types.QueryServer = (*Querier)(nil)
