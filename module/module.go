@@ -1,6 +1,8 @@
 package module
 
 import (
+	"context"
+
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
@@ -26,6 +28,11 @@ func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) { //n
 }
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, serveMux *runtime.ServeMux) {
+	err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(clientCtx))
+	if err != nil {
+		panic(err)
+	}
+
 	submodules := b.keeper.GetSubmodules()
 	for _, sm := range submodules {
 		err := sm.RegisterQueryHandlerClient(clientCtx, serveMux)
@@ -49,6 +56,8 @@ func (AppModuleBasic) Name() string {
 // Normally AppModule has this method, not AppModuleBasic, but indexer module has this method in AppModuleBasic
 // because indexer module is not a real module and don't related to the consensus.
 func (am AppModuleBasic) RegisterServices(cfg module.Configurator) {
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQuerier(am.keeper))
+
 	submodules := am.keeper.GetSubmodules()
 	for _, sm := range submodules {
 		sm.RegisterQueryServer(cfg.QueryServer(), am.keeper)

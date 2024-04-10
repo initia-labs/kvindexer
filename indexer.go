@@ -96,7 +96,7 @@ func (i Indexer) ListenCommit(ctx context.Context, res abci.ResponseCommit, chan
 	if err != nil {
 		i.logger.Error("failed to handle commit", "err", err)
 	}
-	err = i.keeper.WriteStore()
+	//err = i.keeper.WriteStore()
 
 	return err
 }
