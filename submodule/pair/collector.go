@@ -268,7 +268,7 @@ func updateIBCChannels(k *keeper.Keeper, ctx context.Context) error {
 	ibcChannels := []string{}
 	ibcNftChannels := []string{}
 	for _, channel := range channels {
-		if channel.PortId != ibcTransferPort && channel.PortId != ibcNftTransferPort {
+		if channel.PortId != ibcTransferPort && !strings.HasPrefix(channel.Version, "ics721-") {
 			continue
 		}
 
@@ -284,12 +284,12 @@ func updateIBCChannels(k *keeper.Keeper, ctx context.Context) error {
 		if counterpartyChainId != croncfg.l1ChainId {
 			continue
 		}
+
 		if channel.PortId == ibcTransferPort {
 			ibcChannels = append(ibcChannels, channel.ChannelId)
 		} else {
 			ibcNftChannels = append(ibcNftChannels, channel.ChannelId)
 		}
-
 	}
 
 	croncfg.ibcChannels.Store(ibcChannels)

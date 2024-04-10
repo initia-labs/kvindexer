@@ -8,6 +8,7 @@ require (
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/log v1.3.1
 	cosmossdk.io/store v1.0.2
+	github.com/CosmWasm/wasmd v0.50.0
 	github.com/cometbft/cometbft v0.38.5
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.4
@@ -29,41 +30,53 @@ require (
 )
 
 require (
-	github.com/Microsoft/go-winio v0.6.1 // indirect
-	github.com/StackExchange/wmi v1.2.1 // indirect
-	github.com/VictoriaMetrics/fastcache v1.12.1 // indirect
+	cloud.google.com/go v0.112.0 // indirect
+	cloud.google.com/go/compute v1.24.0 // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
+	cloud.google.com/go/iam v1.1.6 // indirect
+	cloud.google.com/go/storage v1.36.0 // indirect
+	cosmossdk.io/x/evidence v0.1.0 // indirect
+	cosmossdk.io/x/feegrant v0.1.0 // indirect
+	github.com/CosmWasm/wasmvm v1.5.0 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/aws/aws-sdk-go v1.44.224 // indirect
+	github.com/bgentry/go-netrc v0.0.0-20140422174119-9fd32a8b3d3d // indirect
 	github.com/bits-and-blooms/bitset v1.13.0 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
-	github.com/consensys/bavard v0.1.13 // indirect
-	github.com/consensys/gnark-crypto v0.12.1 // indirect
-	github.com/crate-crypto/go-ipa v0.0.0-20231025140028-3c0104f4b233 // indirect
-	github.com/crate-crypto/go-kzg-4844 v1.0.0 // indirect
-	github.com/deckarep/golang-set/v2 v2.1.0 // indirect
-	github.com/ethereum/c-kzg-4844 v1.0.0 // indirect
-	github.com/ethereum/go-ethereum v1.13.14 // indirect
-	github.com/gballet/go-verkle v0.1.1-0.20231031103413-a67434b50f46 // indirect
-	github.com/go-ole/go-ole v1.3.0 // indirect
-	github.com/gobwas/httphead v0.1.0 // indirect
-	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gofrs/flock v0.8.1 // indirect
-	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
-	github.com/holiman/uint256 v1.2.4 // indirect
+	github.com/distribution/reference v0.5.0 // indirect
+	github.com/go-logr/logr v1.4.1 // indirect
+	github.com/go-logr/stdr v1.2.2 // indirect
+	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
+	github.com/golang/mock v1.6.0 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/google/s2a-go v0.1.7 // indirect
+	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
+	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-getter v1.7.3 // indirect
+	github.com/hashicorp/go-safetemp v1.0.0 // indirect
+	github.com/hashicorp/go-version v1.6.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
-	github.com/mmcloughlin/addchain v0.4.0 // indirect
-	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
-	github.com/supranational/blst v0.3.11 // indirect
-	github.com/tklauser/go-sysconf v0.3.12 // indirect
-	github.com/tklauser/numcpus v0.6.1 // indirect
+	github.com/ulikunitz/xz v0.5.11 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/mod v0.15.0 // indirect
-	golang.org/x/tools v0.18.0 // indirect
-	rsc.io/tmplfunc v0.0.3 // indirect
+	go.opencensus.io v0.24.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.47.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.47.0 // indirect
+	go.opentelemetry.io/otel v1.22.0 // indirect
+	go.opentelemetry.io/otel/metric v1.22.0 // indirect
+	go.opentelemetry.io/otel/trace v1.22.0 // indirect
+	golang.org/x/oauth2 v0.16.0 // indirect
+	golang.org/x/time v0.5.0 // indirect
+	google.golang.org/api v0.162.0 // indirect
+	google.golang.org/appengine v1.6.8 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 require (
