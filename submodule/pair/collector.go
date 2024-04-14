@@ -24,7 +24,7 @@ const (
 	collectionStructTag = "0x1::collection::Collection"
 
 	queryOpTokenFmt    = "%s/opinit/ophost/v1/bridges/%s/token_pairs"
-	queryCollectionFmt = "%s/initia/move/v1/accounts/%s/resources/by_struct_tag?struct_tag=%s"
+	queryCollectionFmt = "%s/cosmwasm/wasm/v1/contract/%s/smart/%s"
 	paginationFmt      = "%s?pagination.key=%s"
 )
 
@@ -143,92 +143,7 @@ func collectOpTokenPairsFromL1(client *fiber.Client, cfg *cronConfig) (err error
 	return nil
 }
 
-func collectNftTokensFromL2(k *keeper.Keeper, ctx context.Context) (err error) {
-	ibcNftChannels := croncfg.ibcNftChannels.Load().([]string)
-	if len(ibcNftChannels) == 0 {
-		return nil
-	}
-
-	traces, err := k.NftTransferKeeper.GetAllClassTraces(ctx)
-	if err != nil {
-		return err
-	}
-	for _, ibcNftChannel := range ibcNftChannels {
-		for _, trace := range traces {
-			// only from allowed channel
-			if trace.Path != fmt.Sprintf("%s/%s", ibcNftTransferPort, ibcNftChannel) {
-				continue
-			}
-
-			// only gather move based class
-			splitted := strings.Split(trace.BaseClassId, "/")
-			if splitted[0] != "move" || len(splitted) < 2 {
-				continue
-			}
-
-			classId := trace.IBCClassId()
-			l2collAddr := "0x" + splitted[1]
-			l1collName, ok := nonFungiblePairsFromL2.Load(classId)
-			if !ok {
-				// insert them into nft syncmap if not exists
-				nonFungiblePairsFromL2.Store(classId, l2collAddr)
-			} else {
-				if l1collName == "" || l1collName == l2collAddr {
-					continue
-				}
-				_, err := nonFungiblePairsMap.Get(ctx, classId)
-				if !cosmoserr.IsOf(err, collections.ErrNotFound) || err == nil {
-					continue
-				}
-
-				err = nonFungiblePairsMap.Set(ctx, classId, l1collName.(string))
-				if err != nil {
-					return err
-				}
-
-				nonFungiblePairsFromL2.Store(classId, "")
-			}
-		}
-	}
-
-	return nil
-}
-
-// get OPinit token pairs from L1 and insert them into the syncmap
-// data in syncmap will be used by collecOpTokenPairs()
-func collectNftTokenPairsFromL1(client *fiber.Client, cfg *cronConfig) (err error) {
-	if cfg.l1LcdUrl == "" {
-		return errors.New("l1LcdUrl is not set")
-	}
-	ibcNftChannels := cfg.ibcNftChannels.Load().([]string)
-	if len(ibcNftChannels) == 0 {
-		return nil
-	}
-
-	nonFungiblePairsFromL2.Range(func(key, value interface{}) bool {
-		ibcClassId := key.(string)
-		l2CollAddr := value.(string)
-
-		// already set
-		if l2CollAddr == "" {
-			return false
-		}
-
-		// if it has value, it means it's already set
-		collectionName, err := getCollectionNameFromL1(client, cfg, l2CollAddr)
-		if err != nil {
-			// just continue to next iteration. it'll be processed by next iteration
-			return false
-		}
-
-		nonFungiblePairsFromL2.Store(ibcClassId, collectionName)
-		return false
-	})
-
-	return nil
-}
-
-// query collection name from L1
+// query collection name from L1 - wasm
 func getCollectionNameFromL1(client *fiber.Client, cfg *cronConfig, addr string) (collectionName string, err error) {
 	queryStr := fmt.Sprintf(queryCollectionFmt, cfg.l1LcdUrl, addr, collectionStructTag)
 	code, body, errs := client.Get(queryStr).Bytes()

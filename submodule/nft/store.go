@@ -18,15 +18,12 @@ import (
 
 const collectionsPrefix = 0x10
 const collectionOwnersPrefix = 0x20
-
 const tokenPrefix = 0x30
 const tokenOwnerPrefix = 0x40
 
 const collectionMapName = "collections"
 const collectionOwnersMapName = "collection_owners"
-
 const tokenMapName = "tokens"
-
 const tokenOwnerSetName = "token_owner"
 
 var (

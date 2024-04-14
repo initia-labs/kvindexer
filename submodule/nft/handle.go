@@ -2,28 +2,34 @@ package nft
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
+	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
+	"github.com/initia-labs/kvindexer/submodule/pair"
 )
 
 func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, events []types.EventWithAttributeMap) error {
 	var fn func(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error
 	for _, event := range events {
-		switch event.AttributesMap["action"] {
-		case "mint":
-			fn = handleMintEvent
-		case "transfer_nft", "send_nft":
-			fn = handlerSendOrTransferEvent
-		case "burn":
-			fn = handleBurnEvent
-		default:
-			continue
+		if event.Type == "wasm" {
+			switch event.AttributesMap["action"] {
+			case "mint":
+				fn = handleMintEvent
+			case "transfer_nft", "send_nft":
+				fn = handlerSendOrTransferEvent
+			case "burn":
+				fn = handleBurnEvent
+			default:
+				continue
+			}
 		}
 		if err := fn(k, ctx, cfg, event); err != nil {
 			k.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
@@ -38,7 +44,8 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 
 	data := types.MintEvent{}
 	if err := data.Parse(event); err != nil {
-		return cosmoserr.Wrap(err, "failed to parse mint event")
+		// may be not nft mint event
+		return nil
 	}
 
 	var collection *types.IndexedCollection
@@ -89,7 +96,8 @@ func handlerSendOrTransferEvent(k *keeper.Keeper, ctx context.Context, cfg confi
 	k.Logger(ctx).Info("sent/transferred", "event", event)
 	data := types.TransferOrSendEvent{}
 	if err := data.Parse(event); err != nil {
-		return cosmoserr.Wrap(err, "failed to parse send/transfer event")
+		// may be not nft send/transfer event
+		return nil
 	}
 
 	tpk := collections.Join[sdk.AccAddress, string](data.ContractAddress, data.TokenId)
@@ -136,7 +144,8 @@ func handleBurnEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 
 	data := types.BurnEvent{}
 	if err := data.Parse(event); err != nil {
-		return cosmoserr.Wrap(err, "failed to parse burn event")
+		// may be not nft burn event
+		return nil
 	}
 
 	// remove from tokensOwnersMap
@@ -165,7 +174,7 @@ func handleBurnEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 		return err // just return err, no wrap
 	}
 
-	k.Logger(ctx).Debug("nft burnt", "event", data)
+	k.Logger(ctx).Info("nft burnt", "event", data)
 
 	return nil
 }
@@ -190,6 +199,46 @@ func applyCollectionOwnerMap(_ *keeper.Keeper, ctx context.Context, collectionAd
 	}
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to update collection count in collectionOwnersMap")
+	}
+	return nil
+}
+
+func handleWriteAcknowledgementEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, attrs []abci.EventAttribute) (err error) {
+	k.Logger(ctx).Debug("write-ack", "attrs", attrs)
+	for _, attr := range attrs {
+		if attr.Key != "packet_data" {
+			continue
+		}
+
+		data := types.WriteAckForNftEvent{}
+		if err = json.Unmarshal([]byte(attr.Value), &data); err != nil {
+			// may be not target
+			return nil
+		}
+
+		cdb, err := base64.StdEncoding.DecodeString(data.ClassData)
+		if err != nil {
+			return cosmoserr.Wrap(err, "failed to decode class data")
+		}
+		classData := types.NftClassData{}
+		if err = json.Unmarshal(cdb, &classData); err != nil {
+			return cosmoserr.Wrap(err, "failed to unmarshal class data")
+		}
+
+		_, err = pair.GetPair(ctx, false, data.ClassId)
+		if err == nil {
+			return nil // already exists
+		}
+		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+			return cosmoserr.Wrap(err, "failed to check class existence")
+		}
+
+		err = pair.SetPair(ctx, false, data.ClassId, classData.Description.Value)
+		if err != nil {
+			return cosmoserr.Wrap(err, "failed to set class")
+		}
+
+		k.Logger(ctx).Info("nft class added", "classId", data.ClassId, "description", classData.Description.Value)
 	}
 	return nil
 }

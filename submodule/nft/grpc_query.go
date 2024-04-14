@@ -50,6 +50,7 @@ func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionReque
 	if err != nil {
 		return nil, handleCollectionErr(err)
 	}
+	collection.Collection.Name, _ = getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
 
 	return &types.QueryCollectionResponse{
 		Collection: &collection,
@@ -96,6 +97,7 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *types.QueryColle
 		if err != nil {
 			return nil, handleCollectionErr(err)
 		}
+		collection.Collection.Name, _ = getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
 		collections = append(collections, &collection)
 	}
 
@@ -150,7 +152,11 @@ func NewQuerier(k *keeper.Keeper) Querier {
 }
 
 func getCollectionNameFromPairSubmodule(ctx context.Context, collName string) (string, error) {
-	return pair.GetPair(ctx, false, collName)
+	name, err := pair.GetPair(ctx, false, collName)
+	if err != nil {
+		return collName, err
+	}
+	return name, nil
 }
 
 func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
@@ -169,6 +175,7 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 			return false, nil
 		},
 		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+			v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 			return &v, nil
 		},
 	)
@@ -194,6 +201,7 @@ func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req 
 	if err != nil {
 		return nil, handleCollectionErr(err)
 	}
+	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 
 	return &types.QueryTokensResponse{
 		Tokens: []*types.IndexedToken{&token},
@@ -225,6 +233,8 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 		if err != nil {
 			return nil, handleCollectionErr(err)
 		}
+		token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+
 		res = append(res, &token)
 	}
 
@@ -251,6 +261,7 @@ func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req 
 			if slices.Equal(k.K1(), collAddr) && (v.OwnerAddr == ownerAddrStr) {
 				return &v, nil
 			}
+			v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 			return nil, nil
 		},
 	)
@@ -279,6 +290,7 @@ func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Contex
 	if token.OwnerAddr != req.Account {
 		return nil, status.Error(codes.NotFound, "token not found")
 	}
+	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 
 	return &types.QueryTokensResponse{
 		Tokens: []*types.IndexedToken{&token},

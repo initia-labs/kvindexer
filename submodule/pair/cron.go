@@ -74,7 +74,6 @@ func pairCollectorRunner(keeper *keeper.Keeper, config config.CronjobConfig) err
 	defer fiber.ReleaseClient(client)
 
 	_ = collectOpTokenPairsFromL1(client, croncfg)
-	_ = collectNftTokenPairsFromL1(client, croncfg)
 
 	// return nil: it's cron
 	return nil

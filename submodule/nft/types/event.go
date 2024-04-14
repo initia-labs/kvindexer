@@ -120,3 +120,20 @@ func (event *BurnEvent) Parse(src EventWithAttributeMap) (err error) {
 	}
 	return nil
 }
+
+type NftClassData struct {
+	Description struct {
+		Value string `json:"value"`
+	} `json:"initia:description"`
+}
+
+type WriteAckForNftEvent struct {
+	ClassData string         `json:"classData"`
+	ClassId   string         `json:"classId"`
+	ClassUri  string         `json:"classUri"`
+	Receiver  sdk.AccAddress `json:"receiver"`
+	Sender    sdk.AccAddress `json:"sender"`
+	//TokenData []string       `json:"tokenData"`
+	//TokenIds  []string       `json:"tokenIds"`
+	//TokenUris []string       `json:"tokenUris"`
+}

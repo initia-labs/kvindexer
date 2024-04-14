@@ -14,7 +14,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const eventType = "wasm"
+var eventTypes = []string{"wasm"}
 
 var (
 	qreqCollectionContractInfo = []byte("{\"contract_info\":{}}") // {"contract_info":{}}
