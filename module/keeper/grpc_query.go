@@ -12,8 +12,13 @@ type Querier struct {
 	*Keeper
 }
 
-// Version implements types.QueryServer.
-func (q Querier) Version(context.Context, *types.QueryVersionRequest) (*types.QueryVersionResponse, error) {
+// VMType implements types.QueryServer.
+func (q Querier) VMType(context.Context, *types.QueryVMTypeRequest) (*types.QueryVMTypeResponse, error) {
+	return &types.QueryVMTypeResponse{Vmtype: q.VMKeeper.GetVMType()}, nil
+}
+
+// Versions implements types.QueryServer.
+func (q Querier) Versions(context.Context, *types.QueryVersionRequest) (*types.QueryVersionResponse, error) {
 	res := []*types.SubmoduleVersion{}
 	for name, sm := range q.submodules {
 		if name == "" {

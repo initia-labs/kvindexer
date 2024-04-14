@@ -8,3 +8,6 @@ type VMKeeper struct {
 	wasmkeeper.Keeper
 }
 
+func (k VMKeeper) GetVMType() string {
+	return "wasm"
+}

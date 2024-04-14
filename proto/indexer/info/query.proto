@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package indexer.info;
+
+import "google/api/annotations.proto";
+import "indexer/info/types.proto";
+
+
+option go_package = "github.com/initia-labs/kvindexer/module/types";
+
+// Query provides the service definition for the Token Version
+service Query {
+	// Version queries all the collections of an account
+	rpc Versions(QueryVersionRequest) returns (QueryVersionResponse) {
+		option (google.api.http) = {
+			get : "/indexer/version"
+		};
+	}
+	
+	rpc VMType(QueryVMTypeRequest) returns (QueryVMTypeResponse) {
+		option (google.api.http) = {
+			get : "/indexer/vmtype"
+		};
+	}
+}
+
+// QueryVersionRequest is the request type for the Query/Versions RPC method
+message QueryVersionRequest {
+}
+
+// QueryVersionResponse is the response type for the Query/Versions RPC method
+message QueryVersionResponse {
+	repeated SubmoduleVersion versions = 1;
+}
+
+
+// QueryVMTypeRequest is the request type for the Query/VMType RPC method
+message QueryVMTypeRequest {
+}
+
+// QueryVMTypeResponse is the response type for the Query/VMType RPC method
+message QueryVMTypeResponse {
+	string vmtype = 1;
+}
+
