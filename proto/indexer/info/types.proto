@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package indexer.version;
+package indexer.info;
 
 import "gogoproto/gogo.proto";
 import "amino/amino.proto";
