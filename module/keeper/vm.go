@@ -7,3 +7,7 @@ import (
 type VMKeeper struct {
 	movekeeper.Keeper
 }
+
+func (k VMKeeper) GetVMType() string {
+	return "move"
+}
