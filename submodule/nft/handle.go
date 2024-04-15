@@ -10,14 +10,13 @@ import (
 	cosmoserr "cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	"github.com/initia-labs/kvindexer/submodule/pair"
 )
 
-func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, events []types.EventWithAttributeMap) error {
-	var fn func(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error
+func processEvents(k *keeper.Keeper, ctx context.Context, events []types.EventWithAttributeMap) error {
+	var fn func(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error
 	for _, event := range events {
 		if event.Type == "wasm" {
 			switch event.AttributesMap["action"] {
@@ -31,7 +30,7 @@ func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleCo
 				continue
 			}
 		}
-		if err := fn(k, ctx, cfg, event); err != nil {
+		if err := fn(k, ctx, event); err != nil {
 			k.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
 			return cosmoserr.Wrap(err, "failed to handle nft-related event")
 		}
@@ -39,7 +38,7 @@ func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleCo
 	return nil
 }
 
-func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error {
+func handleMintEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Debug("minted", "event", event)
 
 	data := types.MintEvent{}
@@ -92,7 +91,7 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 	return nil
 }
 
-func handlerSendOrTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) (err error) {
+func handlerSendOrTransferEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) (err error) {
 	k.Logger(ctx).Info("sent/transferred", "event", event)
 	data := types.TransferOrSendEvent{}
 	if err := data.Parse(event); err != nil {
@@ -138,7 +137,7 @@ func handlerSendOrTransferEvent(k *keeper.Keeper, ctx context.Context, cfg confi
 	return nil
 }
 
-func handleBurnEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error {
+func handleBurnEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Info("burnt", "event", event)
 	cdc := k.GetAddressCodec()
 
@@ -203,7 +202,7 @@ func applyCollectionOwnerMap(_ *keeper.Keeper, ctx context.Context, collectionAd
 	return nil
 }
 
-func handleWriteAcknowledgementEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, attrs []abci.EventAttribute) (err error) {
+func handleWriteAcknowledgementEvent(k *keeper.Keeper, ctx context.Context, attrs []abci.EventAttribute) (err error) {
 	k.Logger(ctx).Debug("write-ack", "attrs", attrs)
 	for _, attr := range attrs {
 		if attr.Key != "packet_data" {

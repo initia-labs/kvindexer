@@ -48,9 +48,6 @@ var tokenMap *collections.Map[collections.Pair[sdk.AccAddress, string], types.In
 // key: triple[owner-addr, collection-address, token-id], value: none
 var tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
 
-// key: triple[owner-addr, collection-address, token-id], value: none
-var tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
-
 //
 // Indices - vm specific
 //

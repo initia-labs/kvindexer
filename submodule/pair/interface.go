@@ -12,9 +12,6 @@ func GetPair(ctx context.Context, isFungible bool, l2key string) (string, error)
 }
 
 func SetPair(ctx context.Context, isFungible bool, l2key, l1key string) error {
-	if !enabled {
-		return fmt.Errorf("cannot set: %s is disabled", submoduleName)
-	}
 	if isFungible {
 		return fungiblePairsMap.Set(ctx, l2key, l1key)
 	}

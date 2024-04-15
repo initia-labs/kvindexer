@@ -35,13 +35,13 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 
 	for _, txResult := range res.TxResults {
 		events := filterAndParseEvent(txResult.Events, eventTypes)
-		err := processEvents(k, ctx, cfg, events)
+		err := processEvents(k, ctx, events)
 		if err != nil {
 			return err
 		}
 		for _, event := range txResult.Events {
 			if event.Type == "write_acknowledgement" {
-				err := handleWriteAcknowledgementEvent(k, ctx, cfg, event.Attributes)
+				err := handleWriteAcknowledgementEvent(k, ctx, event.Attributes)
 				if err != nil {
 					return err
 				}

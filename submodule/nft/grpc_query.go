@@ -2,7 +2,6 @@ package nft
 
 import (
 	"context"
-	"fmt"
 	"slices"
 
 	"google.golang.org/grpc/codes"
