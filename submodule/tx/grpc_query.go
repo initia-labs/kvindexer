@@ -2,7 +2,6 @@ package tx
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"cosmossdk.io/collections"
@@ -22,10 +21,6 @@ type Querier struct {
 
 // Tx implements types.QueryServer.
 func (q Querier) Tx(ctx context.Context, req *types.QueryTxRequest) (*types.QueryTxResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
 	if req.TxHash == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty tx hash")
 	}
@@ -40,19 +35,10 @@ func (q Querier) Tx(ctx context.Context, req *types.QueryTxRequest) (*types.Quer
 
 // TxsByAccount implements types.QueryServer.
 func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountRequest) (*types.QueryTxsResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	if req.Account == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty account")
-	}
+  }
+  
 	acc, err := accAddressFromString(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -85,16 +71,6 @@ func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountR
 
 // Txs implements types.QueryServer.
 func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.QueryTxsResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	txHashes, pageRes, err := query.CollectionPaginate(ctx, txhashesBySequence, req.Pagination,
 		func(_ uint64, value string) (*string, error) {
 			return &value, nil
@@ -121,16 +97,6 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 
 // TxsByHeight implements types.QueryServer.
 func (q Querier) TxsByHeight(ctx context.Context, req *types.QueryTxsByHeightRequest) (*types.QueryTxsResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	txHashes, pageRes, err := query.CollectionPaginate(ctx, txhashesByHeight, req.Pagination,
 		func(_ collections.Pair[int64, uint64], value string) (*string, error) {
 			return &value, nil

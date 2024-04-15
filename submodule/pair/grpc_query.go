@@ -2,7 +2,6 @@ package pair
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -20,16 +19,6 @@ type Querier struct {
 
 // Pairs implements types.QueryServer.
 func (q Querier) Pairs(ctx context.Context, req *types.QueryPairsRequest) (*types.QueryPairsResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	pairs := []*types.Pair{}
 	var targetMap *collections.Map[string, string]
 	if req.IsNonFungible {
