@@ -9,13 +9,12 @@ import (
 	cosmoserr "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 )
 
-func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, events []types.EventWithAttributeMap) error {
-	var fn func(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error
+func processEvents(k *keeper.Keeper, ctx context.Context, events []types.EventWithAttributeMap) error {
+	var fn func(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error
 	for _, event := range events {
 		switch event.AttributesMap["type_tag"] {
 		case "0x1::collection::MintEvent":
@@ -29,7 +28,7 @@ func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleCo
 		default:
 			continue
 		}
-		if err := fn(k, ctx, cfg, event); err != nil {
+		if err := fn(k, ctx, event); err != nil {
 			k.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
 			return cosmoserr.Wrap(err, "failed to handle nft-related event")
 		}
@@ -37,7 +36,7 @@ func processEvents(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleCo
 	return nil
 }
 
-func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error {
+func handleMintEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Debug("minted", "event", event)
 
 	data := types.NftMintAndBurnEventData{}
@@ -107,7 +106,7 @@ func handleMintEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodule
 	return nil
 }
 
-func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error {
+func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Info("transferred", "event", event)
 
 	data := types.NftTransferEventData{}
@@ -180,7 +179,7 @@ func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, cfg config.Subm
 	return nil
 }
 
-func handleMutateEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error {
+func handleMutateEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Info("mutated", "event", event)
 	cdc := k.GetAddressCodec()
 
@@ -236,7 +235,7 @@ func handleMutateEvent(k *keeper.Keeper, ctx context.Context, cfg config.Submodu
 	return nil
 }
 
-func handleBurnEvent(k *keeper.Keeper, ctx context.Context, cfg config.SubmoduleConfig, event types.EventWithAttributeMap) error {
+func handleBurnEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Info("burnt", "event", event)
 	cdc := k.GetAddressCodec()
 	burnt := types.NftMintAndBurnEventData{}

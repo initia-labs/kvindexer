@@ -2,7 +2,6 @@ package nft
 
 import (
 	"context"
-	"encoding/json"
 
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -10,8 +9,6 @@ import (
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	vmtypes "github.com/initia-labs/movevm/types"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const eventType = "move"
@@ -29,15 +26,8 @@ var nftStructTag = vmtypes.StructTag{
 
 func getCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colAddr vmtypes.AccountAddress) (*types.CollectionResource, error) {
 
-	rb, err := k.VMKeeper.GetResource(ctx, colAddr, collectionStructTag)
-	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	resource := types.CollectionResource{}
-	if err := json.Unmarshal([]byte(rb.MoveResource), &resource); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return &resource, nil
+	panic("not implemented")
+
 }
 
 func getIndexedCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colAddr vmtypes.AccountAddress) (*types.IndexedCollection, error) {
@@ -53,15 +43,9 @@ func getIndexedCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colA
 }
 
 func getNftResourceFromVMStore(k *keeper.Keeper, ctx context.Context, nftAddr vmtypes.AccountAddress) (*types.NftResource, error) {
-	rb, err := k.VMKeeper.GetResource(ctx, nftAddr, nftStructTag)
-	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	resource := types.NftResource{}
-	if err := json.Unmarshal([]byte(rb.MoveResource), &resource); err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
-	return &resource, nil
+
+	panic("not implemented")
+
 }
 
 func getIndexedTokenFromVMStore(k *keeper.Keeper, ctx context.Context, nftAddr vmtypes.AccountAddress, collectionAddr *vmtypes.AccountAddress) (*types.IndexedToken, error) {
