@@ -10,8 +10,6 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	storetypes "cosmossdk.io/store/types"
-
-	"github.com/initia-labs/kvindexer/config"
 )
 
 type Submodule struct {
@@ -34,14 +32,14 @@ type Submodule struct {
 }
 
 // NOTE: 'ctx' does NOT contain sdk context!
-type Preparer func(keeper *Keeper, ctx context.Context, config config.SubmoduleConfig) error
+type Preparer func(keeper *Keeper, ctx context.Context) error
 
 // NOTE: 'ctx' does NOT contain sdk context!
-type Initializer func(keeper *Keeper, ctx context.Context, config config.SubmoduleConfig) error
+type Initializer func(keeper *Keeper, ctx context.Context) error
 
-type FinalizeBlockHandler func(keeper *Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock, config config.SubmoduleConfig) error
+type FinalizeBlockHandler func(keeper *Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error
 
-type CommitHandler func(keeper *Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair, config config.SubmoduleConfig) error
+type CommitHandler func(keeper *Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error
 
 type RegisterQueryHandlerClientFunc func(ctx client.Context, mux *runtime.ServeMux) error
 type RegisterQueryServerFunc func(s grpc1.Server, k *Keeper)

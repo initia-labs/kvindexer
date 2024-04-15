@@ -13,14 +13,11 @@ import (
 func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
 	for name, svc := range k.submodules {
 		if svc.Prepare != nil {
-			if !k.config.IsEnabledSubmodule(name) {
-				continue
-			}
 			fn := svc.Prepare
 			if fn == nil {
 				continue
 			}
-			if err = (fn)(k, ctxMap[name], k.config.SubmoduleConfigs[name]); err != nil {
+			if err = (fn)(k, ctxMap[name]); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to prepare submodule %s", name))
 			}
 		}
@@ -37,10 +34,7 @@ func (k *Keeper) Start(ctxMap map[string]context.Context) (err error) {
 
 	for name, svc := range k.submodules {
 		if svc.Initialize != nil {
-			if !k.config.IsEnabledSubmodule(name) {
-				continue
-			}
-			if err = (svc.Initialize)(k, ctxMap[name], k.config.SubmoduleConfigs[name]); err != nil {
+			if err = (svc.Initialize)(k, ctxMap[name]); err != nil {
 				return errors.Wrap(err, fmt.Sprintf("failed to initialize submodule %s", name))
 			}
 		}
@@ -83,15 +77,12 @@ func (k *Keeper) RegisterSubmodules(submodules ...Submodule) error {
 
 func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) (err error) {
 	for name, svc := range k.submodules {
-		if !k.config.IsEnabledSubmodule(name) {
-			continue
-		}
 		fn := svc.HandleFinalizeBlock
 		if fn == nil {
 			continue
 		}
 
-		if err = (fn)(k, ctx, req, res, k.config.SubmoduleConfigs[name]); err != nil {
+		if err = (fn)(k, ctx, req, res); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to handle finalize block event for submodule %s", name))
 		}
 	}
@@ -100,14 +91,11 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 
 func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) (err error) {
 	for name, svc := range k.submodules {
-		if !k.config.IsEnabledSubmodule(name) {
-			continue
-		}
 		fn := svc.HandleCommit
 		if fn == nil {
 			continue
 		}
-		if err := (fn)(k, ctx, res, changeSet, k.config.SubmoduleConfigs[name]); err != nil {
+		if err := (fn)(k, ctx, res, changeSet); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to handle commit event for submodule %s", name))
 		}
 	}

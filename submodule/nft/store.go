@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/collections/indexes"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 )
@@ -99,7 +98,7 @@ func newTokensIndex(k *keeper.Keeper) TokenIndex {
 	}
 }
 
-func addStorages(k *keeper.Keeper, _ context.Context, _ config.SubmoduleConfig) (err error) {
+func addStorages(k *keeper.Keeper, _ context.Context) (err error) {
 	cdc := k.GetCodec()
 
 	if collectionMap, err = keeper.AddMap(k, prefixCollection, collectionMapName, sdk.AccAddressKey, codec.CollValue[types.IndexedCollection](cdc)); err != nil {
