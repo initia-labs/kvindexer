@@ -7,6 +7,7 @@ import (
 type IndexerConfig struct {
 	Enable        bool         `mapstructure:"indexer.enable"`
 	CacheSize     uint         `mapstructure:"indexer.cache-size"`
+	L1ChainID     string       `mapstructure:"indexer.l1-chain-id"`
 	BackendConfig *viper.Viper `mapstructure:"indexer.backend"`
 }
 
