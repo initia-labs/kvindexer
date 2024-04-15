@@ -1,8 +1,13 @@
 package keeper
 
-// VMKEeper is just a stub
-type VMKeeper struct{}
+import (
+	evmkeeper "github.com/initia-labs/minievm/x/evm/keeper"
+)
+
+type VMKeeper struct {
+	*evmkeeper.Keeper
+}
 
 func (k VMKeeper) GetVMType() string {
-	return "stub"
+	return "evm"
 }

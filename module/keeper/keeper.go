@@ -72,12 +72,12 @@ func NewKeeper(
 	accountKeeper *authkeeper.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
-	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
-	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
-	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
+	distrKeeper types.DistributionKeeper,          // can be nil, if staking not used
+	stakingKeeper types.StakingKeeper,             // can be nil, if staking not used
+	rewardKeeper types.RewardKeeper,               // can be nil, if staking not used
 	communityPoolKeeper types.CommunityPoolKeeper, // can be nil, if staking not used
 	vmKeeper VMKeeper,
-	IbcKeeper *ibckeeper.Keeper, // can be nil, if ibc not used
+	IbcKeeper *ibckeeper.Keeper,         // can be nil, if ibc not used
 	TransferKeeper types.TransferKeeper, // can be nil, if transfer not used
 	NftTransferKeeper types.NftTransferKeeper,
 	OPChildKeeper types.OPChildKeeper,

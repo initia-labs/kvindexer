@@ -33,6 +33,8 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 		return nil, fmt.Errorf("failed to merge backend config: %w", err)
 	}
 
+	cfg.CacheSize = cast.ToUint(appOpts.Get(flagIndexerCacheSize))
+
 	return cfg, nil
 }
 
