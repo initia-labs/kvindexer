@@ -2,7 +2,6 @@ package block
 
 import (
 	"context"
-	"fmt"
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -21,10 +20,6 @@ func NewQuerier(k *keeper.Keeper) Querier {
 }
 
 func (q Querier) Block(ctx context.Context, req *types.BlockRequest) (*types.BlockResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
 	block, err := blockByHeight.Get(ctx, req.Height)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, err.Error())
@@ -37,10 +32,6 @@ func (q Querier) Block(ctx context.Context, req *types.BlockRequest) (*types.Blo
 }
 
 func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.BlocksResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
 	results, pageRes, err := query.CollectionPaginate(
 		ctx,
 		blockByHeight,
@@ -60,9 +51,6 @@ func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.B
 }
 
 func (q Querier) AvgBlockTime(ctx context.Context, req *types.AvgBlockTimeRequest) (*types.AvgBlockTimeResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
 	rng := new(collections.Range[int64]).Descending()
 	iter, err := blockByHeight.Iterate(ctx, rng)
 	if err != nil {
@@ -75,12 +63,6 @@ func (q Querier) AvgBlockTime(ctx context.Context, req *types.AvgBlockTimeReques
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	lastBlock := lastKV.Value
-
-	// var lastBlock types.Block
-	// err = json.Unmarshal(kv.Value, &lastBlock)
-	// if err != nil {
-	// 	return nil, status.Error(codes.Internal, err.Error())
-	// }
 
 	firstBlock, err := blockByHeight.Get(ctx, lastBlock.Height-1000) // error when lastBlock.Height < 1000?
 	if err != nil {

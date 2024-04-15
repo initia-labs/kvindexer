@@ -30,7 +30,11 @@ const (
 
 func collectIbcTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	ibcChannels := croncfg.ibcChannels.Load().([]string)
+	val := croncfg.ibcChannels.Load()
+	if val == nil {
+		return nil
+	}
+	ibcChannels := val.([]string)
 	if len(ibcChannels) == 0 {
 		return nil
 	}
@@ -200,7 +204,11 @@ func collectNftTokenPairsFromL1(client *fiber.Client, cfg *cronConfig) (err erro
 	if cfg.l1LcdUrl == "" {
 		return errors.New("l1LcdUrl is not set")
 	}
-	ibcNftChannels := cfg.ibcNftChannels.Load().([]string)
+	val := cfg.ibcNftChannels.Load()
+	if val == nil {
+		return nil
+	}
+	ibcNftChannels := val.([]string)
 	if len(ibcNftChannels) == 0 {
 		return nil
 	}
