@@ -8,11 +8,11 @@ import (
 
 type CacheStore struct {
 	store types.KVStore
-	cache *lru.ARCCache
+	cache *lru.TwoQueueCache
 }
 
 func NewCacheStore(store types.KVStore, size uint) *CacheStore {
-	cache, err := lru.NewARC(int(size))
+	cache, err := lru.New2Q(int(size))
 	if err != nil {
 		panic(fmt.Errorf("failed to create KVStore cache: %s", err))
 	}
