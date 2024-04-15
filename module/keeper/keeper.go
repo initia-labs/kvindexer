@@ -206,3 +206,7 @@ func (k Keeper) GetValidatorAddressCodec() address.Codec {
 func (k Keeper) GetSchemaBilder() *collections.SchemaBuilder {
 	return k.schemaBuilder
 }
+
+func (k Keeper) GetL1ChainId() string {
+	return k.config.L1ChainId
+}

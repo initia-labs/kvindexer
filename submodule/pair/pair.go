@@ -8,6 +8,7 @@ import (
 	"cosmossdk.io/collections"
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/cosmos/cosmos-sdk/types/tx"
 
 	"github.com/initia-labs/kvindexer/module/keeper"
 )
@@ -36,21 +37,20 @@ func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 		return errors.New("nft transfer keeper is not set")
 	}
 
-	croncfg, err = getCronConfigFromSubmoduleConfig()
-	if err != nil {
-		return err
-	}
-	Cronjob.Pattern = croncfg.l1QueryPattern
-	err = k.RegisterCronJob(Cronjob)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func initializer(k *keeper.Keeper, ctx context.Context) (err error) {
 	return nil
+}
+
+func parseTx(k *keeper.Keeper, txBytes []byte) (*tx.Tx, error) {
+	tx := tx.Tx{}
+	err := k.GetCodec().Unmarshal(txBytes, &tx)
+	if err != nil {
+		return nil, err
+	}
+	return &tx, nil
 }
 
 func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
@@ -61,21 +61,17 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	height = req.Height
 	timestamp = req.Time
 
-	if err := updateIBCChannels(k, ctx); err != nil {
+	if err := collectOPfungibleTokens(k, ctx, req); err != nil {
+		k.Logger(ctx).Warn("collectOPfungibleTokens", "error", err, "submodule", submoduleName)
+	}
+
+	if err := collectIBCFungibleTokens(k, ctx); err != nil {
 		// don't return error
-		k.Logger(ctx).Info("updateIBCChannels", "error", err)
+		k.Logger(ctx).Warn("collectIBCFungibleTokens", "error", err, "submodule", submoduleName)
 	}
 
-	if err := collectIbcTokenPairs(k, ctx); err != nil {
-		return err
-	}
-
-	if err := collecOpTokenPairs(k, ctx); err != nil {
-		return err
-	}
-
-	if err := collectNftTokensFromL2(k, ctx); err != nil {
-		return err
+	if err := collectIBCNonfungibleTokens(k, ctx, res); err != nil {
+		k.Logger(ctx).Warn("collectIBCNonfungibleTokens", "error", err, "submodule", submoduleName)
 	}
 
 	return nil

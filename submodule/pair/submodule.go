@@ -27,10 +27,6 @@ var (
 	prefixFungiblePairs    = keeper.NewPrefix(submoduleName, fungiblePairsPrefix)
 )
 
-// temporary storage for fungible token pairs from L1
-// key: l2 denom, value: l1 denom
-var fungiblePairsFromL1 sync.Map = sync.Map{}
-
 // temporary storage for non-fungible token pairs from L2
 // key: l2 collection address, value: l1 collection name
 var nonFungiblePairsFromL2 sync.Map = sync.Map{}
