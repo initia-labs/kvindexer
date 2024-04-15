@@ -1,14 +1,11 @@
 package pair
 
 import (
-	"errors"
 	"fmt"
 	"sync/atomic"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
-	"github.com/spf13/cast"
 )
 
 var Cronjob = keeper.Cronjob{
@@ -36,40 +33,24 @@ type cronConfig struct {
 	l1QueryPattern string
 }
 
-func getCronConfigFromSubmoduleConfig(smcfg config.SubmoduleConfig) (*cronConfig, error) {
+func getCronConfigFromSubmoduleConfig() (*cronConfig, error) {
 	cfg := cronConfig{}
 
-	// bridgeId base is 1, so if it's 0, it's not set
-	cfg.bridgeId = cast.ToUint64(smcfg[bridgeIdConfigKey])
-	if cfg.bridgeId == 0 {
-		return nil, errors.New("op-bridge-id is required")
-	}
-
-	cfg.l1ChainId = cast.ToString(smcfg[l1ChainId])
-	if cfg.l1ChainId == "" {
-		return nil, errors.New("l1-chain-id is required")
-	}
-
-	cfg.l1QueryPattern = cast.ToString(smcfg[l1QueryPatternKey])
-	if cfg.l1QueryPattern == "" {
-		return nil, errors.New("l1-query-pattern is required")
-	}
-
-	cfg.l1LcdUrl = cast.ToString(smcfg[l1LcdUrlConfigKey])
-	if cfg.l1LcdUrl == "" {
-		return nil, errors.New("l1-lcd-url is required")
-	}
+	cfg.bridgeId = 0
+	cfg.l1ChainId = ""
+	cfg.l1LcdUrl = ""
+	cfg.l1QueryPattern = ""
 
 	return &cfg, nil
 }
 
-func pairCollectorInitializer(keeper *keeper.Keeper, config config.CronjobConfig) error {
+func pairCollectorInitializer(keeper *keeper.Keeper) error {
 	// nop
 
 	return nil
 }
 
-func pairCollectorRunner(keeper *keeper.Keeper, config config.CronjobConfig) error {
+func pairCollectorRunner(keeper *keeper.Keeper) error {
 	client := fiber.AcquireClient()
 	defer fiber.ReleaseClient(client)
 

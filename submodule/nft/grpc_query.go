@@ -12,7 +12,6 @@ import (
 	cosmoserr "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
-
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	"github.com/initia-labs/kvindexer/submodule/pair"
@@ -36,10 +35,6 @@ func handleCollectionErr(err error) error {
 
 // Collection implements types.QueryServer.
 func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionRequest) (*types.QueryCollectionResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
 	collectionAddr, err := getVMAddress(q.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -59,16 +54,6 @@ func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionReque
 
 // Collections implements types.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *types.QueryCollectionsByAccountRequest) (*types.QueryCollectionsResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	accountAddr, err := getVMAddress(q.GetAddressCodec(), req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -109,16 +94,6 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *types.QueryColle
 
 // TokensByCollection implements types.QueryServer.
 func (q Querier) TokensByCollection(ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	if req.TokenId == "" {
 		return getTokensByCollection(q.Keeper, ctx, req)
 	}
@@ -127,16 +102,6 @@ func (q Querier) TokensByCollection(ctx context.Context, req *types.QueryTokensB
 
 // TokensByAccount implements types.QueryServer.
 func (q Querier) TokensByAccount(ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	if !enabled {
-		return nil, status.Error(codes.Unavailable, fmt.Sprintf("cannot query: %s is disabled", submoduleName))
-	}
-
-	if req.Pagination != nil && limit > 0 {
-		if req.Pagination.Limit > limit || req.Pagination.Limit == 0 {
-			req.Pagination.Limit = limit
-		}
-	}
-
 	if req.CollectionAddr == "" {
 		return getTokensByAccount(q.Keeper, ctx, req)
 	}
@@ -191,7 +156,7 @@ func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.Que
 }
 
 func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -209,12 +174,11 @@ func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req 
 }
 
 func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	ownerAddr, err := sdk.AccAddressFromBech32(req.Account)
+	ownerAddr, err := getVMAddress(k.GetAddressCodec(), req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
-
 	identifiers := []collections.Pair[sdk.AccAddress, string]{}
 
 	_, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenOwnerMap, req.Pagination,
@@ -234,7 +198,6 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 			return nil, handleCollectionErr(err)
 		}
 		token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
-
 		res = append(res, &token)
 	}
 
@@ -244,7 +207,7 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 	}, nil
 }
 
-func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+func getTokensByAccountAndCollection(_ *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
 	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -259,6 +222,7 @@ func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req 
 	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
 			if slices.Equal(k.K1(), collAddr) && (v.OwnerAddr == ownerAddrStr) {
+				v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 				return &v, nil
 			}
 			v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
@@ -276,7 +240,7 @@ func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req 
 }
 
 func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -288,10 +252,13 @@ func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Contex
 	}
 
 	if token.OwnerAddr != req.Account {
-		return nil, status.Error(codes.NotFound, "token not found")
+		return &types.QueryTokensResponse{
+			Tokens: []*types.IndexedToken{},
+		}, nil
 	}
 	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 
+	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 	return &types.QueryTokensResponse{
 		Tokens: []*types.IndexedToken{&token},
 	}, nil

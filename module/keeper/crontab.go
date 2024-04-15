@@ -11,8 +11,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-type JobInitializer func(keeper *Keeper, config config.CronjobConfig) error
-type JobFunc func(keeper *Keeper, config config.CronjobConfig) error
+type JobInitializer func(keeper *Keeper) error
+type JobFunc func(keeper *Keeper) error
 
 type Crontab struct {
 	config      *config.IndexerConfig
@@ -34,8 +34,8 @@ func NewCrontab(c *config.IndexerConfig, keeper *Keeper) *Crontab {
 }
 
 func (ct *Crontab) Initialize() error {
-	for tag, initializer := range ct.initializer {
-		err := initializer(ct.keeper, ct.config.CronjobConfigs[tag])
+	for _, initializer := range ct.initializer {
+		err := initializer(ct.keeper)
 		if err != nil {
 			return errors.Wrap(err, "failed to initialize cron")
 		}
@@ -58,7 +58,7 @@ func (ct *Crontab) RegisterJobWithPattern(pattern, tag string, jobInit JobInitia
 		panic(fmt.Errorf("%+v already exists", jobFunc))
 	}
 	sched, err := ct.scheduler.Cron(pattern).Do(func() {
-		err := jobFunc(ct.keeper, ct.config.CronjobConfigs[tag])
+		err := jobFunc(ct.keeper)
 		if err != nil {
 			panic(errors.Wrap(err, "failed to run cron"))
 		}
@@ -69,19 +69,6 @@ func (ct *Crontab) RegisterJobWithPattern(pattern, tag string, jobInit JobInitia
 	sched.Tag(tag)
 	ct.initializer[tag] = jobInit
 	return nil
-}
-
-func (ct *Crontab) RegisterJob(tag string, jobInit JobInitializer, jobFunc JobFunc) error {
-	//initName := getFunctionName(jobInit)
-	//jobName := getFunctionName(jobFunc)
-	if !ct.config.IsEnabledCronjob(tag) {
-		return nil
-	}
-	pattern, ok := ct.config.CronjobConfigs[tag]["pattern"].(string)
-	if !ok {
-		panic(fmt.Errorf("pattern is not string"))
-	}
-	return ct.RegisterJobWithPattern(pattern, tag, jobInit, jobFunc)
 }
 
 func (ct *Crontab) UnregisterJob(tag string) {

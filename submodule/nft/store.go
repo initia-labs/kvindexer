@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/collections/indexes"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 )
@@ -49,6 +48,9 @@ var tokenMap *collections.Map[collections.Pair[sdk.AccAddress, string], types.In
 // key: triple[owner-addr, collection-address, token-id], value: none
 var tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
 
+// key: triple[owner-addr, collection-address, token-id], value: none
+var tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
+
 //
 // Indices - vm specific
 //
@@ -58,7 +60,8 @@ type CollectionIndex struct {
 	OwnerAddress *indexes.Multi[ /*ref*/ sdk.AccAddress /*pk*/, sdk.AccAddress /*val*/, types.IndexedCollection]
 }
 
-func addStorages(k *keeper.Keeper, _ context.Context, _ config.SubmoduleConfig) (err error) {
+func addStorages(k *keeper.Keeper, _ context.Context) (err error) {
+
 	cdc := k.GetCodec()
 
 	if collectionMap, err = keeper.AddMap(k, prefixCollection, collectionMapName, sdk.AccAddressKey, codec.CollValue[types.IndexedCollection](cdc)); err != nil {
@@ -70,6 +73,10 @@ func addStorages(k *keeper.Keeper, _ context.Context, _ config.SubmoduleConfig) 
 	}
 
 	if tokenMap, err = keeper.AddMap(k, prefixTokens, tokenMapName, collections.PairKeyCodec(sdk.AccAddressKey, collections.StringKey), codec.CollValue[types.IndexedToken](cdc)); err != nil {
+		return err
+	}
+
+	if tokenOwnerMap, err = keeper.AddMap(k, prefixTokenOwner, tokenOwnerSetName, collections.TripleKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey, collections.StringKey), collections.BoolValue); err != nil {
 		return err
 	}
 

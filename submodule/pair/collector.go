@@ -30,7 +30,11 @@ const (
 
 func collectIbcTokenPairs(k *keeper.Keeper, ctx context.Context) (err error) {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	ibcChannels := croncfg.ibcChannels.Load().([]string)
+	val := croncfg.ibcChannels.Load()
+	if val == nil {
+		return nil
+	}
+	ibcChannels := val.([]string)
 	if len(ibcChannels) == 0 {
 		return nil
 	}
