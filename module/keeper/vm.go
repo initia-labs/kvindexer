@@ -1,13 +1,13 @@
 package keeper
 
 import (
-	movekeeper "github.com/initia-labs/initia/x/move/keeper"
+	evmkeeper "github.com/initia-labs/minievm/x/evm/keeper"
 )
 
 type VMKeeper struct {
-	movekeeper.Keeper
+	*evmkeeper.Keeper
 }
 
 func (k VMKeeper) GetVMType() string {
-	return "move"
+	return "evm"
 }
