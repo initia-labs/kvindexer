@@ -41,6 +41,18 @@ func (c IndexerConfig) Validate() error {
 		return nil
 	}
 
+	if c.CacheSize == 0 {
+		return fmt.Errorf("cache size must be greater than 0")
+	}
+
+	if c.L1ChainId == "" {
+		return fmt.Errorf("l1 chain id must be set")
+	}
+
+	if c.BackendConfig == nil {
+		return fmt.Errorf("backend config must be set")
+	}
+
 	return nil
 }
 
