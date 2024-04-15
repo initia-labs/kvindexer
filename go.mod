@@ -16,6 +16,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/initia v0.2.3
+	github.com/initia-labs/movevm v0.2.2
 	github.com/pkg/errors v0.9.1
 	github.com/skip-mev/slinky v0.2.2
 	github.com/spf13/cast v1.6.0
@@ -28,7 +29,9 @@ require (
 )
 
 require (
+	github.com/IGLOU-EU/go-wildcard v1.0.3 // indirect
 	github.com/andybalholm/brotli v1.0.5 // indirect
+	github.com/aptos-labs/serde-reflection/serde-generate/runtime/golang v0.0.0-20231213012317-73b6bbf74833 // indirect
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect

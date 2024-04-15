@@ -20,9 +20,6 @@ l1_lcd_url = "https://lcd..."
 # OPinit bridge ID (mandatory)
 bridge_id = number
 
-# IBC channel id to pass fungible tokens (mandatory)
-ibc_channel = "channel-id"
-
-# IBC channle id to pass non-fungible tokens (mandatory)
-ibc_nft_channel = "channel-id"
+# L1's chain ID (mandatorty)
+l1_chain_id = "mahalo-2"
 ```

@@ -20,21 +20,23 @@ const collectionOwnersPrefix = 0x20
 
 const tokenPrefix = 0x30
 const tokenAddressIndexPrefix = 0x31
-const tokenOwnerIndexPrefix = 0x32
+
+const tokenOwnerPrefix = 0x40
 
 const collectionMapName = "collections"
 const collectionOwnersMapName = "collection_owners"
 
 const tokenMapName = "tokens"
 const tokenAddressIndexName = "token_addr"
-const tokenOwnerIndexName = "owner_addr"
+
+const tokenOwnerSetName = "token_owner"
 
 var (
 	prefixCollection        = keeper.NewPrefix(submoduleName, collectionsPrefix)
 	prefixCollectionOwners  = keeper.NewPrefix(submoduleName, collectionOwnersPrefix)
 	prefixTokens            = keeper.NewPrefix(submoduleName, tokenPrefix)
 	prefixTokenAddressIndex = keeper.NewPrefix(submoduleName, tokenAddressIndexPrefix)
-	prefixTokenOwnerIndex   = keeper.NewPrefix(submoduleName, tokenOwnerIndexPrefix)
+	prefixTokenOwner        = keeper.NewPrefix(submoduleName, tokenOwnerPrefix)
 )
 
 //
@@ -50,6 +52,9 @@ var collectionOwnerMap *collections.Map[collections.Pair[sdk.AccAddress, sdk.Acc
 // key: pair[collection-address, token_id], value: indexed token
 var tokenMap *collections.IndexedMap[collections.Pair[sdk.AccAddress, string], types.IndexedToken, TokenIndex]
 
+// key: triple[owner-addr, collection-address, token-id], value: none
+var tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
+
 //
 // Indices - vm specific
 //
@@ -62,18 +67,17 @@ type CollectionIndex struct {
 type TokenIndex struct {
 	// ref: token-address, pk: pair[collection-address, token-id], value: indexed token
 	TokenAddress *indexes.Unique[ /*ref*/ sdk.AccAddress /*pk*/, collections.Pair[sdk.AccAddress, string] /*val*/, types.IndexedToken]
-	// ref: owner-address, pk: pair[collection-address, token-id], value: indexed token
-	OwnerAddress *indexes.Multi[ /*ref*/ sdk.AccAddress /*pk*/, collections.Pair[sdk.AccAddress, string] /*val*/, types.IndexedToken]
 }
 
 func (i TokenIndex) IndexesList() []collections.Index[collections.Pair[sdk.AccAddress, string], types.IndexedToken] {
 	return []collections.Index[collections.Pair[sdk.AccAddress, string], types.IndexedToken]{
 		i.TokenAddress,
-		i.OwnerAddress,
+		//i.OwnerAddress,
 	}
 }
 
 func newTokensIndex(k *keeper.Keeper) TokenIndex {
+	cdc := k.GetAddressCodec()
 	return TokenIndex{
 		TokenAddress: indexes.NewUnique(
 			k.GetSchemaBilder(),     // schema builder
@@ -82,17 +86,11 @@ func newTokensIndex(k *keeper.Keeper) TokenIndex {
 			sdk.AccAddressKey,       // refCodec
 			collections.PairKeyCodec(sdk.AccAddressKey, collections.StringKey), // pkCodec
 			func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (sdk.AccAddress, error) {
-				return sdk.AccAddressFromBech32(v.ObjectAddr)
-			}, // getRefKeyFunc
-		),
-		OwnerAddress: indexes.NewMulti(
-			k.GetSchemaBilder(),   // schema builder
-			prefixTokenOwnerIndex, // prefix
-			tokenOwnerIndexName,   // name
-			sdk.AccAddressKey,     // refCodec
-			collections.PairKeyCodec(sdk.AccAddressKey, collections.StringKey), // pkCodec
-			func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (sdk.AccAddress, error) {
-				return sdk.AccAddressFromBech32(v.OwnerAddr)
+				vmAddr, err := getVMAddress(cdc, v.ObjectAddr)
+				if err != nil {
+					return sdk.AccAddress{}, err
+				}
+				return getCosmosAddress(vmAddr), nil
 			}, // getRefKeyFunc
 		),
 	}
@@ -110,6 +108,10 @@ func addStorages(k *keeper.Keeper, _ context.Context) (err error) {
 	}
 
 	if tokenMap, err = keeper.AddIndexedMap(k, prefixTokens, tokenMapName, collections.PairKeyCodec(sdk.AccAddressKey, collections.StringKey), codec.CollValue[types.IndexedToken](cdc), newTokensIndex(k)); err != nil {
+		return err
+	}
+
+	if tokenOwnerMap, err = keeper.AddMap(k, prefixTokenOwner, tokenOwnerSetName, collections.TripleKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey, collections.StringKey), collections.BoolValue); err != nil {
 		return err
 	}
 

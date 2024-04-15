@@ -37,7 +37,8 @@ func (q Querier) Tx(ctx context.Context, req *types.QueryTxRequest) (*types.Quer
 func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountRequest) (*types.QueryTxsResponse, error) {
 	if req.Account == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty account")
-	}
+  }
+  
 	acc, err := accAddressFromString(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
