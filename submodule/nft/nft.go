@@ -34,10 +34,18 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	timestamp = req.Time
 
 	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(eventType, txResult.Events)
-		err := processEvents(k, ctx, events)
+		events := filterAndParseEvent(txResult.Events, eventTypes)
+		err := processEvents(k, ctx, cfg, events)
 		if err != nil {
 			return err
+		}
+		for _, event := range txResult.Events {
+			if event.Type == "write_acknowledgement" {
+				err := handleWriteAcknowledgementEvent(k, ctx, cfg, event.Attributes)
+				if err != nil {
+					return err
+				}
+			}
 		}
 	}
 

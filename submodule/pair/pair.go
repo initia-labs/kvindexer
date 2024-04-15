@@ -32,9 +32,6 @@ func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 	if k.TransferKeeper == nil {
 		return errors.New("transfer keeper is not set")
 	}
-	if k.NftTransferKeeper == nil {
-		return errors.New("nft transfer keeper is not set")
-	}
 
 	croncfg, err = getCronConfigFromSubmoduleConfig()
 	if err != nil {
@@ -71,10 +68,6 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	}
 
 	if err := collecOpTokenPairs(k, ctx); err != nil {
-		return err
-	}
-
-	if err := collectNftTokensFromL2(k, ctx); err != nil {
 		return err
 	}
 

@@ -2,45 +2,101 @@ package nft
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
+	"strconv"
 
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
-	vmtypes "github.com/initia-labs/movevm/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-const eventType = "move"
+var eventTypes = []string{"wasm"}
 
-var collectionStructTag = vmtypes.StructTag{
-	Address: vmtypes.StdAddress,
-	Module:  "collection",
-	Name:    "Collection",
+var (
+	qreqCollectionContractInfo = []byte("{\"contract_info\":{}}") // {"contract_info":{}}
+	qreqCollectionMinter       = []byte("{\"minter\":{}}")        // {"minter":{}}
+	qreqCollectionNumTokens    = []byte("{\"num_tokens\":{}}")    // {"num_tokens":{}}
+)
+
+func encode(req []byte) []byte {
+	res := make([]byte, base64.StdEncoding.EncodedLen(len(req)))
+	base64.StdEncoding.Encode(res, req)
+	return res
 }
-var nftStructTag = vmtypes.StructTag{
-	Address: vmtypes.StdAddress,
-	Module:  "nft",
-	Name:    "Nft",
+
+func generateQueryRequestToGetNftInfo(tokenId string) []byte {
+	return []byte(`{"nft_info":{"token_id":"` + tokenId + `"}}`)
+	//return encode(qb)
 }
 
-func getCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colAddr vmtypes.AccountAddress) (*types.CollectionResource, error) {
-
-	rb, err := k.VMKeeper.GetResource(ctx, colAddr, collectionStructTag)
+func getCollectionContractInfo(k *keeper.Keeper, ctx context.Context, colAddr sdk.AccAddress) (*types.ContractInfo, error) {
+	rb, err := k.VMKeeper.QuerySmart(ctx, colAddr, []byte("{\"contract_info\":{}}")) //qreqCollectionContractInfo)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
-	resource := types.CollectionResource{}
-	if err := json.Unmarshal([]byte(rb.MoveResource), &resource); err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	res := types.ContractInfo{}
+	if err := json.Unmarshal(rb, &res); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &res, nil
+}
+
+func getCollectioMinter(k *keeper.Keeper, ctx context.Context, colAddr sdk.AccAddress) (*types.Minter, error) {
+	rb, err := k.VMKeeper.QuerySmart(ctx, colAddr, qreqCollectionMinter)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	res := types.Minter{}
+	if err := json.Unmarshal(rb, &res); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &res, nil
+}
+
+func getCollectioNumTokens(k *keeper.Keeper, ctx context.Context, colAddr sdk.AccAddress) (*types.NumTokens, error) {
+	rb, err := k.VMKeeper.QuerySmart(ctx, colAddr, qreqCollectionNumTokens)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
+	res := types.NumTokens{}
+	if err := json.Unmarshal(rb, &res); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &res, nil
+}
+
+func getCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colAddr sdk.AccAddress) (*types.CollectionResource, error) {
+	resource := types.CollectionResource{}
+
+	ci, err := getCollectionContractInfo(k, ctx, colAddr)
+	if err != nil {
+		return nil, err
+	}
+	resource.Collection.Name = ci.Name
+
+	minter, err := getCollectioMinter(k, ctx, colAddr)
+	if err != nil {
+		return nil, err
+	}
+	resource.Collection.Creator = minter.Minter
+
+	numTokens, err := getCollectioNumTokens(k, ctx, colAddr)
+	if err != nil {
+		return nil, err
+	}
+	resource.Collection.Nfts = &types.TokenHandle{Length: strconv.FormatInt(numTokens.Count, 10)}
+
 	return &resource, nil
 }
 
-func getIndexedCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colAddr vmtypes.AccountAddress) (*types.IndexedCollection, error) {
+func getIndexedCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colAddr sdk.AccAddress) (*types.IndexedCollection, error) {
 	resource, err := getCollectionFromVMStore(k, ctx, colAddr)
 	if err != nil {
 		return nil, err
@@ -52,42 +108,47 @@ func getIndexedCollectionFromVMStore(k *keeper.Keeper, ctx context.Context, colA
 	return &indexed, nil
 }
 
-func getNftResourceFromVMStore(k *keeper.Keeper, ctx context.Context, nftAddr vmtypes.AccountAddress) (*types.NftResource, error) {
-	rb, err := k.VMKeeper.GetResource(ctx, nftAddr, nftStructTag)
-	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
-	}
+func getNftResourceFromVMStore(k *keeper.Keeper, ctx context.Context, collectionAddr sdk.AccAddress, tokenId string) (*types.NftResource, error) {
 	resource := types.NftResource{}
-	if err := json.Unmarshal([]byte(rb.MoveResource), &resource); err != nil {
+
+	q := generateQueryRequestToGetNftInfo(tokenId)
+	rb, err := k.VMKeeper.QuerySmart(ctx, collectionAddr, q)
+	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	if err := json.Unmarshal(rb, &resource); err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+
 	return &resource, nil
 }
 
-func getIndexedTokenFromVMStore(k *keeper.Keeper, ctx context.Context, nftAddr vmtypes.AccountAddress, collectionAddr *vmtypes.AccountAddress) (*types.IndexedToken, error) {
-	resource, err := getNftResourceFromVMStore(k, ctx, nftAddr)
+func getIndexedNftFromVMStore(k *keeper.Keeper, ctx context.Context, contractAddr sdk.AccAddress, tokenId string, ownerAddr *sdk.AccAddress) (*types.IndexedToken, error) {
+	resource, err := getNftResourceFromVMStore(k, ctx, contractAddr, tokenId)
 	if err != nil {
 		return nil, err
 	}
 	indexed := types.IndexedToken{
-		ObjectAddr: nftAddr.String(),
-		Nft:        &resource.Nft,
+		Nft: &types.Token{
+			TokenId: tokenId,
+			Uri:     resource.TokenUri,
+		},
+		CollectionAddr: contractAddr.String(),
 	}
-	if collectionAddr != nil {
-		indexed.CollectionAddr = collectionAddr.String()
+	if ownerAddr != nil {
+		indexed.OwnerAddr = ownerAddr.String()
 	}
 
 	return &indexed, nil
 }
 
-func getVMAddress(cdc address.Codec, addr string) (vmtypes.AccountAddress, error) {
-	accAddr, err := movetypes.AccAddressFromString(cdc, addr)
-	if err != nil {
-		return vmtypes.AccountAddress{}, err
-	}
-	return vmtypes.AccountAddress(accAddr), nil
+// wasm only uses bech32 address, not hex
+func getVMAddress(_ address.Codec, addr string) (sdk.AccAddress, error) {
+	return sdk.AccAddressFromBech32(addr)
 }
 
-func getCosmosAddress(addr vmtypes.AccountAddress) sdk.AccAddress {
-	return movetypes.ConvertVMAddressToSDKAddress(addr)
+// it just returns the same address: it's like an abstract function to support other VMs
+func getCosmosAddress(addr sdk.AccAddress) sdk.AccAddress {
+	return addr
 }

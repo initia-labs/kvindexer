@@ -28,12 +28,14 @@ func parseEvent(event abci.Event) types.EventWithAttributeMap {
 	return eventWithMap
 }
 
-func filterAndParseEvent(eventType string, events []abci.Event) (filtered []types.EventWithAttributeMap) {
+func filterAndParseEvent(events []abci.Event, eventTypes []string) (filtered []types.EventWithAttributeMap) {
 	for _, event := range events {
-		if event.Type != eventType {
-			continue
+		for _, eventType := range eventTypes {
+			if event.Type != eventType {
+				continue
+			}
+			filtered = append(filtered, parseEvent(event))
 		}
-		filtered = append(filtered, parseEvent(event))
 	}
 	return
 }
