@@ -25,7 +25,7 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 		return cfg, nil
 	}
 	cfg.CacheSize = cast.ToUint(appOpts.Get(flagIndexerCacheSize))
-	cfg.L1ChainID = cast.ToString(appOpts.Get(flagL1ChainId))
+	cfg.L1ChainId = cast.ToString(appOpts.Get(flagL1ChainId))
 
 	cfg.BackendConfig = viper.New()
 	err := cfg.BackendConfig.MergeConfigMap(cast.ToStringMap(appOpts.Get(flagIndexerBackend)))
@@ -41,6 +41,18 @@ func (c IndexerConfig) Validate() error {
 		return nil
 	}
 
+	if c.CacheSize == 0 {
+		return fmt.Errorf("cache size must be greater than 0")
+	}
+
+	if c.L1ChainId == "" {
+		return fmt.Errorf("l1 chain id must be set")
+	}
+
+	if c.BackendConfig == nil {
+		return fmt.Errorf("backend config must be set")
+	}
+
 	return nil
 }
 
@@ -52,7 +64,7 @@ func DefaultConfig() IndexerConfig {
 	return IndexerConfig{
 		Enable:        false,
 		CacheSize:     1_000_000,
-		L1ChainID:     "",
+		L1ChainId:     "",
 		BackendConfig: store.DefaultConfig(),
 	}
 }
