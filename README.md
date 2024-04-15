@@ -8,25 +8,19 @@ Registered submodules get abci Events(i.e. FinalizeBlock and Commit) and are all
 
 ### Configuration
 
-Submodules can be configured via `[[indexer.submodules]]` section array in `config/app.toml`.
-The array defines the configuration for each submodule and it should have a key-value pair named 'name', and the value should exist in enabled_submodules.
-If a named submodule is not exist in `indexer.enabled-submodules` in `config/app.toml`, it will be ignored.
+Default configuration will be set when the indexer is initialized.
+But, to run your indexer properly, you have to set 2 configuration properties.
 
-see `README.md`s for examples
+* set indexer.enable to true in app.toml
+* set indexer.l1-chain-id to the L1's chain id app.toml
 
-### Basic Submodules
+Here's example:
+```toml
+[indexer]
+enable = true
+l1-chain-id = "mahalo-2"
 
-* [block](https://github.com/initia-labs/kvindexer/tree/main/submodule/block)
-* [tx](https://github.com/initia-labs/kvindexer/tree/main/submodule/tx)
-* [nft](https://github.com/initia-labs/kvindexer/tree/main/submodule/nft)
-* [pair](https://github.com/initia-labs/kvindexer/tree/main/submodule/pair)
+#...other properties..
+```
 
-## Crontab
-
-Indexer handles a simple crontab.
-
-### Configuration
-
-Submodules can be configured via `[[indexer.submodules]]` section array in `config/app.toml`.
-The array defines the configuration for each submodule and it should have 2 key-value pairs named `name` and `pattern`, and the name should exist in enabled_submodules.
-If a named submodule is not exist in `indexer.enabled-cronjobs` in `config/app.toml`, it will be ignored.
+Other properties are okay with default!
