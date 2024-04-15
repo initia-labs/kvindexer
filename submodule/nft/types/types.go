@@ -2,6 +2,7 @@ package types
 
 import (
 	abci "github.com/cometbft/cometbft/abci/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type EventWithAttributeMap struct {
@@ -51,4 +52,21 @@ type OwnerOf struct {
 type Approval struct {
 	Spender    string `json:"spender"`
 	Expiration uint64 `json:"expiration"` // FIXME: height? timestamp?
+}
+
+type NftClassData struct {
+	Description struct {
+		Value string `json:"value"`
+	} `json:"initia:description"`
+}
+
+type WriteAckForNftEvent struct {
+	ClassData string         `json:"classData"`
+	ClassId   string         `json:"classId"`
+	ClassUri  string         `json:"classUri"`
+	Receiver  sdk.AccAddress `json:"receiver"`
+	Sender    sdk.AccAddress `json:"sender"`
+	//TokenData []string       `json:"tokenData"`
+	//TokenIds  []string       `json:"tokenIds"`
+	//TokenUris []string       `json:"tokenUris"`
 }

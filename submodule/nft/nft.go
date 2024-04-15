@@ -37,7 +37,7 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 		events := filterAndParseEvent(txResult.Events, eventTypes)
 		err := processEvents(k, ctx, events)
 		if err != nil {
-			return err
+			k.Logger(ctx).Warn("failed to process events", "error", err, "submodule", submoduleName)
 		}
 		for _, event := range txResult.Events {
 			if event.Type == "write_acknowledgement" {
