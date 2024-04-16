@@ -77,9 +77,5 @@ func addStorages(k *keeper.Keeper, _ context.Context) (err error) {
 		return err
 	}
 
-	if tokenOwnerMap, err = keeper.AddMap(k, prefixTokenOwner, tokenOwnerSetName, collections.TripleKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey, collections.StringKey), collections.BoolValue); err != nil {
-		return err
-	}
-
 	return nil
 }
