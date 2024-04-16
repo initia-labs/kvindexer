@@ -11,6 +11,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	avg_denominator int64 = 1000
+)
+
 type Querier struct {
 	*keeper.Keeper
 }
@@ -64,7 +68,12 @@ func (q Querier) AvgBlockTime(ctx context.Context, req *types.AvgBlockTimeReques
 	}
 	lastBlock := lastKV.Value
 
-	firstBlock, err := blockByHeight.Get(ctx, lastBlock.Height-1000) // error when lastBlock.Height < 1000?
+	base := lastBlock.Height - avg_denominator
+	if base < 0 {
+		base = 1 // from genesis
+	}
+
+	firstBlock, err := blockByHeight.Get(ctx, base)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
