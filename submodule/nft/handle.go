@@ -10,14 +10,11 @@ import (
 	cosmoserr "cosmossdk.io/errors"
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	"github.com/initia-labs/kvindexer/submodule/pair"
 )
 
-func processEvents(k *keeper.Keeper, ctx context.Context, events []types.EventWithAttributeMap) error {
-	var fn func(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error
 func processEvents(k *keeper.Keeper, ctx context.Context, events []types.EventWithAttributeMap) error {
 	var fn func(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error
 	for _, event := range events {
@@ -235,7 +232,7 @@ func handleWriteAcknowledgementEvent(k *keeper.Keeper, ctx context.Context, attr
 			return cosmoserr.Wrap(err, "failed to check class existence")
 		}
 
-		err = pair.SetPair(ctx, false, data.ClassId, classData.Description.Value)
+		err = pair.SetPair(ctx, false, false, data.ClassId, classData.Description.Value)
 		if err != nil {
 			return cosmoserr.Wrap(err, "failed to set class")
 		}
