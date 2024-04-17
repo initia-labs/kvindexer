@@ -1,13 +1,13 @@
 package keeper
 
 import (
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	movekeeper "github.com/initia-labs/initia/x/move/keeper"
 )
 
 type VMKeeper struct {
-	wasmkeeper.Keeper
+	*movekeeper.Keeper
 }
 
 func (k VMKeeper) GetVMType() string {
-	return "wasm"
+	return "move"
 }
