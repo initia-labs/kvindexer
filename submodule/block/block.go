@@ -18,6 +18,9 @@ var height int64
 //nolint:unused
 var timestamp time.Time
 
+var fbreq abci.RequestFinalizeBlock
+var fbres abci.ResponseFinalizeBlock
+
 func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 	cdc := k.GetCodec()
 
@@ -39,15 +42,17 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	// is okay to set height here because finalizeBlock is called before commit
 	height = req.Height
 	timestamp = req.Time
-
-	if err := collectBlock(k, ctx, req, res); err != nil {
-		return err
-	}
+	fbreq = req
+	fbres = res
 
 	return nil
 }
 func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
+
+	if err := collectBlock(k, ctx, fbreq, fbres); err != nil {
+		return err
+	}
 
 	return nil
 }

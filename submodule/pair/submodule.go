@@ -6,7 +6,9 @@ import (
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/client"
 	grpc1 "github.com/cosmos/gogoproto/grpc"
+
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/pair/types"
 )

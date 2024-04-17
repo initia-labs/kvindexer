@@ -14,6 +14,7 @@ func GetPair(ctx context.Context, isFungible bool, l2key string) (string, error)
 	}
 	return target.Get(ctx, l2key)
 }
+
 func SetPair(ctx context.Context, overwrite, isFungible bool, l2key, l1key string) error {
 	target := nonFungiblePairsMap
 	if isFungible {

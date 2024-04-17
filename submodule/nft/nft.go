@@ -16,6 +16,9 @@ var height int64
 //nolint:unused
 var timestamp time.Time
 
+var fbreq abci.RequestFinalizeBlock
+var fbres abci.ResponseFinalizeBlock
+
 func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 	return addStorages(k, ctx)
 
@@ -32,19 +35,28 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	// is okay to set height here because finalizeBlock is called before commit
 	height = req.Height
 	timestamp = req.Time
-
-	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(eventType, txResult.Events)
-		err := processEvents(k, ctx, events)
-		if err != nil {
-			k.Logger(ctx).Warn("failed to process events", "error", err, "submodule", submoduleName)
-		}
-	}
+	fbreq = req
+	fbres = res
 
 	return nil
 }
 func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
-	// nop here
+
+	for _, txResult := range res.TxResults {
+		events := filterAndParseEvent(txResult.Events, eventTypes)
+		err := processEvents(k, ctx, events)
+		if err != nil {
+			k.Logger(ctx).Warn("failed to process events", "error", err, "submodule", submoduleName)
+		}
+		for _, event := range txResult.Events {
+			if event.Type == "write_acknowledgement" {
+				err := handleWriteAcknowledgementEvent(k, ctx, event.Attributes)
+				if err != nil {
+					return err
+				}
+			}
+		}
+	}
 	return nil
 }

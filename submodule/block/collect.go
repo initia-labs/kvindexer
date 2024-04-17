@@ -52,9 +52,11 @@ func collectBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinaliz
 	if req.Height > 1 {
 		prevBlock, err := blockByHeight.Get(ctx, req.Height-1)
 		if err != nil {
-			return err
+			k.Logger(ctx).Warn("failed to get previous block", "error", err, "height", req.Height-1)
+			block.BlockTime = 0
+		} else {
+			block.BlockTime = req.Time.Sub(prevBlock.Timestamp).Milliseconds()
 		}
-		block.BlockTime = req.Time.Sub(prevBlock.Timestamp).Milliseconds()
 	}
 
 	if err := blockByHeight.Set(ctx, req.Height, block); err != nil {

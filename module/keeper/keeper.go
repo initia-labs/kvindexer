@@ -12,6 +12,7 @@ import (
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/dbadapter"
+	storetypes "cosmossdk.io/store/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -60,9 +61,10 @@ type Keeper struct {
 	db     dbm.DB
 	sealed bool
 
-	chainId    string
-	crontab    *Crontab
-	submodules map[string]Submodule
+	chainId      string
+	crontab      *Crontab
+	submodules   map[string]Submodule
+	requiredKeys map[string]*storetypes.StoreKey
 }
 
 // NewKeeper creates a new indexer Keeper instance
@@ -110,6 +112,7 @@ func NewKeeper(
 		vc:                  vc,
 		chainId:             chainId,
 		sealed:              false,
+		requiredKeys:        make(map[string]*storetypes.StoreKey),
 	}
 
 	k.crontab = NewCrontab(config, k)
@@ -166,25 +169,12 @@ func (k Keeper) GetStore() *store.CacheStore {
 	return k.store
 }
 
-//func (k *Keeper) WriteStore() error {
-//	if !k.IsSealed() {
-//		return errors.New("keeper is not sealed")
-//	}
-//	k.store.Write()
-//	return nil
-//}
-
 func (k Keeper) GetCodec() codec.Codec {
 	return k.cdc
 }
 
 func (k Keeper) GetChainId() string {
 	return k.chainId
-}
-
-func (k Keeper) GetNewAddresses(ctx context.Context, from, to int64) ([]sdk.AccAddress, error) {
-
-	return nil, nil
 }
 
 func (k Keeper) GetCrontab() *Crontab {
@@ -209,4 +199,8 @@ func (k Keeper) GetSchemaBilder() *collections.SchemaBuilder {
 
 func (k Keeper) GetL1ChainId() string {
 	return k.config.L1ChainId
+}
+
+func (k *Keeper) GetRequiredKeys() map[string]*storetypes.StoreKey {
+	return k.requiredKeys
 }
