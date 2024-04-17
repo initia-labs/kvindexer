@@ -16,6 +16,9 @@ var height int64
 //nolint:unused
 var timestamp time.Time
 
+var fbreq abci.RequestFinalizeBlock
+var fbres abci.ResponseFinalizeBlock
+
 func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 	return addStorages(k, ctx)
 
@@ -32,19 +35,20 @@ func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinali
 	// is okay to set height here because finalizeBlock is called before commit
 	height = req.Height
 	timestamp = req.Time
+	fbreq = req
+	fbres = res
 
-	for _, txResult := range res.TxResults {
+	return nil
+}
+func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
+	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
+
+	for _, txResult := range fbres.TxResults {
 		events := filterAndParseEvent(eventType, txResult.Events)
 		err := processEvents(k, ctx, events)
 		if err != nil {
 			k.Logger(ctx).Warn("failed to process events", "error", err, "submodule", submoduleName)
 		}
 	}
-
-	return nil
-}
-func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
-	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
-	// nop here
 	return nil
 }

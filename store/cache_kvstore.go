@@ -1,24 +1,26 @@
 package store
 
 import (
-	"cosmossdk.io/store/types"
 	"fmt"
+
+	cachekv "cosmossdk.io/store/cachekv"
+	"cosmossdk.io/store/types"
 	lru "github.com/hashicorp/golang-lru"
 )
 
 type CacheStore struct {
-	store types.KVStore
-	cache *lru.TwoQueueCache
+	store types.CacheKVStore
+	cache *lru.ARCCache
 }
 
 func NewCacheStore(store types.KVStore, size uint) *CacheStore {
-	cache, err := lru.New2Q(int(size))
+	cache, err := lru.NewARC(int(size))
 	if err != nil {
 		panic(fmt.Errorf("failed to create KVStore cache: %s", err))
 	}
 
 	return &CacheStore{
-		store: store,
+		store: cachekv.NewStore(store),
 		cache: cache,
 	}
 }
@@ -67,4 +69,8 @@ func (c CacheStore) Iterator(start, end []byte) (types.Iterator, error) {
 
 func (c CacheStore) ReverseIterator(start, end []byte) (types.Iterator, error) {
 	return c.store.ReverseIterator(start, end), nil
+}
+
+func (c CacheStore) Write() {
+	c.store.Write()
 }
