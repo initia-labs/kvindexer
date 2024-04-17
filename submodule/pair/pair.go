@@ -36,9 +36,6 @@ func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 	if k.TransferKeeper == nil {
 		return errors.New("transfer keeper is not set")
 	}
-	if k.NftTransferKeeper == nil {
-		return errors.New("nft transfer keeper is not set")
-	}
 
 	return nil
 }

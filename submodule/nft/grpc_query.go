@@ -4,17 +4,16 @@ import (
 	"context"
 	"slices"
 
-	"cosmossdk.io/store/prefix"
-	"github.com/cosmos/cosmos-sdk/runtime"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"cosmossdk.io/collections"
+	cosmoserr "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	"github.com/initia-labs/kvindexer/submodule/pair"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 var _ types.QueryServer = (*Querier)(nil)
@@ -23,17 +22,29 @@ type Querier struct {
 	*keeper.Keeper
 }
 
+func handleCollectionErr(err error) error {
+	if err == nil {
+		return nil
+	}
+	if cosmoserr.IsOf(err, collections.ErrNotFound) {
+		return status.Error(codes.NotFound, err.Error())
+	}
+	return status.Error(codes.Internal, err.Error())
+}
+
 // Collection implements types.QueryServer.
 func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionRequest) (*types.QueryCollectionResponse, error) {
-	collectionSdkAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	collectionAddr, err := getVMAddress(q.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+	collectionSdkAddr := getCosmosAddress(collectionAddr)
 
 	collection, err := collectionMap.Get(ctx, collectionSdkAddr)
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, handleCollectionErr(err)
 	}
+	collection.Collection.Name, _ = getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
 
 	return &types.QueryCollectionResponse{
 		Collection: &collection,
@@ -42,28 +53,35 @@ func (q Querier) Collection(ctx context.Context, req *types.QueryCollectionReque
 
 // Collections implements types.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *types.QueryCollectionsByAccountRequest) (*types.QueryCollectionsResponse, error) {
-	accountSdkAddr, err := sdk.AccAddressFromBech32(req.Account)
+	accountAddr, err := getVMAddress(q.GetAddressCodec(), req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+	accountSdkAddr := getCosmosAddress(accountAddr)
 	accountAddrString := accountSdkAddr.String()
 
 	collectionSdkAddrs := []sdk.AccAddress{}
-	_, pageRes, err := query.CollectionPaginate(ctx, collectionOwnerMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (uint64, error) {
-			if k.K2().String() == accountAddrString {
-				collectionSdkAddrs = append(collectionSdkAddrs, k.K2())
+	_, pageRes, err := query.CollectionFilteredPaginate(ctx, collectionOwnerMap, req.Pagination,
+		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (bool, error) {
+			if k.K1().String() == accountAddrString {
+				return true, nil
 			}
+			return false, nil
+		},
+		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (uint64, error) {
+			collectionSdkAddrs = append(collectionSdkAddrs, k.K2())
 			return v, nil
 		},
+		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, sdk.AccAddress](accountSdkAddr),
 	)
 
 	collections := []*types.IndexedCollection{}
 	for _, collectionSdkAddr := range collectionSdkAddrs {
 		collection, err := collectionMap.Get(ctx, collectionSdkAddr)
 		if err != nil {
-			return nil, status.Error(codes.NotFound, err.Error())
+			return nil, handleCollectionErr(err)
 		}
+		collection.Collection.Name, _ = getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
 		collections = append(collections, &collection)
 	}
 
@@ -98,25 +116,35 @@ func NewQuerier(k *keeper.Keeper) Querier {
 }
 
 func getCollectionNameFromPairSubmodule(ctx context.Context, collName string) (string, error) {
-	return pair.GetPair(ctx, false, collName)
+	name, err := pair.GetPair(ctx, false, collName)
+	if err != nil {
+		return collName, err
+	}
+	return name, nil
 }
 
-func getTokensByCollection(_ *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
+
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+	colSdkAddr := getCosmosAddress(collAddr)
 
-	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
-			if slices.Equal(k.K1(), collAddr) {
-				return &v, nil
+	res, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenMap, req.Pagination,
+		func(key collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (bool, error) {
+			if slices.Equal(key.K1(), colSdkAddr) {
+				return true, nil
 			}
-			return nil, nil
+			return false, nil
+		},
+		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
+			v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
+			return &v, nil
 		},
 	)
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	return &types.QueryTokensResponse{
@@ -126,48 +154,50 @@ func getTokensByCollection(_ *keeper.Keeper, ctx context.Context, req *types.Que
 
 }
 
-func getTokensByCollectionAndTokenId(_ *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+func getTokensByCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+	colSdkAddr := getCosmosAddress(collAddr)
 
-	token, err := tokenMap.Get(ctx, collections.Join(collAddr, req.TokenId))
+	token, err := tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, handleCollectionErr(err)
 	}
+	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 
 	return &types.QueryTokensResponse{
 		Tokens: []*types.IndexedToken{&token},
 	}, nil
 }
 
-func getTokensByAccount(k *keeper.Keeper, _ context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	ownerAddr, err := sdk.AccAddressFromBech32(req.Account)
+func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+	ownerAddr, err := getVMAddress(k.GetAddressCodec(), req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	ownerAddrStr := ownerAddr.String()
+	ownerSdkAddr := getCosmosAddress(ownerAddr)
+	identifiers := []collections.Pair[sdk.AccAddress, string]{}
 
-	store := k.GetStore()
-	ownerStore := prefix.NewStore(runtime.KVStoreAdapter(store), prefixTokenOwnerIndex)
-
-	res, pageRes, err := query.GenericFilteredPaginate(
-		k.GetCodec(),   /*codec*/
-		ownerStore,     /* store */
-		req.Pagination, /* page request */
-		func(key []byte, val *types.IndexedToken) (*types.IndexedToken, error) {
-			if val.OwnerAddr != ownerAddrStr {
-				return nil, nil
-			}
-			return val, nil
-		}, /* onResult */
-		func() *types.IndexedToken {
-			return &types.IndexedToken{}
-		}, /* constructor */
+	_, pageRes, err := query.CollectionFilteredPaginate(ctx, tokenOwnerMap, req.Pagination,
+		func(k collections.Triple[sdk.AccAddress, sdk.AccAddress, string], _ bool) (bool, error) {
+			return true, nil
+		},
+		func(k collections.Triple[sdk.AccAddress, sdk.AccAddress, string], v bool) (bool, error) {
+			identifiers = append(identifiers, collections.Join(k.K2(), k.K3()))
+			return v, nil
+		},
+		WithCollectionPaginationTriplePrefix[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr),
 	)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+	res := []*types.IndexedToken{}
+	for _, identifier := range identifiers {
+		token, err := tokenMap.Get(ctx, identifier)
+		if err != nil {
+			return nil, handleCollectionErr(err)
+		}
+		token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+		res = append(res, &token)
 	}
 
 	return &types.QueryTokensResponse{
@@ -191,8 +221,10 @@ func getTokensByAccountAndCollection(_ *keeper.Keeper, ctx context.Context, req 
 	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
 			if slices.Equal(k.K1(), collAddr) && (v.OwnerAddr == ownerAddrStr) {
+				v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 				return &v, nil
 			}
+			v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 			return nil, nil
 		},
 	)
@@ -206,22 +238,36 @@ func getTokensByAccountAndCollection(_ *keeper.Keeper, ctx context.Context, req 
 	}, nil
 }
 
-func getTokensByAccountCollectionAndTokenId(_ *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+	colSdkAddr := getCosmosAddress(collAddr)
 
-	token, err := tokenMap.Get(ctx, collections.Join(collAddr, req.TokenId))
+	token, err := tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
-		return nil, status.Error(codes.NotFound, err.Error())
+		return nil, handleCollectionErr(err)
 	}
 
 	if token.OwnerAddr != req.Account {
-		return nil, status.Error(codes.NotFound, "token not found")
+		return &types.QueryTokensResponse{
+			Tokens: []*types.IndexedToken{},
+		}, nil
 	}
+	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 
+	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 	return &types.QueryTokensResponse{
 		Tokens: []*types.IndexedToken{&token},
 	}, nil
+}
+
+// WithCollectionPaginationTriplePrefix applies a prefix to a collection, whose key is a collection.Triple,
+// being paginated that needs prefixing.
+func WithCollectionPaginationTriplePrefix[K1, K2, K3 any](prefix K1) func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
+	return func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
+		prefix := collections.TriplePrefix[K1, K2, K3](prefix)
+		o.Prefix = &prefix
+	}
 }

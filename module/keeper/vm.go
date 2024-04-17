@@ -1,8 +1,13 @@
 package keeper
 
-// VMKEeper is just a stub
-type VMKeeper struct{}
+import (
+	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+)
+
+type VMKeeper struct {
+	wasmkeeper.Keeper
+}
 
 func (k VMKeeper) GetVMType() string {
-	return "stub"
+	return "wasm"
 }

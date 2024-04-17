@@ -8,8 +8,6 @@ import "google/api/annotations.proto";
 import "indexer/block/v1/types.proto";
 
 option go_package = "github.com/initia-labs/kvindexer/submodule/block/types";
-//option (gogoproto.goproto_getters_all) = false;
-//option (gogoproto.equal_all)           = true;
 
 // Query provides defines the gRPC querier service.
 service Query {
