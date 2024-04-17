@@ -2,33 +2,31 @@ package nft
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
-	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	movetypes "github.com/initia-labs/initia/x/move/types"
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
-	"github.com/initia-labs/kvindexer/submodule/pair"
 )
 
 func processEvents(k *keeper.Keeper, ctx context.Context, events []types.EventWithAttributeMap) error {
 	var fn func(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error
 	for _, event := range events {
-		if event.Type == "wasm" {
-			switch event.AttributesMap["action"] {
-			case "mint":
-				fn = handleMintEvent
-			case "transfer_nft", "send_nft":
-				fn = handlerSendOrTransferEvent
-			case "burn":
-				fn = handleBurnEvent
-			default:
-				continue
-			}
+		switch event.AttributesMap["type_tag"] {
+		case "0x1::collection::MintEvent":
+			fn = handleMintEvent
+		case "0x1::object::TransferEvent":
+			fn = handlerTransferEvent
+		case "0x1::nft::MutationEvent", "0x1::collection::MutationEvent":
+			fn = handleMutateEvent
+		case "0x1::collection::BurnEvent":
+			fn = handleBurnEvent
+		default:
+			continue
 		}
 		if err := fn(k, ctx, event); err != nil {
 			k.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
@@ -41,140 +39,249 @@ func processEvents(k *keeper.Keeper, ctx context.Context, events []types.EventWi
 func handleMintEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Debug("minted", "event", event)
 
-	data := types.MintEvent{}
-	if err := data.Parse(event); err != nil {
-		// may be not nft mint event
-		return nil
+	data := types.NftMintAndBurnEventData{}
+	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+		return errors.New("failed to unmarshal mint event")
 	}
 
-	var collection *types.IndexedCollection
-	_, err := collectionMap.Get(ctx, data.ContractAddress)
+	collectionAddr, err := getVMAddress(k.GetAddressCodec(), data.Collection)
 	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return cosmoserr.Wrap(err, "failed to check collection existence")
-		}
-		// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
-		collection, err = getIndexedCollectionFromVMStore(k, ctx, data.ContractAddress)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to get collection contract info")
-		}
-
-		err = collectionMap.Set(ctx, data.ContractAddress, *collection)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to set collection")
-		}
+		return errors.New("failed to parse collection address")
 	}
 
-	err = applyCollectionOwnerMap(k, ctx, data.ContractAddress, data.Minter, true)
+	collection, err := getIndexedCollectionFromVMStore(k, ctx, collectionAddr)
 	if err != nil {
-		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
+		return errors.New("failed to get minted collection info")
 	}
 
-	token, err := getIndexedNftFromVMStore(k, ctx, data.ContractAddress, data.TokenId, &data.Minter)
+	tokenAddr, err := getVMAddress(k.GetAddressCodec(), data.Nft)
 	if err != nil {
-		return cosmoserr.Wrap(err, "failed to get token info")
+		return errors.New("failed to parse nft address")
+	}
+
+	creatorAddr, err := getVMAddress(k.GetAddressCodec(), collection.Collection.Creator)
+	if err != nil {
+		return errors.New("failed to parse creator address")
+	}
+
+	creatorSdkAddr := getCosmosAddress(creatorAddr)
+	collectionSdkAddr := getCosmosAddress(collectionAddr)
+	tokenSdkAddr := getCosmosAddress(tokenAddr)
+
+	token, err := getIndexedTokenFromVMStore(k, ctx, tokenAddr, &collectionAddr)
+	if err != nil {
+		return errors.New("failed to get minted nft info")
 	}
 	token.CollectionName = collection.Collection.Name
+	token.OwnerAddr = creatorSdkAddr.String()
 
-	err = tokenMap.Set(ctx, collections.Join(data.ContractAddress, data.TokenId), *token)
+	_, err = collectionMap.Get(ctx, collectionSdkAddr)
 	if err != nil {
-		return cosmoserr.Wrap(err, "failed to set token")
+		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+			return errors.New("")
+		}
+		err = collectionMap.Set(ctx, collectionSdkAddr, *collection)
+		if err != nil {
+			return errors.New("failed to insert collection into collectionMap")
+		}
 	}
 
-	err = tokenOwnerMap.Set(ctx, collections.Join3(data.Minter, data.ContractAddress, data.TokenId), true)
+	err = applyCollectionOwnerMap(k, ctx, collectionSdkAddr, creatorSdkAddr, true)
 	if err != nil {
-		k.Logger(ctx).Error("failed to insert into tokenOwnerSet", "minter", data.Minter, "collection-addr", data.ContractAddress, "token-id", token.Nft.TokenId, "error", err)
-		return cosmoserr.Wrap(err, "failed to insert into tokenOwnerSet")
+		return errors.New("failed to insert collection into collectionOwnersMap")
 	}
 
-	k.Logger(ctx).Info("nft minted", "collection", collection, "token", token)
+	err = tokenMap.Set(ctx, collections.Join(collectionSdkAddr, token.Nft.TokenId), *token)
+	if err != nil {
+		k.Logger(ctx).Error("failed to insert token into tokenMap", "collection-addr", collectionSdkAddr, "token-id", token.Nft.TokenId, "error", err, "token", token)
+		return errors.New("failed to insert token into tokenMap")
+	}
+	err = tokenOwnerMap.Set(ctx, collections.Join3(creatorSdkAddr, collectionSdkAddr, token.Nft.TokenId), true)
+	if err != nil {
+		k.Logger(ctx).Error("failed to insert into tokenOwnerSet", "owner", creatorSdkAddr, "collection-addr", collectionSdkAddr, "token-id", token.Nft.TokenId, "error", err)
+		return errors.New("failed to insert into tokenOwnerSet")
+	}
+
+	k.Logger(ctx).Info("nft minted", "collection", collection, "nft", token, "collection-sdk-addr", collectionSdkAddr, "nft-sdk-addr", tokenSdkAddr, "creator-sdk-addr", creatorSdkAddr)
 	return nil
 }
 
-func handlerSendOrTransferEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) (err error) {
-	k.Logger(ctx).Info("sent/transferred", "event", event)
-	data := types.TransferOrSendEvent{}
-	if err := data.Parse(event); err != nil {
-		// may be not nft send/transfer event
-		return nil
+func handlerTransferEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
+	k.Logger(ctx).Info("transferred", "event", event)
+
+	data := types.NftTransferEventData{}
+	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+		return errors.New("failed to unmarshal transfer event")
 	}
 
-	tpk := collections.Join[sdk.AccAddress, string](data.ContractAddress, data.TokenId)
+	objectAddr, err := getVMAddress(k.GetAddressCodec(), data.Object)
+	if err != nil {
+		return errors.New("failed to parse object address")
+	}
+	objectSdkAddr := getCosmosAddress(objectAddr)
+
+	fromAddr, err := movetypes.AccAddressFromString(k.GetAddressCodec(), data.From)
+	if err != nil {
+		return errors.New("failed to parse prev owner address")
+	}
+	fromSdkAddr := getCosmosAddress(fromAddr)
+
+	toAddr, err := getVMAddress(k.GetAddressCodec(), data.To)
+	if err != nil {
+		return errors.New("failed to parse new owner address")
+	}
+	toSdkAddr := getCosmosAddress(toAddr)
+
+	tpk, err := tokenMap.Indexes.TokenAddress.MatchExact(ctx, objectSdkAddr)
+	if err != nil {
+		return errors.New("token's object address not found")
+	}
 
 	token, err := tokenMap.Get(ctx, tpk)
 	if err != nil {
-		k.Logger(ctx).Debug("failed to get nft from prev owner and object addres", "collection-addr", data.ContractAddress, "token-id", data.TokenId, "prevOwner", data.Sender, "error", err)
-		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")
+		// NOT all transferEvent means the nft is transferred. it's all object transfer event. so it's okay to ignore NotFound error
+		if cosmoserr.IsOf(err, collections.ErrNotFound) {
+			k.Logger(ctx).Debug("nft not found, maybe not NFT related object transfer", "object", objectSdkAddr.String(), "prevOwner", fromSdkAddr.String())
+			return nil
+		}
+		k.Logger(ctx).Info("failed to get nft from prev owner and object addres", "err", err, "object", objectSdkAddr.String(), "prev", fromSdkAddr.String())
+
+		return err
 	}
-	token.OwnerAddr = data.Recipient.String()
+	token.OwnerAddr = toSdkAddr.String()
 
 	if err = tokenMap.Set(ctx, tpk, token); err != nil {
 		return errors.New("failed to delete nft from sender's collection")
 	}
 
-	err = applyCollectionOwnerMap(k, ctx, tpk.K1(), data.Sender, false)
+	err = applyCollectionOwnerMap(k, ctx, tpk.K1(), fromSdkAddr, false)
 	if err != nil {
 		return errors.New("failed to decrease collection count from prev owner")
 
 	}
-	err = applyCollectionOwnerMap(k, ctx, tpk.K1(), data.Recipient, true)
+	err = applyCollectionOwnerMap(k, ctx, tpk.K1(), toSdkAddr, true)
 	if err != nil {
 		return errors.New("failed to increase collection count from new owner")
 	}
 
-	err = tokenOwnerMap.Remove(ctx, collections.Join3(data.Sender, tpk.K1(), tpk.K2()))
+	err = tokenOwnerMap.Remove(ctx, collections.Join3(fromSdkAddr, tpk.K1(), tpk.K2()))
 	if err != nil {
-		k.Logger(ctx).Error("failed to remove from tokenOwnerSet", "to", data.Recipient, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
+		k.Logger(ctx).Error("failed to remove from tokenOwnerSet", "to", toSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
 		return errors.New("failed to insert token into tokenOwnerSet")
 	}
-	err = tokenOwnerMap.Set(ctx, collections.Join3(data.Recipient, tpk.K1(), tpk.K2()), true)
+	err = tokenOwnerMap.Set(ctx, collections.Join3(toSdkAddr, tpk.K1(), tpk.K2()), true)
 	if err != nil {
-		k.Logger(ctx).Error("failed to insert into tokenOwnerSet", "to", data.Recipient, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
+		k.Logger(ctx).Error("failed to insert into tokenOwnerSet", "to", toSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
 		return errors.New("failed to insert token into tokenOwnerSet")
 	}
 
-	k.Logger(ctx).Info("nft sent/transferred", "objectKey", tpk, "token", token, "prevOwner", data.Sender, "newOwner", data.Recipient)
+	k.Logger(ctx).Info("nft transferred", "objectKey", tpk, "token", token, "prevOwner", data.From, "newOwner", data.To)
+	return nil
+}
+
+func handleMutateEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
+	k.Logger(ctx).Info("mutated", "event", event)
+	cdc := k.GetAddressCodec()
+
+	data := types.MutationEventData{}
+	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+		return errors.New("failed to unmarshal mutation event")
+	}
+
+	switch {
+	case data.Nft != "":
+		objectAddr, err := getVMAddress(cdc, data.Nft)
+		if err != nil {
+			return errors.New("failed to parse object address")
+		}
+		objectSdkAddr := getCosmosAddress(objectAddr)
+
+		nft, err := getIndexedTokenFromVMStore(k, ctx, objectAddr, nil)
+		if err != nil {
+			return errors.New("failed to get minted nft info")
+		}
+		k.Logger(ctx).Debug("mutated", "nft", nft)
+
+		// remove the nft from the sender's collection
+		tpk, err := tokenMap.Indexes.TokenAddress.MatchExact(ctx, objectSdkAddr)
+		//objectKey, err := nftByOwner.TokenAddress.MatchExact(ctx, objectSdkAddr)
+		if err != nil {
+			return errors.New("object key not found")
+		}
+		nft.CollectionAddr = tpk.K1().String()
+
+		if err = tokenMap.Set(ctx, tpk, *nft); err != nil {
+			return errors.New("failed to update mutated nft")
+		}
+	case data.Collection != "":
+		collectionAddr, err := getVMAddress(cdc, data.Collection)
+		if err != nil {
+			return errors.New("failed to parse object address")
+		}
+
+		collection, err := getIndexedCollectionFromVMStore(k, ctx, collectionAddr)
+		if err != nil {
+			return errors.New("failed to get mutated collection info")
+		}
+
+		err = collectionMap.Set(ctx, getCosmosAddress(collectionAddr), *collection)
+		if err != nil {
+			return errors.New("failed to update mutated collection")
+		}
+	}
+
+	k.Logger(ctx).Info("nft mutated", "nft", data.Nft, "collection", data.Collection)
+
 	return nil
 }
 
 func handleBurnEvent(k *keeper.Keeper, ctx context.Context, event types.EventWithAttributeMap) error {
 	k.Logger(ctx).Info("burnt", "event", event)
 	cdc := k.GetAddressCodec()
-
-	data := types.BurnEvent{}
-	if err := data.Parse(event); err != nil {
-		// may be not nft burn event
-		return nil
+	burnt := types.NftMintAndBurnEventData{}
+	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &burnt); err != nil {
+		return errors.New("failed to unmarshal burnt event")
 	}
 
+	objectAddr, err := getVMAddress(cdc, burnt.Nft)
+	if err != nil {
+		return errors.New("failed to parse object address")
+	}
+	objectSdkAddr := getCosmosAddress(objectAddr)
+
 	// remove from tokensOwnersMap
-	tpk := collections.Join[sdk.AccAddress, string](data.ContractAddress, data.TokenId)
+	tpk, err := tokenMap.Indexes.TokenAddress.MatchExact(ctx, objectSdkAddr)
+	if err != nil {
+		return errors.New("token's object address not found")
+	}
 	token, err := tokenMap.Get(ctx, tpk)
 	if err != nil {
-		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")
+		return errors.New("failed to get nft from tokenMap")
 	}
 
 	err = tokenMap.Remove(ctx, tpk)
 	if err != nil {
-		return cosmoserr.Wrap(err, "failed to delete nft from tokenMap")
+		return errors.New("failed to delete nft from tokenMap")
 	}
+
+	collectionAddr, _ := getVMAddress(cdc, token.CollectionAddr)
+	collectionSdkAddr := getCosmosAddress(collectionAddr)
 
 	ownerAddr, _ := getVMAddress(cdc, token.OwnerAddr)
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
 
-	err = tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
-	if err != nil {
-		k.Logger(ctx).Error("failed to remove from tokenOwnerSet", "owner", ownerSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
-		return cosmoserr.Wrap(err, "failed to insert token into tokenOwnerSet")
-	}
-
-	err = applyCollectionOwnerMap(k, ctx, data.ContractAddress, ownerSdkAddr, false)
+	err = applyCollectionOwnerMap(k, ctx, collectionSdkAddr, ownerSdkAddr, false)
 	if err != nil {
 		return err // just return err, no wrap
 	}
 
-	k.Logger(ctx).Info("nft burnt", "event", data)
+	err = tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
+	if err != nil {
+		k.Logger(ctx).Error("failed to remove from tokenOwnerSet", "owner", ownerSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
+		return errors.New("failed to insert token into tokenOwnerSet")
+	}
 
+	k.Logger(ctx).Info("nft burnt", "event", burnt)
 	return nil
 }
 
@@ -182,7 +289,7 @@ func applyCollectionOwnerMap(_ *keeper.Keeper, ctx context.Context, collectionAd
 	count, err := collectionOwnerMap.Get(ctx, collections.Join(ownerAddr, collectionAddr))
 	if err != nil {
 		if !isIncrease || (isIncrease && !cosmoserr.IsOf(err, collections.ErrNotFound)) {
-			return cosmoserr.Wrap(err, "failed to get collection count from collectionOwnersMap")
+			return errors.New("failed to get collection count from collectionOwnersMap")
 		}
 	}
 	if isIncrease {
@@ -197,47 +304,7 @@ func applyCollectionOwnerMap(_ *keeper.Keeper, ctx context.Context, collectionAd
 		err = collectionOwnerMap.Set(ctx, collections.Join(ownerAddr, collectionAddr), count)
 	}
 	if err != nil {
-		return cosmoserr.Wrap(err, "failed to update collection count in collectionOwnersMap")
-	}
-	return nil
-}
-
-func handleWriteAcknowledgementEvent(k *keeper.Keeper, ctx context.Context, attrs []abci.EventAttribute) (err error) {
-	k.Logger(ctx).Debug("write-ack", "attrs", attrs)
-	for _, attr := range attrs {
-		if attr.Key != "packet_data" {
-			continue
-		}
-
-		data := types.WriteAckForNftEvent{}
-		if err = json.Unmarshal([]byte(attr.Value), &data); err != nil {
-			// may be not target
-			return nil
-		}
-
-		cdb, err := base64.StdEncoding.DecodeString(data.ClassData)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to decode class data")
-		}
-		classData := types.NftClassData{}
-		if err = json.Unmarshal(cdb, &classData); err != nil {
-			return cosmoserr.Wrap(err, "failed to unmarshal class data")
-		}
-
-		_, err = pair.GetPair(ctx, false, data.ClassId)
-		if err == nil {
-			return nil // already exists
-		}
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return cosmoserr.Wrap(err, "failed to check class existence")
-		}
-
-		err = pair.SetPair(ctx, false, false, data.ClassId, classData.Description.Value)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to set class")
-		}
-
-		k.Logger(ctx).Info("nft class added", "classId", data.ClassId, "description", classData.Description.Value)
+		return errors.New("failed to update collection count in collectionOwnersMap")
 	}
 	return nil
 }

@@ -17,7 +17,7 @@ import (
 
 	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
 	"github.com/initia-labs/kvindexer/module/keeper"
-	"github.com/initia-labs/kvindexer/submodule/nft/types"
+	"github.com/initia-labs/kvindexer/submodule/pair/types"
 )
 
 const (

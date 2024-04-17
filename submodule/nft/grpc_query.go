@@ -4,9 +4,6 @@ import (
 	"context"
 	"slices"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -14,6 +11,8 @@ import (
 	"github.com/initia-labs/kvindexer/module/keeper"
 	"github.com/initia-labs/kvindexer/submodule/nft/types"
 	"github.com/initia-labs/kvindexer/submodule/pair"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var _ types.QueryServer = (*Querier)(nil)
@@ -124,7 +123,6 @@ func getCollectionNameFromPairSubmodule(ctx context.Context, collName string) (s
 }
 
 func getTokensByCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByCollectionRequest) (*types.QueryTokensResponse, error) {
-
 	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -224,7 +222,6 @@ func getTokensByAccountAndCollection(_ *keeper.Keeper, ctx context.Context, req 
 				v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 				return &v, nil
 			}
-			v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 			return nil, nil
 		},
 	)
@@ -255,7 +252,6 @@ func getTokensByAccountCollectionAndTokenId(k *keeper.Keeper, ctx context.Contex
 			Tokens: []*types.IndexedToken{},
 		}, nil
 	}
-	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 
 	token.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 	return &types.QueryTokensResponse{

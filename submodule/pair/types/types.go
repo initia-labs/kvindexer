@@ -1,5 +1,9 @@
 package types
 
+import (
+	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
 type CollectedTokenPair struct {
 	L1   string `json:"l1_denom"`
 	L2   string `json:"l2_denom"`
@@ -35,4 +39,21 @@ type MetadataResource struct {
 type MoveResource struct {
 	Type string                 `json:"type"`
 	Data map[string]interface{} `json:"data"`
+}
+
+type NftClassData struct {
+	Description struct {
+		Value string `json:"value"`
+	} `json:"initia:description"`
+}
+
+type WriteAckForNftEvent struct {
+	ClassData string         `json:"classData"`
+	ClassId   string         `json:"classId"`
+	ClassUri  string         `json:"classUri"`
+	Receiver  sdk.AccAddress `json:"receiver"`
+	Sender    sdk.AccAddress `json:"sender"`
+	//TokenData []string       `json:"tokenData"`
+	//TokenIds  []string       `json:"tokenIds"`
+	//TokenUris []string       `json:"tokenUris"`
 }
