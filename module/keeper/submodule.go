@@ -17,6 +17,8 @@ type Submodule struct {
 	Name string
 	// Version is the version of the submodule
 	Version string
+	//	RequiredKeys are the keys that are required to be present in changeSet
+	RequiredKeys map[string]*storetypes.StoreKey
 	// Prepare is a function that will be called when the submodule is prepared
 	Prepare Preparer
 	// Initializer is a function that will be called when the submodule is started

@@ -70,6 +70,11 @@ func (k *Keeper) RegisterSubmodules(submodules ...Submodule) error {
 			}
 		}
 		k.submodules[submodule.Name] = submodule
+		if submodule.RequiredKeys != nil {
+			for name, key := range submodule.RequiredKeys {
+				k.requiredKeys[name] = key
+			}
+		}
 	}
 
 	return nil
@@ -83,7 +88,7 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 		}
 
 		if err = (fn)(k, ctx, req, res); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to handle finalize block event for submodule %s", name))
+			k.Logger(ctx).Warn("failed to handle finalize block event", "submodule", name)
 		}
 	}
 	return nil
@@ -96,8 +101,10 @@ func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, chan
 			continue
 		}
 		if err := (fn)(k, ctx, res, changeSet); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to handle commit event for submodule %s", name))
+			k.Logger(ctx).Warn("failed to handle commit event", "submodule", name)
 		}
 	}
+
+	k.store.Write()
 	return nil
 }
