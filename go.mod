@@ -18,6 +18,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/initia v0.2.4
+	github.com/initia-labs/movevm v0.2.5
 	github.com/pkg/errors v0.9.1
 	github.com/skip-mev/slinky v0.2.2
 	github.com/spf13/cast v1.6.0
@@ -35,7 +36,6 @@ require (
 	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/initia-labs/movevm v0.2.5 // indirect
 	github.com/manifoldco/promptui v0.9.0 // indirect
 )
 
