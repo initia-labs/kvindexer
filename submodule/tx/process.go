@@ -25,12 +25,14 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 	for idx, txBytes := range req.Txs {
 		tx, err := parseTx(k, txBytes)
 		if err != nil {
-			return err
+			k.Logger(ctx).Info("failed to parse tx", "error", err, "index", idx)
+			continue
 		}
 
 		any, err := codectypes.NewAnyWithValue(tx)
 		if err != nil {
-			return err
+			k.Logger(ctx).Info("failed to unpack any", "error", err, "index", idx)
+			continue
 		}
 
 		txHash := tmhash.Sum(txBytes)
@@ -45,13 +47,15 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 		txr := sdk.NewResponseResultTx(&resultTx, any, req.Time.UTC().Format(time.RFC3339))
 
 		if err := txMap.Set(ctx, txHashStr, *txr); err != nil {
-			return err
+			k.Logger(ctx).Info("failed to store tx", "error", err, "index", idx)
+			continue
 		}
 
 		// get addresses from the tx
 		addrs, err := grepAddressesFromTx(txr)
 		if err != nil {
-			return err
+			k.Logger(ctx).Info("failed to grep addresses from tx", "error", err, "index", idx)
+			continue
 		}
 
 		for _, addr := range addrs {
@@ -62,12 +66,12 @@ func processTxs(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeB
 
 	// store tx/account pair into txAccMap
 	for addr, txHashes := range accTxMap {
-		err := storeAccTxs(ctx, addr, txHashes)
+		err := storeAccTxs(k, ctx, addr, txHashes)
 		if err != nil {
-			return err
+			k.Logger(ctx).Info("failed to store tx/account pair", "error", err, "address", addr)
 		}
 	}
-	return storeIndices(ctx, req.Height, txHashes)
+	return storeIndices(k, ctx, req.Height, txHashes)
 }
 
 func uniqueAppend(slice []string, elem string) []string {
@@ -107,7 +111,7 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 	return grepped, nil
 }
 
-func storeAccTxs(ctx context.Context, addr string, txHashes []string) error {
+func storeAccTxs(k *keeper.Keeper, ctx context.Context, addr string, txHashes []string) error {
 	if len(txHashes) == 0 {
 		return nil
 	}
@@ -121,23 +125,27 @@ func storeAccTxs(ctx context.Context, addr string, txHashes []string) error {
 	for i, txHash := range txHashes {
 		err = txhashesByAccountMap.Set(ctx, collections.Join(acc, seq+uint64(i)), txHash)
 		if err != nil {
-			return err
+			k.Logger(ctx).Info("failed to store tx/account pair", "error", err, "address", addr, "txhash", txHash)
+			continue
 		}
 
 	}
-	if err := accountSequenceMap.Set(ctx, acc, seq+uint64(len(txHashes)+1)); err != nil {
+	delta := seq + uint64(len(txHashes)+1)
+	if err = accountSequenceMap.Set(ctx, acc, delta); err != nil {
+		k.Logger(ctx).Info("failed to store account sequence", "error", err, "address", addr, "delta", delta)
 		return err
 	}
 
-	return nil
+	return err
 }
 
-func storeIndices(ctx context.Context, height int64, txHashes []string) error {
+func storeIndices(k *keeper.Keeper, ctx context.Context, height int64, txHashes []string) error {
 
 	for i, txHash := range txHashes {
 		err := txhashesByHeight.Set(ctx, collections.Join(height, uint64(i)), txHash)
 		if err != nil {
-			return err
+			k.Logger(ctx).Info("failed to store tx/height pair", "error", err, "height", height, "txhash", txHash)
+			continue
 		}
 
 		seq, err := sequence.Next(ctx)
