@@ -71,6 +71,12 @@ func (k *Keeper) RegisterSubmodules(submodules ...Submodule) error {
 }
 
 func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) (err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			k.Logger(ctx).Error("panic in HandleFinalizeBlock", "err", err)
+		}
+	}()
+
 	for name, svc := range k.submodules {
 		fn := svc.HandleFinalizeBlock
 		if fn == nil {
@@ -86,6 +92,12 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 }
 
 func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) (err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			k.Logger(ctx).Error("panic in HandleCommit", "err", err)
+		}
+	}()
+
 	for name, svc := range k.submodules {
 		fn := svc.HandleCommit
 		if fn == nil {
