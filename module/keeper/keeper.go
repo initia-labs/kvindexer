@@ -12,7 +12,6 @@ import (
 	corestoretypes "cosmossdk.io/core/store"
 	"cosmossdk.io/log"
 	"cosmossdk.io/store/dbadapter"
-	storetypes "cosmossdk.io/store/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -61,10 +60,12 @@ type Keeper struct {
 	db     dbm.DB
 	sealed bool
 
-	chainId      string
-	crontab      *Crontab
-	submodules   map[string]Submodule
-	requiredKeys map[string]*storetypes.StoreKey
+	submodules map[string]Submodule
+}
+
+// Close closes indexer goleveldb
+func (k Keeper) Close() error {
+	return k.db.Close()
 }
 
 // NewKeeper creates a new indexer Keeper instance
@@ -74,12 +75,12 @@ func NewKeeper(
 	accountKeeper *authkeeper.AccountKeeper,
 	bankKeeper types.BankKeeper,
 	oracleKeeper types.OracleKeeper,
-	distrKeeper types.DistributionKeeper,          // can be nil, if staking not used
-	stakingKeeper types.StakingKeeper,             // can be nil, if staking not used
-	rewardKeeper types.RewardKeeper,               // can be nil, if staking not used
+	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
+	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
+	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
 	communityPoolKeeper types.CommunityPoolKeeper, // can be nil, if staking not used
 	vmKeeper VMKeeper,
-	IbcKeeper *ibckeeper.Keeper,         // can be nil, if ibc not used
+	IbcKeeper *ibckeeper.Keeper, // can be nil, if ibc not used
 	TransferKeeper types.TransferKeeper, // can be nil, if transfer not used
 	NftTransferKeeper types.NftTransferKeeper,
 	OPChildKeeper types.OPChildKeeper,
@@ -87,7 +88,6 @@ func NewKeeper(
 	homeDir string,
 	config *config.IndexerConfig,
 	ac, vc address.Codec,
-	chainId string,
 ) *Keeper {
 
 	k := &Keeper{
@@ -110,12 +110,9 @@ func NewKeeper(
 		schema:              nil,
 		ac:                  ac,
 		vc:                  vc,
-		chainId:             chainId,
 		sealed:              false,
-		requiredKeys:        make(map[string]*storetypes.StoreKey),
 	}
 
-	k.crontab = NewCrontab(config, k)
 	k.submodules = make(map[string]Submodule)
 
 	sb := collections.NewSchemaBuilderFromAccessor(
@@ -173,14 +170,6 @@ func (k Keeper) GetCodec() codec.Codec {
 	return k.cdc
 }
 
-func (k Keeper) GetChainId() string {
-	return k.chainId
-}
-
-func (k Keeper) GetCrontab() *Crontab {
-	return k.crontab
-}
-
 func (k Keeper) GetSubmodules() map[string]Submodule {
 	return k.submodules
 }
@@ -195,12 +184,4 @@ func (k Keeper) GetValidatorAddressCodec() address.Codec {
 
 func (k Keeper) GetSchemaBilder() *collections.SchemaBuilder {
 	return k.schemaBuilder
-}
-
-func (k Keeper) GetL1ChainId() string {
-	return k.config.L1ChainId
-}
-
-func (k *Keeper) GetRequiredKeys() map[string]*storetypes.StoreKey {
-	return k.requiredKeys
 }

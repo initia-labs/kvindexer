@@ -2,22 +2,12 @@ package nft
 
 import (
 	"context"
-	"time"
 
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/initia-labs/kvindexer/module/keeper"
 )
-
-//nolint:unused
-var height int64
-
-//nolint:unused
-var timestamp time.Time
-
-var fbreq abci.RequestFinalizeBlock
-var fbres abci.ResponseFinalizeBlock
 
 func preparer(k *keeper.Keeper, ctx context.Context) (err error) {
 	return addStorages(k, ctx)
@@ -31,23 +21,19 @@ func initializer(k *keeper.Keeper, ctx context.Context) (err error) {
 func finalizeBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	k.Logger(ctx).Debug("finalizeBlock", "submodule", submoduleName, "txs", len(req.Txs), "height", req.Height)
 
-	// set these everytime: it'll be used in commit()
-	// is okay to set height here because finalizeBlock is called before commit
-	height = req.Height
-	timestamp = req.Time
-	fbreq = req
-	fbres = res
-
-	return nil
-}
-func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
-	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
-	for _, txResult := range fbres.TxResults {
+	for _, txResult := range res.TxResults {
 		events := filterAndParseEvent(eventType, txResult.Events)
 		err := processEvents(k, ctx, events)
 		if err != nil {
 			k.Logger(ctx).Warn("processEvents", "error", err)
 		}
 	}
+
+	return nil
+}
+
+func commit(k *keeper.Keeper, ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
+	k.Logger(ctx).Debug("commit", "submodule", submoduleName)
+
 	return nil
 }

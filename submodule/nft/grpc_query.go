@@ -73,6 +73,9 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *types.QueryColle
 		},
 		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, sdk.AccAddress](accountSdkAddr),
 	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
 
 	collections := []*types.IndexedCollection{}
 	for _, collectionSdkAddr := range collectionSdkAddrs {
@@ -188,6 +191,10 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 		},
 		WithCollectionPaginationTriplePrefix[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr),
 	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+
 	res := []*types.IndexedToken{}
 	for _, identifier := range identifiers {
 		token, err := tokenMap.Get(ctx, identifier)

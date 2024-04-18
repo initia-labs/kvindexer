@@ -27,11 +27,6 @@ func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
 }
 
 func (k *Keeper) Start(ctxMap map[string]context.Context) (err error) {
-	if err = k.crontab.Initialize(); err != nil {
-		return errors.Wrap(err, "failed to initialize crontab")
-	}
-	k.crontab.Start()
-
 	for name, svc := range k.submodules {
 		if svc.Initialize != nil {
 			if err = (svc.Initialize)(k, ctxMap[name]); err != nil {
@@ -70,11 +65,6 @@ func (k *Keeper) RegisterSubmodules(submodules ...Submodule) error {
 			}
 		}
 		k.submodules[submodule.Name] = submodule
-		if submodule.RequiredKeys != nil {
-			for name, key := range submodule.RequiredKeys {
-				k.requiredKeys[name] = key
-			}
-		}
 	}
 
 	return nil
@@ -86,6 +76,7 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 			k.Logger(ctx).Error("panic in HandleFinalizeBlock", "err", err)
 		}
 	}()
+
 	for name, svc := range k.submodules {
 		fn := svc.HandleFinalizeBlock
 		if fn == nil {
@@ -96,6 +87,7 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 			k.Logger(ctx).Warn("failed to handle finalize block event", "submodule", name)
 		}
 	}
+
 	return nil
 }
 
@@ -105,6 +97,7 @@ func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, chan
 			k.Logger(ctx).Error("panic in HandleCommit", "err", err)
 		}
 	}()
+
 	for name, svc := range k.submodules {
 		fn := svc.HandleCommit
 		if fn == nil {
@@ -116,5 +109,6 @@ func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, chan
 	}
 
 	k.store.Write()
+
 	return nil
 }
