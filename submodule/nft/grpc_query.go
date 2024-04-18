@@ -204,7 +204,7 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 	}, nil
 }
 
-func getTokensByAccountAndCollection(_ *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
+func getTokensByAccountAndCollection(k *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
 	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
