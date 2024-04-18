@@ -8,17 +8,17 @@ import (
 // filter out events that are not related to move and have attribute named type_tag and data
 //
 //nolint:unused
-func filterEvents(eventType string, events []abci.Event) (filtered []abci.Event) {
+// func filterEvents(eventType string, events []abci.Event) (filtered []abci.Event) {
 
-	for _, event := range events {
-		if event.Type != eventType {
-			continue
-		}
-		filtered = append(filtered, event)
-	}
+// 	for _, event := range events {
+// 		if event.Type != eventType {
+// 			continue
+// 		}
+// 		filtered = append(filtered, event)
+// 	}
 
-	return
-}
+// 	return
+// }
 
 func parseEvent(event abci.Event) types.EventWithAttributeMap {
 	eventWithMap := types.EventWithAttributeMap{Event: &event, AttributesMap: make(map[string]string)}
