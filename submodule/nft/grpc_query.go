@@ -205,20 +205,22 @@ func getTokensByAccount(k *keeper.Keeper, ctx context.Context, req *types.QueryT
 }
 
 func getTokensByAccountAndCollection(_ *keeper.Keeper, ctx context.Context, req *types.QueryTokensByAccountRequest) (*types.QueryTokensResponse, error) {
-	collAddr, err := sdk.AccAddressFromBech32(req.CollectionAddr)
+	collAddr, err := getVMAddress(k.GetAddressCodec(), req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
+	colSdkAddr := getCosmosAddress(collAddr)
 
-	ownerAddr, err := sdk.AccAddressFromBech32(req.Account)
+	ownerAddr, err := getVMAddress(k.GetAddressCodec(), req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	ownerAddrStr := ownerAddr.String()
+	ownerSdkAddr := getCosmosAddress(ownerAddr)
+	ownerAddrStr := ownerSdkAddr.String()
 
 	res, pageRes, err := query.CollectionPaginate(ctx, tokenMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, string], v types.IndexedToken) (*types.IndexedToken, error) {
-			if slices.Equal(k.K1(), collAddr) && (v.OwnerAddr == ownerAddrStr) {
+			if slices.Equal(k.K1(), colSdkAddr) && (v.OwnerAddr == ownerAddrStr) {
 				v.CollectionName, _ = getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 				return &v, nil
 			}
