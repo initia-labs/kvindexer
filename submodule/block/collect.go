@@ -14,7 +14,7 @@ import (
 func collectBlock(k *keeper.Keeper, ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	var block types.Block
 
-	block.ChainId = k.GetChainId()
+	block.ChainId = sdk.UnwrapSDKContext(ctx).ChainID()
 	block.Height = req.Height
 	block.Hash = fmt.Sprintf("%X", req.Hash)
 	block.Timestamp = req.Time

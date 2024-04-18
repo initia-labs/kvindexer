@@ -3,14 +3,13 @@ package keeper
 import (
 	"errors"
 
-	"cosmossdk.io/collections"
 	col "cosmossdk.io/collections"
 	ccdc "cosmossdk.io/collections/codec"
 )
 
 // NewPrefix returns a new prefix
-func NewPrefix[T interface{ int | string | []byte }](submodule string, identifier T) collections.Prefix {
-	return append([]byte(submodule), []byte(collections.NewPrefix(identifier))...)
+func NewPrefix[T interface{ int | string | []byte }](submodule string, identifier T) col.Prefix {
+	return append([]byte(submodule), []byte(col.NewPrefix(identifier))...)
 }
 
 // AddMap adds a map collection to the keeper

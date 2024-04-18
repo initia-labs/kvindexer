@@ -122,7 +122,7 @@ func collectIBCFungibleTokens(k *keeper.Keeper, ctx context.Context) error {
 			k.Logger(ctx).Warn("channel id is nil")
 			continue
 		}
-		if counterpartyChainId != k.GetL1ChainId() {
+		if counterpartyChainId != sdk.UnwrapSDKContext(ctx).ChainID() {
 			continue
 		}
 		ibcChannels = append(ibcChannels, channel.ChannelId)
