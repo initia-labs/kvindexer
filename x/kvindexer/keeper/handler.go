@@ -7,7 +7,7 @@ import (
 
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/initia-labs/kvindexer/x/types"
+	"github.com/initia-labs/kvindexer/x/kvindexer/types"
 	"github.com/pkg/errors"
 )
 

@@ -17,7 +17,7 @@ import (
 
 	"github.com/initia-labs/kvindexer/collection"
 	"github.com/initia-labs/kvindexer/submodules/pair/types"
-	kvindexer "github.com/initia-labs/kvindexer/x/types"
+	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
 var _ kvindexer.Submodule = PairSubmodule{}

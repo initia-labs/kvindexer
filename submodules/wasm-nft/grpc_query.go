@@ -1,4 +1,4 @@
-package move_nft
+package wasm_nft
 
 import (
 	"context"
@@ -18,10 +18,10 @@ import (
 var _ nfttypes.QueryServer = (*Querier)(nil)
 
 type Querier struct {
-	MoveNftSubmodule
+	WasmNFTSubmodule
 }
 
-func NewQuerier(mn MoveNftSubmodule) nfttypes.QueryServer {
+func NewQuerier(mn WasmNFTSubmodule) nfttypes.QueryServer {
 	return Querier{mn}
 }
 
@@ -116,7 +116,7 @@ func (q Querier) TokensByAccount(ctx context.Context, req *nfttypes.QueryTokensB
 	return q.getTokensByAccountCollectionAndTokenId(ctx, req)
 }
 
-func (sm MoveNftSubmodule) getCollectionNameFromPairSubmodule(ctx context.Context, collName string) (string, error) {
+func (sm WasmNFTSubmodule) getCollectionNameFromPairSubmodule(ctx context.Context, collName string) (string, error) {
 	name, err := sm.pairSubmodule.GetPair(ctx, false, collName)
 	if err != nil {
 		return collName, err
@@ -125,7 +125,7 @@ func (sm MoveNftSubmodule) getCollectionNameFromPairSubmodule(ctx context.Contex
 	return name, nil
 }
 
-func (sm MoveNftSubmodule) getTokensByCollection(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
+func (sm WasmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
 	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -155,7 +155,7 @@ func (sm MoveNftSubmodule) getTokensByCollection(ctx context.Context, req *nftty
 
 }
 
-func (sm MoveNftSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
+func (sm WasmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
 	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -173,7 +173,7 @@ func (sm MoveNftSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, 
 	}, nil
 }
 
-func (sm MoveNftSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
+func (sm WasmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
 	ownerAddr, err := getVMAddress(sm.ac, req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -211,7 +211,7 @@ func (sm MoveNftSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes
 	}, nil
 }
 
-func (sm MoveNftSubmodule) getTokensByAccountAndCollection(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
+func (sm WasmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
 	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -245,7 +245,7 @@ func (sm MoveNftSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	}, nil
 }
 
-func (sm MoveNftSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
+func (sm WasmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
 	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())

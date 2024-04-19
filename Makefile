@@ -122,15 +122,6 @@ proto-gen:
 	@echo "Generating Protobuf files"
 	@$(protoImage) sh ./scripts/protocgen.sh
 
-proto-swagger-gen:
-	@echo "Generating Swagger files"
-	@$(protoImage) sh ./scripts/protoc-swagger-gen.sh
-	$(MAKE) update-swagger-docs
-
-proto-pulsar-gen:
-	@echo "Generating Dep-Inj Protobuf files"
-	@$(protoImage) sh ./scripts/protocgen-pulsar.sh
-
 proto-format:
 	@$(protoImage) find ./ -name "*.proto" -exec clang-format -i {} \;
 
@@ -140,7 +131,7 @@ proto-lint:
 proto-check-breaking:
 	@$(protoImage) buf breaking --against $(HTTPS_GIT)#branch=main
 
-.PHONY: proto-all proto-gen proto-swagger-gen proto-pulsar-gen proto-format proto-lint proto-check-breaking
+.PHONY: proto-all proto-gen proto-format proto-lint proto-check-breaking
 
 ########################################
 ### Tools & dependencies

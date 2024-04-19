@@ -6,9 +6,13 @@ import (
 
 	"cosmossdk.io/core/address"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
 	movetypes "github.com/initia-labs/initia/x/move/types"
-	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
 	vmtypes "github.com/initia-labs/movevm/types"
+
+	nfttypes "github.com/initia-labs/kvindexer/internal/nft/types"
+	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -38,12 +42,12 @@ func (sm MoveNftSubmodule) getCollectionFromVMStore(ctx context.Context, colAddr
 	return &resource, nil
 }
 
-func (sm MoveNftSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, colAddr vmtypes.AccountAddress) (*types.IndexedCollection, error) {
+func (sm MoveNftSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, colAddr vmtypes.AccountAddress) (*nfttypes.IndexedCollection, error) {
 	resource, err := sm.getCollectionFromVMStore(ctx, colAddr)
 	if err != nil {
 		return nil, err
 	}
-	indexed := types.IndexedCollection{
+	indexed := nfttypes.IndexedCollection{
 		Collection: &resource.Collection,
 		ObjectAddr: colAddr.String(),
 	}
@@ -62,12 +66,12 @@ func (sm MoveNftSubmodule) getNftResourceFromVMStore(ctx context.Context, nftAdd
 	return &resource, nil
 }
 
-func (sm MoveNftSubmodule) getIndexedTokenFromVMStore(ctx context.Context, nftAddr vmtypes.AccountAddress, collectionAddr *vmtypes.AccountAddress) (*types.IndexedToken, error) {
+func (sm MoveNftSubmodule) getIndexedTokenFromVMStore(ctx context.Context, nftAddr vmtypes.AccountAddress, collectionAddr *vmtypes.AccountAddress) (*nfttypes.IndexedToken, error) {
 	resource, err := sm.getNftResourceFromVMStore(ctx, nftAddr)
 	if err != nil {
 		return nil, err
 	}
-	indexed := types.IndexedToken{
+	indexed := nfttypes.IndexedToken{
 		ObjectAddr: nftAddr.String(),
 		Nft:        &resource.Nft,
 	}

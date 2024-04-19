@@ -3,7 +3,7 @@ package keeper
 import (
 	"context"
 
-	"github.com/initia-labs/kvindexer/x/types"
+	"github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
 var _ types.QueryServer = (*Querier)(nil)

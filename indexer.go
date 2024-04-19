@@ -16,7 +16,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/initia-labs/kvindexer/config"
-	"github.com/initia-labs/kvindexer/x/keeper"
+	"github.com/initia-labs/kvindexer/x/kvindexer/keeper"
 )
 
 var _ storetypes.ABCIListener = Indexer{}

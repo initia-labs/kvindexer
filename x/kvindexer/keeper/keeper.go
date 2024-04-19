@@ -16,7 +16,7 @@ import (
 
 	"github.com/initia-labs/kvindexer/config"
 	"github.com/initia-labs/kvindexer/store"
-	"github.com/initia-labs/kvindexer/x/types"
+	"github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
 const StoreName = "indexer"

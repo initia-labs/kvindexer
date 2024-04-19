@@ -6,7 +6,7 @@ import "google/api/annotations.proto";
 import "indexer/info/types.proto";
 
 
-option go_package = "github.com/initia-labs/kvindexer/x/types";
+option go_package = "github.com/initia-labs/kvindexer/x/kvindexer/types";
 
 // Query provides the service definition for the Token Version
 service Query {

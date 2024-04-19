@@ -17,7 +17,7 @@ import (
 
 	"github.com/initia-labs/kvindexer/collection"
 	"github.com/initia-labs/kvindexer/submodules/block/types"
-	kvindexer "github.com/initia-labs/kvindexer/x/types"
+	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
 var _ kvindexer.Submodule = BlockSubmodule{}
