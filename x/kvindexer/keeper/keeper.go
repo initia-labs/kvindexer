@@ -145,7 +145,3 @@ func (k Keeper) GetAddressCodec() address.Codec {
 func (k Keeper) GetValidatorAddressCodec() address.Codec {
 	return k.vc
 }
-
-func (k Keeper) GetSchemaBilder() *collections.SchemaBuilder {
-	return k.schemaBuilder
-}
