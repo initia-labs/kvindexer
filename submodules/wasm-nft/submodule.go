@@ -17,7 +17,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/initia-labs/kvindexer/collection"
-	nfttypes "github.com/initia-labs/kvindexer/internal/nft/types"
+	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
 	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
 )

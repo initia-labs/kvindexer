@@ -2,7 +2,7 @@ package types
 
 import (
 	abci "github.com/cometbft/cometbft/abci/types"
-	nfttypes "github.com/initia-labs/kvindexer/internal/nft/types"
+	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 )
 
 type EventWithAttributeMap struct {

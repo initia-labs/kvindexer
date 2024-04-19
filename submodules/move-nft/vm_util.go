@@ -10,7 +10,7 @@ import (
 	movetypes "github.com/initia-labs/initia/x/move/types"
 	vmtypes "github.com/initia-labs/movevm/types"
 
-	nfttypes "github.com/initia-labs/kvindexer/internal/nft/types"
+	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
 
 	"google.golang.org/grpc/codes"

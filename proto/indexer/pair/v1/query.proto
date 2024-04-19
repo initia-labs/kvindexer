@@ -12,23 +12,22 @@ option go_package = "github.com/initia-labs/kvindexer/submodules/pair/types";
 
 // Query provides the service definition for the Token Pairs
 service Query {
-	// Pairs queries all the collections of an account
-	rpc Pairs(QueryPairsRequest) returns (QueryPairsResponse) {
-		option (google.api.http) = {
-			get : "/indexer/pair/v1/pairs"
-		};
-	}
+  // Pairs queries all the collections of an account
+  rpc Pairs(QueryPairsRequest) returns (QueryPairsResponse) {
+    option (google.api.http) = {
+      get : "/indexer/pair/v1/pairs"
+    };
+  }
 }
 
 // QueryPairsRequest is the request type for the Query/Pairs RPC method
 message QueryPairsRequest {
-	bool is_non_fungible = 1;
-	cosmos.base.query.v1beta1.PageRequest pagination = 2;
+  bool is_non_fungible = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 
 // QueryPairsResponse is the response type for the Query/Pairs RPC method
 message QueryPairsResponse {
-	repeated Pair pairs = 1;
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  repeated Pair pairs = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
-

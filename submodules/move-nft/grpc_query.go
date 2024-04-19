@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	nfttypes "github.com/initia-labs/kvindexer/internal/nft/types"
+	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 )
 
 var _ nfttypes.QueryServer = (*Querier)(nil)

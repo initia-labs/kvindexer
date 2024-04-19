@@ -10,75 +10,73 @@ import "google/api/annotations.proto";
 
 option go_package = "github.com/initia-labs/kvindexer/submodules/tx/types";
 
-// Query provides the service definition for the Txs 
+// Query provides the service definition for the Txs
 service Query {
-	// Tx queries a transaction by hash
-	rpc Tx(QueryTxRequest) returns (QueryTxResponse) {
-		option (google.api.http) = {
-			get : "/indexer/tx/v1/txs/{tx_hash}"
-		};
-	}
+  // Tx queries a transaction by hash
+  rpc Tx(QueryTxRequest) returns (QueryTxResponse) {
+    option (google.api.http) = {
+      get : "/indexer/tx/v1/txs/{tx_hash}"
+    };
+  }
 
-	// Txs queries all transactions with pagination
-	rpc Txs(QueryTxsRequest) returns (QueryTxsResponse) {
-		option (google.api.http) = {
-			get : "/indexer/tx/v1/txs"
-		};
-	}
+  // Txs queries all transactions with pagination
+  rpc Txs(QueryTxsRequest) returns (QueryTxsResponse) {
+    option (google.api.http) = {
+      get : "/indexer/tx/v1/txs"
+    };
+  }
 
-	// TxsByAccount queries all the collections of given account
-	rpc TxsByAccount(QueryTxsByAccountRequest) returns (QueryTxsResponse) {
-		option (google.api.http) = {
-			get : "/indexer/tx/v1/txs/by_account/{account}"
-		};
-	}
+  // TxsByAccount queries all the collections of given account
+  rpc TxsByAccount(QueryTxsByAccountRequest) returns (QueryTxsResponse) {
+    option (google.api.http) = {
+      get : "/indexer/tx/v1/txs/by_account/{account}"
+    };
+  }
 
-	// TxsByHeight queries all the collections of given height
-	rpc TxsByHeight(QueryTxsByHeightRequest) returns (QueryTxsResponse) {
-		option (google.api.http) = {
-			get : "/indexer/tx/v1/txs/by_height/{height}"
-		};
-	}
+  // TxsByHeight queries all the collections of given height
+  rpc TxsByHeight(QueryTxsByHeightRequest) returns (QueryTxsResponse) {
+    option (google.api.http) = {
+      get : "/indexer/tx/v1/txs/by_height/{height}"
+    };
+  }
 }
-
 
 // QueryTxRequest is the request type for the Query/Txs RPC method
 message QueryTxRequest {
-	// tx_hash is a hash string of the transaction to query.
-	string tx_hash = 1 ;
+  // tx_hash is a hash string of the transaction to query.
+  string tx_hash = 1;
 }
 
 // QueryTxResponse is the response type for the Query/Txs RPC method
 message QueryTxResponse {
-	// txs is the list of queried transactions.
-	cosmos.base.abci.v1beta1.TxResponse tx = 1;
+  // txs is the list of queried transactions.
+  cosmos.base.abci.v1beta1.TxResponse tx = 1;
 }
 
 // QueryTxsequest is the request type for the Query/Txs RPC method
 message QueryTxsRequest {
-	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
 }
-
 
 // QueryTxsByAccountRequest is the request type for the Query/Txs RPC method
 message QueryTxsByAccountRequest {
-	// account is the account address to query txs for.
-	string account = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  // account is the account address to query txs for.
+  string account = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
 
-	cosmos.base.query.v1beta1.PageRequest pagination = 3;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 // QueryTxsByHeightRequest is the request type for the Query/Txs RPC method
 message QueryTxsByHeightRequest {
-	// height is the height to query txs for.
-	int64 height = 1;
+  // height is the height to query txs for.
+  int64 height = 1;
 
-	cosmos.base.query.v1beta1.PageRequest pagination = 3;
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
 // QueryTxsResponse is the response type for the Query/Txs RPC method
 message QueryTxsResponse {
-	// txs is the list of queried transactions.
-	repeated cosmos.base.abci.v1beta1.TxResponse txs = 1;
-	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  // txs is the list of queried transactions.
+  repeated cosmos.base.abci.v1beta1.TxResponse txs = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }

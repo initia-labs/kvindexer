@@ -13,24 +13,21 @@ option go_package = "github.com/initia-labs/kvindexer/submodules/block/types";
 service Query {
 
   // Block returns a block by its height.
-  rpc Block(BlockRequest)
-      returns (BlockResponse) {
+  rpc Block(BlockRequest) returns (BlockResponse) {
     option (google.api.http) = {
       get : "/indexer/block/v1/blocks/{height}"
     };
   }
 
   // Blocks returns a list of blocks.
-  rpc Blocks(BlocksRequest)
-      returns (BlocksResponse) {
+  rpc Blocks(BlocksRequest) returns (BlocksResponse) {
     option (google.api.http) = {
       get : "/indexer/block/v1/blocks"
     };
   }
 
   // AvgBlockTime returns the average block time.
-  rpc AvgBlockTime(AvgBlockTimeRequest)
-      returns (AvgBlockTimeResponse) {
+  rpc AvgBlockTime(AvgBlockTimeRequest) returns (AvgBlockTimeResponse) {
     option (google.api.http) = {
       get : "/indexer/block/v1/avg_blocktime"
     };
@@ -38,14 +35,10 @@ service Query {
 }
 
 // BlockRequest defines the request for the Blocks RPC.
-message BlockRequest {
-  int64 height = 1;
-}
+message BlockRequest { int64 height = 1; }
 
 // BlockResponse defines the response for the Blocks RPC.
-message BlockResponse {
-  Block block = 1;
-}
+message BlockResponse { Block block = 1; }
 
 // BlocksRequest defines the request for the Blocks RPC.
 message BlocksRequest {
@@ -60,10 +53,9 @@ message BlocksResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC: no params for now.
+// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC: no params
+// for now.
 message AvgBlockTimeRequest {}
 
 // AvgBlockTimeResponse defines the response for the AvgBlockTime RPC.
-message AvgBlockTimeResponse {
-  double avg_block_time = 1;
-}
+message AvgBlockTimeResponse { double avg_block_time = 1; }
