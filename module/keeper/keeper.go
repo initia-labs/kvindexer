@@ -39,7 +39,6 @@ type Keeper struct {
 	// required keepers
 	AccountKeeper     *authkeeper.AccountKeeper
 	BankKeeper        types.BankKeeper
-	OracleKeeper      types.OracleKeeper
 	VMKeeper          VMKeeper
 	IBCKeeper         *ibckeeper.Keeper
 	TransferKeeper    types.TransferKeeper
@@ -74,7 +73,6 @@ func NewKeeper(
 	cdc codec.Codec,
 	accountKeeper *authkeeper.AccountKeeper,
 	bankKeeper types.BankKeeper,
-	oracleKeeper types.OracleKeeper,
 	distrKeeper types.DistributionKeeper, // can be nil, if staking not used
 	stakingKeeper types.StakingKeeper, // can be nil, if staking not used
 	rewardKeeper types.RewardKeeper, // can be nil, if staking not used
@@ -94,7 +92,6 @@ func NewKeeper(
 		cdc:                 cdc,
 		AccountKeeper:       accountKeeper,
 		BankKeeper:          bankKeeper,
-		OracleKeeper:        oracleKeeper,
 		DistrKeeper:         distrKeeper,
 		StakingKeeper:       stakingKeeper,
 		RewardKeeper:        rewardKeeper,

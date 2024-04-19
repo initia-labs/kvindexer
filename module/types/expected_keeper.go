@@ -2,8 +2,9 @@ package types
 
 import (
 	"context"
-	"github.com/initia-labs/OPinit/x/opchild/types"
 	"time"
+
+	"github.com/initia-labs/OPinit/x/opchild/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
@@ -13,8 +14,6 @@ import (
 	nfttransfertypes "github.com/initia-labs/initia/x/ibc/nft-transfer/types"
 	stakingtypes "github.com/initia-labs/initia/x/mstaking/types"
 	rewardtypes "github.com/initia-labs/initia/x/reward/types"
-
-	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 // AccountKeeper is expected keeper for auth module
@@ -88,10 +87,6 @@ type DistributionKeeper interface {
 type CommunityPoolKeeper interface {
 	// FundCommunityPool allows an account to directly fund the community fund pool.
 	FundCommunityPool(ctx context.Context, amount sdk.Coins, sender sdk.AccAddress) error
-}
-
-type OracleKeeper interface {
-	GetPriceForCurrencyPair(ctx sdk.Context, cp oracletypes.CurrencyPair) (oracletypes.QuotePrice, error)
 }
 
 type TransferKeeper interface {
