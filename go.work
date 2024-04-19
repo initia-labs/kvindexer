@@ -1,0 +1,9 @@
+go 1.22
+
+use (
+	.
+	./submodules/block
+	./submodules/move-nft
+	./submodules/pair
+	./submodules/tx
+)

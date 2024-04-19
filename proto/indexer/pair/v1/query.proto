@@ -8,7 +8,7 @@ import "google/api/annotations.proto";
 import "cosmos_proto/cosmos.proto";
 import "indexer/pair/v1/types.proto";
 
-option go_package = "github.com/initia-labs/kvindexer/submodule/pair/types";
+option go_package = "github.com/initia-labs/kvindexer/submodules/pair/types";
 
 // Query provides the service definition for the Token Pairs
 service Query {
