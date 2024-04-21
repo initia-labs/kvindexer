@@ -10,7 +10,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
-	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
+	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
 )
 
 func (sm WasmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {

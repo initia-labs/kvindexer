@@ -2,7 +2,7 @@ package wasm_nft
 
 import (
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
+	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
 )
 
 func parseEvent(event abci.Event) types.EventWithAttributeMap {
