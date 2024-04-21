@@ -5,13 +5,12 @@ package indexer.pair.v1;
 import "gogoproto/gogo.proto";
 import "cosmos_proto/cosmos.proto";
 
-
-option go_package = "github.com/initia-labs/kvindexer/submodule/pair/types";
+option go_package = "github.com/initia-labs/kvindexer/submodules/pair/types";
 option (gogoproto.goproto_getters_all) = false;
-option (gogoproto.equal_all)           = true;
+option (gogoproto.equal_all) = true;
 
 // Pair is a struct that holds the information of a pair
 message Pair {
-	string l1 = 1;
-	string l2 = 2;
+  string l1 = 1;
+  string l2 = 2;
 }

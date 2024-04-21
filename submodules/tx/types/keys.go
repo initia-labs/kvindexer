@@ -1,0 +1,19 @@
+package types
+
+const (
+	// SubmoduleName is the name of the submodule
+	SubmoduleName = "tx"
+
+	// Version is the current version of the submodule
+	Version = "v0.1.0"
+)
+
+// store prefixes
+const (
+	TxsByAccountPrefix    = 0x10
+	AccountSequencePrefix = 0x20
+	SequencePrefix        = 0xa0
+	TxSequencePrefix      = 0xb0
+	TxByHeightPrefix      = 0xc0
+	TxsPrefix             = 0xf0
+)
