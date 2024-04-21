@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
-	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
+	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
 )
 
 var eventTypes = []string{"wasm"}

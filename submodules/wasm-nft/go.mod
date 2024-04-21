@@ -1,4 +1,4 @@
-module github.com/initia-labs/kvindexer/submodules/move-nft
+module github.com/initia-labs/kvindexer/submodules/wasm-nft
 
 go 1.22
 
