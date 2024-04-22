@@ -12,7 +12,6 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/initia-labs/kvindexer/nft/types"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 )
 
@@ -148,7 +147,7 @@ func (sm WasmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nftty
 	if err != nil {
 		return nil, handleCollectionErr(err)
 	}
-	res = slices.DeleteFunc(res, func(item *types.IndexedToken) bool {
+	res = slices.DeleteFunc(res, func(item *nfttypes.IndexedToken) bool {
 		return item == nil
 	})
 	res = slices.Clip(res)
@@ -243,7 +242,7 @@ func (sm WasmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	res = slices.DeleteFunc(res, func(item *types.IndexedToken) bool {
+	res = slices.DeleteFunc(res, func(item *nfttypes.IndexedToken) bool {
 		return item == nil
 	})
 	res = slices.Clip(res)
