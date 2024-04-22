@@ -144,9 +144,14 @@ func (sm MoveNftSubmodule) getTokensByCollection(ctx context.Context, req *nftty
 			return &v, nil
 		},
 	)
+
 	if err != nil {
 		return nil, handleCollectionErr(err)
 	}
+	res = slices.DeleteFunc(res, func(item *nfttypes.IndexedToken) bool {
+		return item == nil
+	})
+	res = slices.Clip(res)
 
 	return &nfttypes.QueryTokensResponse{
 		Tokens:     res,
@@ -238,6 +243,10 @@ func (sm MoveNftSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	res = slices.DeleteFunc(res, func(item *nfttypes.IndexedToken) bool {
+		return item == nil
+	})
+	res = slices.Clip(res)
 
 	return &nfttypes.QueryTokensResponse{
 		Tokens:     res,
