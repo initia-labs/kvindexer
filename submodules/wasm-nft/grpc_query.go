@@ -229,13 +229,16 @@ func (sm WasmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
 	ownerAddrStr := ownerSdkAddr.String()
 
-	res, pageRes, err := query.CollectionPaginate(ctx, sm.tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (*nfttypes.IndexedToken, error) {
+	res, pageRes, err := query.CollectionFilteredPaginate(ctx, sm.tokenMap, req.Pagination,
+		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (bool, error) {
 			if slices.Equal(k.K1(), colSdkAddr) && (v.OwnerAddr == ownerAddrStr) {
-				v.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
-				return &v, nil
+				return true, nil
 			}
-			return nil, nil
+			return false, nil
+		},
+		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (*nfttypes.IndexedToken, error) {
+			v.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
+			return &v, nil
 		},
 	)
 

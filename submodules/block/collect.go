@@ -48,10 +48,9 @@ func (bs BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinal
 		f := tx.GetFee()
 		feeCoins = feeCoins.Add(f...)
 	}
+
 	block.TotalFee = feeCoins
-
 	block.TxCount = int64(len(req.Txs))
-
 	block.GasUsed = 0
 	block.GasWanted = 0
 	for tx := range req.Txs {
@@ -69,7 +68,6 @@ func (bs BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinal
 			block.BlockTime = req.Time.Sub(prevBlock.Timestamp).Milliseconds()
 		}
 	}
-
 	if err := bs.blockByHeight.Set(ctx, req.Height, block); err != nil {
 		return errors.Wrap(err, "failed to set block by height")
 	}
