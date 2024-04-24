@@ -48,9 +48,9 @@ type NftClassData struct {
 }
 
 type WriteAckForNftEvent struct {
-	ClassData string         `json:"classData"`
-	ClassId   string         `json:"classId"`
-	ClassUri  string         `json:"classUri"`
+	ClassData string         `json:"class_data"`
+	ClassId   string         `json:"class_id"`
+	ClassUri  string         `json:"class_uri"`
 	Receiver  sdk.AccAddress `json:"receiver"`
 	Sender    sdk.AccAddress `json:"sender"`
 	//TokenData []string       `json:"tokenData"`
