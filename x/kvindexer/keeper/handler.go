@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"fmt"
+	"runtime/debug"
 	"strings"
 
 	storetypes "cosmossdk.io/store/types"
@@ -68,6 +69,7 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 	defer func() {
 		if err := recover(); err != nil {
 			k.Logger(ctx).Error("panic in HandleFinalizeBlock", "err", err)
+			debug.PrintStack()
 		}
 	}()
 
@@ -84,6 +86,7 @@ func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, chan
 	defer func() {
 		if err := recover(); err != nil {
 			k.Logger(ctx).Error("panic in HandleCommit", "err", err)
+			debug.PrintStack()
 		}
 	}()
 

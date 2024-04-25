@@ -43,6 +43,7 @@ func NewBlockSubmodule(
 
 	return &BlockSubmodule{
 		cdc:           cdc,
+		opChildKeeper: opChildKeeper,
 		blockByHeight: blockByHeight,
 	}, nil
 }

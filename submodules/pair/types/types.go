@@ -42,18 +42,23 @@ type MoveResource struct {
 }
 
 type NftClassData struct {
-	Description struct {
-		Value string `json:"value"`
-	} `json:"initia:description"`
+	Description string `json:"description"`
+	Name        string `json:"name"`
 }
 
-type WriteAckForNftEvent struct {
-	ClassData string         `json:"classData"`
-	ClassId   string         `json:"classId"`
-	ClassUri  string         `json:"classUri"`
+type PacketData struct {
+	ClassData string         `json:"class_data"`
+	ClassId   string         `json:"class_id"`
+	ClassUri  string         `json:"class_uri"`
 	Receiver  sdk.AccAddress `json:"receiver"`
 	Sender    sdk.AccAddress `json:"sender"`
 	//TokenData []string       `json:"tokenData"`
 	//TokenIds  []string       `json:"tokenIds"`
 	//TokenUris []string       `json:"tokenUris"`
+}
+
+type ClassTrace struct {
+	TraceHash string `json:"trace_hash"`
+	ClassId   string `json:"class_id"`
+	//MsgIndex  int    `json:"msg_index"`
 }
