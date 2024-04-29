@@ -14,7 +14,6 @@ const (
 	flagIndexerEnable    = "indexer.enable"
 	flagIndexerBackend   = "indexer.backend"
 	flagIndexerCacheSize = "indexer.cache-size"
-	flagL1ChainId        = "indexer.l1-chain-id"
 )
 
 func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
