@@ -17,7 +17,7 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
-	"github.com/initia-labs/kvindexer/submodules/move_pair/types"
+	"github.com/initia-labs/kvindexer/submodules/move-pair/types"
 )
 
 const (
