@@ -80,7 +80,8 @@ var xxx_messageInfo_Block proto.InternalMessageInfo
 // Proposer represents the proposer of a block: for minitia, its the L2 operator
 type Proposer struct {
 	Moniker string `protobuf:"bytes,1,opt,name=moniker,proto3" json:"moniker,omitempty"`
-	// actually minitias have no identity because they haven't MsgCreateValidator, but we decided to keep this field for compatibility with L1
+	// actually minitias have no identity because they haven't MsgCreateValidator,
+	// but we decided to keep this field for compatibility with L1
 	Identity        string `protobuf:"bytes,2,opt,name=identity,proto3" json:"identity,omitempty"`
 	OperatorAddress string `protobuf:"bytes,3,opt,name=operator_address,json=operatorAddress,proto3" json:"operator_address,omitempty"`
 }

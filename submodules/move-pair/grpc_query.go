@@ -1,11 +1,11 @@
-package pair
+package move_pair
 
 import (
 	"context"
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	"github.com/initia-labs/kvindexer/submodules/pair/types"
+	"github.com/initia-labs/kvindexer/pair/types"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

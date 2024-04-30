@@ -1,4 +1,4 @@
-module github.com/initia-labs/kvindexer/submodules/pair
+module github.com/initia-labs/kvindexer/submodules/wasm_pair
 
 go 1.22
 
