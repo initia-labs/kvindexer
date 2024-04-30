@@ -1,4 +1,4 @@
-package pair
+package move_pair
 
 import (
 	"context"
@@ -16,7 +16,8 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
 	"github.com/initia-labs/kvindexer/collection"
-	"github.com/initia-labs/kvindexer/submodules/pair/types"
+	pairtypes "github.com/initia-labs/kvindexer/pair/types"
+	"github.com/initia-labs/kvindexer/submodules/move-pair/types"
 	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
@@ -76,11 +77,11 @@ func (sub PairSubmodule) Version() string {
 }
 
 func (sub PairSubmodule) RegisterQueryHandlerClient(cc client.Context, mux *runtime.ServeMux) error {
-	return types.RegisterQueryHandlerClient(context.Background(), mux, types.NewQueryClient(cc))
+	return pairtypes.RegisterQueryHandlerClient(context.Background(), mux, pairtypes.NewQueryClient(cc))
 }
 
 func (sub PairSubmodule) RegisterQueryServer(s grpc.Server) {
-	types.RegisterQueryServer(s, NewQuerier(sub))
+	pairtypes.RegisterQueryServer(s, NewQuerier(sub))
 }
 
 func (sub PairSubmodule) Prepare(ctx context.Context) error {

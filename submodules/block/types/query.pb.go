@@ -221,7 +221,8 @@ func (m *BlocksResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC: no params for now.
+// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC: no params
+// for now.
 type AvgBlockTimeRequest struct {
 }
 

@@ -31,7 +31,8 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// QueryCollectionRequest is the request type for the Query/Collection RPC method
+// QueryCollectionRequest is the request type for the Query/Collection RPC
+// method
 type QueryCollectionRequest struct {
 	CollectionAddr string `protobuf:"bytes,1,opt,name=collection_addr,json=collectionAddr,proto3" json:"collection_addr,omitempty"`
 }
@@ -76,7 +77,8 @@ func (m *QueryCollectionRequest) GetCollectionAddr() string {
 	return ""
 }
 
-// QueryCollectionResponse is the response type for the Query/Collection RPC method
+// QueryCollectionResponse is the response type for the Query/Collection RPC
+// method
 type QueryCollectionResponse struct {
 	Collection *IndexedCollection `protobuf:"bytes,1,opt,name=collection,proto3" json:"collection,omitempty"`
 }
@@ -121,7 +123,8 @@ func (m *QueryCollectionResponse) GetCollection() *IndexedCollection {
 	return nil
 }
 
-// QueryCollectionsRequest is the request type for the Query/Collections RPC method
+// QueryCollectionsRequest is the request type for the Query/Collections RPC
+// method
 type QueryCollectionsByAccountRequest struct {
 	Account    string             `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
 	Pagination *query.PageRequest `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -174,7 +177,8 @@ func (m *QueryCollectionsByAccountRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
-// QueryCollectionsResponse is the response type for the Query/Collections RPC method
+// QueryCollectionsResponse is the response type for the Query/Collections RPC
+// method
 type QueryCollectionsResponse struct {
 	Collections []*IndexedCollection `protobuf:"bytes,1,rep,name=collections,proto3" json:"collections,omitempty"`
 	Pagination  *query.PageResponse  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
@@ -227,7 +231,8 @@ func (m *QueryCollectionsResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// QueryTokensByAccountRequest is the request type for the Query/Tokens RPC method
+// QueryTokensByAccountRequest is the request type for the Query/Tokens RPC
+// method
 type QueryTokensByAccountRequest struct {
 	Account        string             `protobuf:"bytes,1,opt,name=account,proto3" json:"account,omitempty"`
 	CollectionAddr string             `protobuf:"bytes,2,opt,name=collection_addr,json=collectionAddr,proto3" json:"collection_addr,omitempty"`
@@ -296,7 +301,8 @@ func (m *QueryTokensByAccountRequest) GetPagination() *query.PageRequest {
 	return nil
 }
 
-// QueryTokensByCollectionRequest is the request type for the Query/Tokens RPC method
+// QueryTokensByCollectionRequest is the request type for the Query/Tokens RPC
+// method
 type QueryTokensByCollectionRequest struct {
 	CollectionAddr string             `protobuf:"bytes,1,opt,name=collection_addr,json=collectionAddr,proto3" json:"collection_addr,omitempty"`
 	TokenId        string             `protobuf:"bytes,2,opt,name=token_id,json=tokenId,proto3" json:"token_id,omitempty"`

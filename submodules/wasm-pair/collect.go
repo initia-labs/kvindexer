@@ -1,4 +1,4 @@
-package pair
+package wasm_pair
 
 import (
 	"context"
@@ -18,11 +18,12 @@ import (
 	ibctm "github.com/cosmos/ibc-go/v8/modules/light-clients/07-tendermint"
 
 	opchildtypes "github.com/initia-labs/OPinit/x/opchild/types"
-	"github.com/initia-labs/kvindexer/submodules/pair/types"
+	"github.com/initia-labs/kvindexer/submodules/wasm-pair/types"
 )
 
 const (
-	ibcTransferPort = "transfer"
+	ibcTransferPort    = "transfer"
+	ibcNftTransferPort = "nft-transfer"
 )
 
 func (sm PairSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
@@ -76,28 +77,19 @@ func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchil
 }
 
 func (sm PairSubmodule) collectIBCNonfungibleTokens(ctx context.Context, txResult *abci.ExecTxResult) (err error) {
-	var packetData, classId string
-
 	for _, event := range txResult.Events {
-		switch event.Type {
-		case "recv_packet":
-			packetData = sm.pickAttribute(event.Attributes, "packet_data")
-		case "class_trace":
-			classId = sm.pickAttribute(event.Attributes, "class_id")
+		if event.Type == "recv_packet" {
+			if sm.pickAttribute(event.Attributes, "packet_src_port") != ibcNftTransferPort {
+				continue
+			}
+			packetData := sm.pickAttribute(event.Attributes, "packet_data")
+			packetDstPort := sm.pickAttribute(event.Attributes, "packet_dst_port")
+			packetDstChannel := sm.pickAttribute(event.Attributes, "packet_dst_channel")
+			err = sm.pricessIbcNftPairEvent(ctx, packetData, packetDstPort, packetDstChannel)
 			if err != nil {
-				sm.Logger(ctx).Warn("failed to handle class_trace event", "error", err, "event", event)
+				sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData, "packetDstPort", packetDstPort, "packetDstChannel", packetDstChannel)
 			}
 		}
-		if packetData != "" && classId != "" {
-			break
-		}
-	}
-	if packetData == "" || classId == "" {
-		return nil
-	}
-	err = sm.pricessPairEvent(ctx, packetData, classId)
-	if err != nil {
-		sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData, "class_trace.class_id", classId)
 	}
 
 	return nil
@@ -112,8 +104,14 @@ func (sm PairSubmodule) pickAttribute(attrs []abci.EventAttribute, key string) s
 	return ""
 }
 
-func (sm PairSubmodule) pricessPairEvent(ctx context.Context, packetDataStr, classId string) (err error) {
-	sm.Logger(ctx).Debug("processPairEvent", "packet_data", packetDataStr, "class_id", classId)
+func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) string {
+	return port + "/" + channel
+}
+
+func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, packetDstPort, packetDstChannel string) (err error) {
+	if packetDataStr == "" || packetDstPort == "" || packetDstChannel == "" {
+		return nil
+	}
 
 	packetData := types.PacketData{}
 	if err = json.Unmarshal([]byte(packetDataStr), &packetData); err != nil {
@@ -130,7 +128,9 @@ func (sm PairSubmodule) pricessPairEvent(ctx context.Context, packetDataStr, cla
 		return cosmoserr.Wrap(err, "failed to unmarshal class data")
 	}
 
-	_, err = sm.GetPair(ctx, false, classId)
+	collectionName := fmt.Sprintf("%s/%s", sm.generateCw721FromIcs721PortInfo(packetDstPort, packetDstChannel), packetData.ClassId)
+
+	_, err = sm.GetPair(ctx, false, collectionName)
 	if err == nil {
 		return nil // already exists
 	}
@@ -138,65 +138,31 @@ func (sm PairSubmodule) pricessPairEvent(ctx context.Context, packetDataStr, cla
 		return cosmoserr.Wrap(err, "failed to check class existence")
 	}
 
-	err = sm.SetPair(ctx, false, false, classId, classData.Name)
+	err = sm.SetPair(ctx, false, false, collectionName, classData.Name)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to set class")
 	}
 
-	sm.Logger(ctx).Info("nft class added", "classId", classId, "classData", classData)
+	sm.Logger(ctx).Info("nft class added", "classId", collectionName, "classData", classData)
 	return nil
 }
 
 func (sm PairSubmodule) collectIBCFungibleTokens(ctx context.Context) error {
 
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
-	chKeeper := sm.channelKeeper
-
-	// get all channels
-	channels := chKeeper.GetAllChannels(sdkCtx)
-
-	ibcChannels := []string{}
-	for _, channel := range channels {
-		if channel.PortId != ibcTransferPort {
-			continue
-		}
-
-		_ /*clientId*/, cs, err := chKeeper.GetChannelClientState(sdkCtx, channel.PortId, channel.ChannelId)
-		if err != nil {
-			sm.Logger(ctx).Warn("GetChannelClientState", "error", err)
-		}
-		counterpartyChainId := getChainIdFromClientState(cs)
-		if counterpartyChainId == "" {
-			sm.Logger(ctx).Warn("channel id is nil")
-			continue
-		}
-		if counterpartyChainId != sdk.UnwrapSDKContext(ctx).ChainID() {
-			continue
-		}
-		ibcChannels = append(ibcChannels, channel.ChannelId)
-	}
 
 	traces := sm.transferKeeper.GetAllDenomTraces(sdkCtx)
-	for _, ibcChannel := range ibcChannels {
-		for _, trace := range traces {
-			if trace.Path != fmt.Sprintf("%s/%s", ibcTransferPort, ibcChannel) {
-				continue
-			}
-
-			prevDenom, err := sm.fungiblePairsMap.Get(ctx, trace.IBCDenom())
-			if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
-				continue
-			}
-			// prevDenom should be empty string if not found, or already set
-			if prevDenom == trace.BaseDenom {
-				continue
-			}
-
-			err = sm.fungiblePairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
-			if err != nil {
-				return err
-			}
+	for _, trace := range traces {
+		_, err := sm.fungiblePairsMap.Get(ctx, trace.IBCDenom())
+		if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
+			continue
 		}
+		err = sm.fungiblePairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
+		if err != nil {
+			sm.Logger(ctx).Warn("failed to set fungible pair", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom, "error", err)
+			return err
+		}
+		sm.Logger(ctx).Info("fungible pair added", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom)
 	}
 
 	return nil

@@ -78,12 +78,12 @@ func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Even
 		}
 	}
 
-	err = sm.applyCollectionOwnerMap(ctx, data.ContractAddress, data.Minter, true)
+	err = sm.applyCollectionOwnerMap(ctx, data.ContractAddress, data.Owner, true)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
 	}
 
-	token, err := sm.getIndexedNftFromVMStore(ctx, data.ContractAddress, data.TokenId, &data.Minter)
+	token, err := sm.getIndexedNftFromVMStore(ctx, data.ContractAddress, data.TokenId, &data.Owner)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get token info")
 	}
@@ -94,13 +94,13 @@ func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Even
 		return cosmoserr.Wrap(err, "failed to set token")
 	}
 
-	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(data.Minter, data.ContractAddress, data.TokenId), true)
+	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(data.Owner, data.ContractAddress, data.TokenId), true)
 	if err != nil {
-		sm.Logger(ctx).Error("failed to insert into tokenOwnerSet", "minter", data.Minter, "collection-addr", data.ContractAddress, "token-id", token.Nft.TokenId, "error", err)
+		sm.Logger(ctx).Error("failed to insert into tokenOwnerSet", "minter", data.Minter, "owner", data.Owner, "collection-addr", data.ContractAddress, "token-id", token.Nft.TokenId, "error", err)
 		return cosmoserr.Wrap(err, "failed to insert into tokenOwnerSet")
 	}
 
-	sm.Logger(ctx).Info("nft minted", "collection", collection, "token", token)
+	sm.Logger(ctx).Warn("nft minted", "collection", collection, "token", token)
 	return nil
 }
 
