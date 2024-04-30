@@ -17,7 +17,7 @@ import (
 
 	"github.com/initia-labs/kvindexer/collection"
 	pairtypes "github.com/initia-labs/kvindexer/pair/types"
-	"github.com/initia-labs/kvindexer/submodules/move_pair/types"
+	"github.com/initia-labs/kvindexer/submodules/move-pair/types"
 	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
