@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -110,13 +109,8 @@ func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) st
 }
 
 func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, packetDstPort, packetDstChannel string) (err error) {
-	switch {
-	case packetDataStr == "":
-		return errors.New("packet_data is empty")
-	case packetDstPort == "":
-		return errors.New("packet_dst_port is empty")
-	case packetDstChannel == "":
-		return errors.New("packet_dst_channel is empty")
+	if packetDataStr == "" || packetDstPort == "" || packetDstChannel == "" {
+		return nil
 	}
 
 	packetData := types.PacketData{}

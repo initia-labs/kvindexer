@@ -76,17 +76,20 @@ func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchil
 }
 
 func (sm PairSubmodule) collectIBCNonfungibleTokens(ctx context.Context, txResult *abci.ExecTxResult) (err error) {
+	var packetData, classId string
 	for _, event := range txResult.Events {
 		if event.Type == "recv_packet" {
 			if sm.pickAttribute(event.Attributes, "packet_src_port") != ibcNftTransferPort {
 				continue
 			}
-			packetData := sm.pickAttribute(event.Attributes, "packet_data")
-			err = sm.pricessIbcNftPairEvent(ctx, packetData)
-			if err != nil {
-				sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData)
-			}
+			packetData = sm.pickAttribute(event.Attributes, "packet_data")
+		} else if event.Type == "class_trace" {
+			classId = sm.pickAttribute(event.Attributes, "class_id")
 		}
+	}
+	err = sm.pricessIbcNftPairEvent(ctx, packetData, classId)
+	if err != nil {
+		sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData)
 	}
 
 	return nil
@@ -105,8 +108,13 @@ func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) st
 	return port + "/" + channel
 }
 
-func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr string) (err error) {
+func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, classId string) (err error) {
 	packetData := types.PacketData{}
+
+	if packetDataStr == "" || classId == "" {
+		return nil
+	}
+
 	if err = json.Unmarshal([]byte(packetDataStr), &packetData); err != nil {
 		// may be not target
 		return nil
@@ -130,7 +138,7 @@ func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataSt
 	// 	return cosmoserr.Wrap(err, "failed to check class existence")
 	// }
 
-	err = sm.SetPair(ctx, false, false, packetData.ClassId, classData.Name)
+	err = sm.SetPair(ctx, false, false, classId, classData.Name)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to set class")
 	}
