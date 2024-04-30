@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -77,19 +76,15 @@ func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchil
 }
 
 func (sm PairSubmodule) collectIBCNonfungibleTokens(ctx context.Context, txResult *abci.ExecTxResult) (err error) {
-	var packetData, classId string
-
 	for _, event := range txResult.Events {
 		if event.Type == "recv_packet" {
 			if sm.pickAttribute(event.Attributes, "packet_src_port") != ibcNftTransferPort {
 				continue
 			}
-			packetData = sm.pickAttribute(event.Attributes, "packet_data")
-			packetDstPort := sm.pickAttribute(event.Attributes, "packet_dst_port")
-			packetDstChannel := sm.pickAttribute(event.Attributes, "packet_dst_channel")
-			err = sm.pricessIbcNftPairEvent(ctx, packetData, packetDstPort, packetDstChannel)
+			packetData := sm.pickAttribute(event.Attributes, "packet_data")
+			err = sm.pricessIbcNftPairEvent(ctx, packetData)
 			if err != nil {
-				sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData, "class_trace.class_id", classId)
+				sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData)
 			}
 		}
 	}
@@ -110,9 +105,7 @@ func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) st
 	return port + "/" + channel
 }
 
-func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, packetDstPort, packetDstChannel string) (err error) {
-	sm.Logger(ctx).Debug("processPairEvent", "packet_data", packetDataStr, "port", packetDstPort, "channel", packetDstChannel)
-
+func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr string) (err error) {
 	packetData := types.PacketData{}
 	if err = json.Unmarshal([]byte(packetDataStr), &packetData); err != nil {
 		// may be not target
@@ -128,22 +121,21 @@ func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataSt
 		return cosmoserr.Wrap(err, "failed to unmarshal class data")
 	}
 
-	collectionName := fmt.Sprintf("%s/%s", sm.generateCw721FromIcs721PortInfo(packetDstPort, packetDstChannel), packetData.ClassId)
+	// block this part overwrite to recent
+	// _, err = sm.GetPair(ctx, false, packetData.ClassId)
+	// if err == nil {
+	// 	return nil // already exists
+	// }
+	// if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+	// 	return cosmoserr.Wrap(err, "failed to check class existence")
+	// }
 
-	_, err = sm.GetPair(ctx, false, collectionName)
-	if err == nil {
-		return nil // already exists
-	}
-	if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-		return cosmoserr.Wrap(err, "failed to check class existence")
-	}
-
-	err = sm.SetPair(ctx, false, false, collectionName, classData.Name)
+	err = sm.SetPair(ctx, false, false, packetData.ClassId, classData.Name)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to set class")
 	}
 
-	sm.Logger(ctx).Info("nft class added", "classId", collectionName, "classData", classData)
+	sm.Logger(ctx).Info("nft class added", "pakcetData", packetData, "classData", classData)
 	return nil
 }
 

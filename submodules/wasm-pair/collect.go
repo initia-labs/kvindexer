@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"cosmossdk.io/collections"
@@ -77,19 +78,17 @@ func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchil
 }
 
 func (sm PairSubmodule) collectIBCNonfungibleTokens(ctx context.Context, txResult *abci.ExecTxResult) (err error) {
-	var packetData, classId string
-
 	for _, event := range txResult.Events {
 		if event.Type == "recv_packet" {
 			if sm.pickAttribute(event.Attributes, "packet_src_port") != ibcNftTransferPort {
 				continue
 			}
-			packetData = sm.pickAttribute(event.Attributes, "packet_data")
+			packetData := sm.pickAttribute(event.Attributes, "packet_data")
 			packetDstPort := sm.pickAttribute(event.Attributes, "packet_dst_port")
 			packetDstChannel := sm.pickAttribute(event.Attributes, "packet_dst_channel")
 			err = sm.pricessIbcNftPairEvent(ctx, packetData, packetDstPort, packetDstChannel)
 			if err != nil {
-				sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData, "class_trace.class_id", classId)
+				sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData, "packetDstPort", packetDstPort, "packetDstChannel", packetDstChannel)
 			}
 		}
 	}
@@ -111,7 +110,14 @@ func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) st
 }
 
 func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, packetDstPort, packetDstChannel string) (err error) {
-	sm.Logger(ctx).Debug("processPairEvent", "packet_data", packetDataStr, "port", packetDstPort, "channel", packetDstChannel)
+	switch {
+	case packetDataStr == "":
+		return errors.New("packet_data is empty")
+	case packetDstPort == "":
+		return errors.New("packet_dst_port is empty")
+	case packetDstChannel == "":
+		return errors.New("packet_dst_channel is empty")
+	}
 
 	packetData := types.PacketData{}
 	if err = json.Unmarshal([]byte(packetDataStr), &packetData); err != nil {
