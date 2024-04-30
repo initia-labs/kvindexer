@@ -1,4 +1,4 @@
-module github.com/initia-labs/kvindexer/submodules/move_pair
+module github.com/initia-labs/kvindexer/submodules/move-pair
 
 go 1.22
 

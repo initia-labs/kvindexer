@@ -165,8 +165,10 @@ func (sm PairSubmodule) collectIBCFungibleTokens(ctx context.Context) error {
 		}
 		err = sm.fungiblePairsMap.Set(ctx, trace.IBCDenom(), trace.BaseDenom)
 		if err != nil {
+			sm.Logger(ctx).Warn("failed to set fungible pair", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom, "error", err)
 			return err
 		}
+		sm.Logger(ctx).Info("fungible pair added", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom)
 	}
 
 	return nil

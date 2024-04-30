@@ -47,9 +47,9 @@ type NftClassData struct {
 }
 
 type PacketData struct {
-	ClassData string         `json:"class_data"`
-	ClassId   string         `json:"class_id"`
-	ClassUri  string         `json:"class_uri"`
+	ClassData string         `json:"classData"`
+	ClassId   string         `json:"classId"`
+	ClassUri  string         `json:"classUri"`
 	Receiver  sdk.AccAddress `json:"receiver"`
 	Sender    sdk.AccAddress `json:"sender"`
 	//TokenData []string       `json:"tokenData"`
