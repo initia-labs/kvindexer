@@ -1,4 +1,4 @@
-package move_pair
+package pair
 
 import (
 	"context"
