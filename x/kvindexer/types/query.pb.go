@@ -238,8 +238,9 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Version queries all the collections of an account
+	// Version queries all the versions of the submodules
 	Versions(ctx context.Context, in *QueryVersionRequest, opts ...grpc.CallOption) (*QueryVersionResponse, error)
+	// VMType queries the type of the Minitia's VM
 	VMType(ctx context.Context, in *QueryVMTypeRequest, opts ...grpc.CallOption) (*QueryVMTypeResponse, error)
 }
 
@@ -271,8 +272,9 @@ func (c *queryClient) VMType(ctx context.Context, in *QueryVMTypeRequest, opts .
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Version queries all the collections of an account
+	// Version queries all the versions of the submodules
 	Versions(context.Context, *QueryVersionRequest) (*QueryVersionResponse, error)
+	// VMType queries the type of the Minitia's VM
 	VMType(context.Context, *QueryVMTypeRequest) (*QueryVMTypeResponse, error)
 }
 

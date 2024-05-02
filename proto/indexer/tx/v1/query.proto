@@ -26,14 +26,14 @@ service Query {
     };
   }
 
-  // TxsByAccount queries all the collections of given account
+  // TxsByAccount queries all transactions of given account
   rpc TxsByAccount(QueryTxsByAccountRequest) returns (QueryTxsResponse) {
     option (google.api.http) = {
       get : "/indexer/tx/v1/txs/by_account/{account}"
     };
   }
 
-  // TxsByHeight queries all the collections of given height
+  // TxsByHeight queries all transactions of given height
   rpc TxsByHeight(QueryTxsByHeightRequest) returns (QueryTxsResponse) {
     option (google.api.http) = {
       get : "/indexer/tx/v1/txs/by_height/{height}"

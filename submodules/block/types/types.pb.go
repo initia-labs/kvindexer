@@ -77,7 +77,7 @@ func (m *Block) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_Block proto.InternalMessageInfo
 
-// Proposer represents the proposer of a block: for minitia, its the L2 operator
+// Proposer represents the proposer of a block: for minitia, it is the L2 operator
 type Proposer struct {
 	Moniker string `protobuf:"bytes,1,opt,name=moniker,proto3" json:"moniker,omitempty"`
 	// actually minitias have no identity because they haven't MsgCreateValidator,

@@ -12,7 +12,7 @@ option go_package = "github.com/initia-labs/kvindexer/pair/types";
 
 // Query provides the service definition for the Token Pairs
 service Query {
-  // Pairs queries all the collections of an account
+  // Pairs queries all the pairs of L1 and L2
   rpc Pairs(QueryPairsRequest) returns (QueryPairsResponse) {
     option (google.api.http) = {
       get : "/indexer/pair/v1/pairs"
