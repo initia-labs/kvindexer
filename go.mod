@@ -24,8 +24,6 @@ require (
 	google.golang.org/grpc v1.62.0
 )
 
-require golang.org/x/sync v0.6.0 // indirect
-
 require (
 	cosmossdk.io/api v0.7.3 // indirect
 	cosmossdk.io/depinject v1.0.0-alpha.4 // indirect
@@ -144,6 +142,7 @@ require (
 	golang.org/x/crypto v0.21.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.18.0 // indirect
 	golang.org/x/term v0.18.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
