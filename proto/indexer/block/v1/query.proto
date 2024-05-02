@@ -34,10 +34,10 @@ service Query {
   }
 }
 
-// BlockRequest defines the request for the Blocks RPC.
+// BlockRequest defines the request for the Block RPC.
 message BlockRequest { int64 height = 1; }
 
-// BlockResponse defines the response for the Blocks RPC.
+// BlockResponse defines the response for the Block RPC.
 message BlockResponse { Block block = 1; }
 
 // BlocksRequest defines the request for the Blocks RPC.
@@ -53,8 +53,7 @@ message BlocksResponse {
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
-// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC: no params
-// for now.
+// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC.
 message AvgBlockTimeRequest {}
 
 // AvgBlockTimeResponse defines the response for the AvgBlockTime RPC.

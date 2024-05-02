@@ -399,9 +399,9 @@ type QueryClient interface {
 	Tx(ctx context.Context, in *QueryTxRequest, opts ...grpc.CallOption) (*QueryTxResponse, error)
 	// Txs queries all transactions with pagination
 	Txs(ctx context.Context, in *QueryTxsRequest, opts ...grpc.CallOption) (*QueryTxsResponse, error)
-	// TxsByAccount queries all the collections of given account
+	// TxsByAccount queries all transactions of given account
 	TxsByAccount(ctx context.Context, in *QueryTxsByAccountRequest, opts ...grpc.CallOption) (*QueryTxsResponse, error)
-	// TxsByHeight queries all the collections of given height
+	// TxsByHeight queries all transactions of given height
 	TxsByHeight(ctx context.Context, in *QueryTxsByHeightRequest, opts ...grpc.CallOption) (*QueryTxsResponse, error)
 }
 
@@ -455,9 +455,9 @@ type QueryServer interface {
 	Tx(context.Context, *QueryTxRequest) (*QueryTxResponse, error)
 	// Txs queries all transactions with pagination
 	Txs(context.Context, *QueryTxsRequest) (*QueryTxsResponse, error)
-	// TxsByAccount queries all the collections of given account
+	// TxsByAccount queries all transactions of given account
 	TxsByAccount(context.Context, *QueryTxsByAccountRequest) (*QueryTxsResponse, error)
-	// TxsByHeight queries all the collections of given height
+	// TxsByHeight queries all transactions of given height
 	TxsByHeight(context.Context, *QueryTxsByHeightRequest) (*QueryTxsResponse, error)
 }
 

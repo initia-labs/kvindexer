@@ -7,15 +7,16 @@ import "indexer/info/types.proto";
 
 option go_package = "github.com/initia-labs/kvindexer/x/kvindexer/types";
 
-// Query provides the service definition for the Token Version
+// Query provides defines the gRPC querier service.
 service Query {
-  // Version queries all the collections of an account
+  // Version queries all the versions of the submodules
   rpc Versions(QueryVersionRequest) returns (QueryVersionResponse) {
     option (google.api.http) = {
       get : "/indexer/version"
     };
   }
 
+  // VMType queries the type of the Minitia's VM
   rpc VMType(QueryVMTypeRequest) returns (QueryVMTypeResponse) {
     option (google.api.http) = {
       get : "/indexer/vmtype"

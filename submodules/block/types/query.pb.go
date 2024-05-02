@@ -31,7 +31,7 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
-// BlockRequest defines the request for the Blocks RPC.
+// BlockRequest defines the request for the Block RPC.
 type BlockRequest struct {
 	Height int64 `protobuf:"varint,1,opt,name=height,proto3" json:"height,omitempty"`
 }
@@ -76,7 +76,7 @@ func (m *BlockRequest) GetHeight() int64 {
 	return 0
 }
 
-// BlockResponse defines the response for the Blocks RPC.
+// BlockResponse defines the response for the Block RPC.
 type BlockResponse struct {
 	Block *Block `protobuf:"bytes,1,opt,name=block,proto3" json:"block,omitempty"`
 }
@@ -221,8 +221,7 @@ func (m *BlocksResponse) GetPagination() *query.PageResponse {
 	return nil
 }
 
-// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC: no params
-// for now.
+// AvgBlockTimeRequest defines the request for the AvgBlockTime RPC.
 type AvgBlockTimeRequest struct {
 }
 

@@ -184,7 +184,7 @@ const _ = grpc.SupportPackageIsVersion4
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type QueryClient interface {
-	// Pairs queries all the collections of an account
+	// Pairs queries all the pairs of L1 and L2
 	Pairs(ctx context.Context, in *QueryPairsRequest, opts ...grpc.CallOption) (*QueryPairsResponse, error)
 }
 
@@ -207,7 +207,7 @@ func (c *queryClient) Pairs(ctx context.Context, in *QueryPairsRequest, opts ...
 
 // QueryServer is the server API for Query service.
 type QueryServer interface {
-	// Pairs queries all the collections of an account
+	// Pairs queries all the pairs of L1 and L2
 	Pairs(context.Context, *QueryPairsRequest) (*QueryPairsResponse, error)
 }
 
