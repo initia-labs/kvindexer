@@ -2,10 +2,10 @@ package types
 
 const (
 	// SubmoduleName is the name of the submodule
-	SubmoduleName = "nft"
+	SubmoduleName = "move-nft"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.0"
+	Version = "v0.1.2"
 )
 
 // store prefixes

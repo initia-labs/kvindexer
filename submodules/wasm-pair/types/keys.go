@@ -2,7 +2,7 @@ package types
 
 const (
 	// SubmoduleName is the name of the submodule
-	SubmoduleName = "pair"
+	SubmoduleName = "wasm-pair"
 
 	// Version is the current version of the submodule
 	Version = "v0.1.0"
