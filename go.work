@@ -3,8 +3,9 @@ go 1.22
 use (
 	.
 	./submodules/block
+	./submodules/evm-nft
 	./submodules/move-nft
-	./submodules/move-pair
+	./submodules/pair
 	./submodules/wasm-nft
 	./submodules/wasm-pair
 	./submodules/tx
