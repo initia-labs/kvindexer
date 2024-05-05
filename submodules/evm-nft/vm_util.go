@@ -36,6 +36,7 @@ func generateQueryRequestToGetNftInfo(tokenId string) []byte {
 }
 
 func (sm EvmNFTSubmodule) getCollectionContractInfo(ctx context.Context, colAddr sdk.AccAddress) (*types.ContractInfo, error) {
+
 	rb, err := sm.vmKeeper.QuerySmart(ctx, colAddr, []byte("{\"contract_info\":{}}")) //qreqCollectionContractInfo)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())

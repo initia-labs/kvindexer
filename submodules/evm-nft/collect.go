@@ -71,7 +71,7 @@ func (sm EvmNFTSubmodule) handleEVMEvent(ctx context.Context, transferLog *types
 		return errors.New("empty transfer log")
 	}
 
-	var fn func(ctx context.Context, transferLog types.ParsedTransfer) error = nil
+	var fn func(ctx context.Context, transferLog types.ParsedTransfer) error
 	switch {
 	case transferLog.From == nil && transferLog.To != nil:
 		// mint
