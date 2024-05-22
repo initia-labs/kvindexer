@@ -4,7 +4,7 @@ use (
 	.
 	./submodules/block
 	./submodules/move-nft
-	./submodules/move-pair
+	./submodules/pair
 	./submodules/wasm-nft
 	./submodules/wasm-pair
 	./submodules/tx
