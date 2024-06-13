@@ -85,7 +85,8 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 	for _, collectionSdkAddr := range collectionSdkAddrs {
 		collection, err := q.collectionMap.Get(ctx, collectionSdkAddr)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			q.Logger(ctx).Warn("index mismatch found", "collection", collectionSdkAddr, "action", "CollectionsByAccount")
+			continue
 		}
 		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
 		collections = append(collections, &collection)
@@ -203,7 +204,8 @@ func (sm WasmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "action", "CollectionsByAccount")
+			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 		res = append(res, &token)
@@ -227,24 +229,29 @@ func (sm WasmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
-	ownerAddrStr := ownerSdkAddr.String()
 
-	res, pageRes, err := query.CollectionFilteredPaginate(ctx, sm.tokenMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (bool, error) {
-			if slices.Equal(k.K1(), colSdkAddr) && (v.OwnerAddr == ownerAddrStr) {
-				return true, nil
-			}
-			return false, nil
+	identifiers := []collections.Pair[sdk.AccAddress, string]{}
+	_, pageRes, err := query.CollectionPaginate(ctx, sm.tokenOwnerMap, req.Pagination,
+		func(k collections.Triple[sdk.AccAddress, sdk.AccAddress, string], v bool) (bool, error) {
+			identifiers = append(identifiers, collections.Join(k.K2(), k.K3()))
+			return v, nil
 		},
-		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (*nfttypes.IndexedToken, error) {
-			v.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
-			return &v, nil
-		},
+		WithCollectionPaginationTriplePrefix2[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr, colSdkAddr),
 	)
-
 	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
+		return nil, handleCollectionErr(err)
 	}
+	res := []*nfttypes.IndexedToken{}
+	for _, identifier := range identifiers {
+		token, err := sm.tokenMap.Get(ctx, identifier)
+		if err != nil {
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "collection", colSdkAddr, "action", "GetTokensByAccountAndCollection")
+			continue
+		}
+		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+		res = append(res, &token)
+	}
+
 	res = slices.DeleteFunc(res, func(item *nfttypes.IndexedToken) bool {
 		return item == nil
 	})
@@ -285,6 +292,13 @@ func (sm WasmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Co
 func WithCollectionPaginationTriplePrefix[K1, K2, K3 any](prefix K1) func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
 	return func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
 		prefix := collections.TriplePrefix[K1, K2, K3](prefix)
+		o.Prefix = &prefix
+	}
+}
+
+func WithCollectionPaginationTriplePrefix2[K1, K2, K3 any](prefix K1, prefix2 K2) func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
+	return func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
+		prefix := collections.TripleSuperPrefix[K1, K2, K3](prefix, prefix2)
 		o.Prefix = &prefix
 	}
 }
