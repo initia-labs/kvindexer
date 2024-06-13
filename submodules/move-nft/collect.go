@@ -287,17 +287,12 @@ func (sm MoveNftSubmodule) handleBurnEvent(ctx context.Context, event types.Even
 	ownerAddr, _ := getVMAddress(cdc, token.OwnerAddr)
 	ownerSdkAddr := getCosmosAddress(ownerAddr)
 
-	err = sm.tokenOwnerMap.Remove(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()))
-	if err != nil {
-		sm.Logger(ctx).Error("failed to remove from tokenOwnerMap", "error", err)
-	}
-
 	err = sm.applyCollectionOwnerMap(ctx, collectionSdkAddr, ownerSdkAddr, false)
 	if err != nil {
 		return err // just return err, no wrap
 	}
 
-	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
+	err = sm.tokenOwnerMap.Remove(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()))
 	if err != nil {
 		sm.Logger(ctx).Error("failed to remove from tokenOwnerSet", "owner", ownerSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
 		return errors.New("failed to insert token into tokenOwnerSet")
