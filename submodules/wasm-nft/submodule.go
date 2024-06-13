@@ -31,10 +31,14 @@ type WasmNFTSubmodule struct {
 	vmKeeper      types.WasmKeeper
 	pairSubmodule types.PairSubmodule
 
-	collectionMap      *collections.Map[sdk.AccAddress, nfttypes.IndexedCollection]
+	// collectionMap: key(collection address`), value(collection)
+	collectionMap *collections.Map[sdk.AccAddress, nfttypes.IndexedCollection]
+	// collectionOwnerMap: key(owner address, collection address), value(collection`s object address)
 	collectionOwnerMap *collections.Map[collections.Pair[sdk.AccAddress, sdk.AccAddress], uint64]
-	tokenMap           *collections.Map[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken]
-	tokenOwnerMap      *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
+	// tokenMap: key(owner address, token id), value(token)
+	tokenMap *collections.Map[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken]
+	// tokenOwnerMap: key(owner address, collection address, token id), value(bool as placeholder)
+	tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
 }
 
 func NewWasmNFTSubmodule(

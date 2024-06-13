@@ -85,7 +85,8 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 	for _, collectionSdkAddr := range collectionSdkAddrs {
 		collection, err := q.collectionMap.Get(ctx, collectionSdkAddr)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			q.Logger(ctx).Warn("index mismatch found", "collection", collectionSdkAddr, "action", "CollectionsByAccount")
+			continue
 		}
 		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
 		collections = append(collections, &collection)
@@ -201,7 +202,8 @@ func (sm MoveNftSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "action", "CollectionsByAccount")
+			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 		res = append(res, &token)
@@ -241,7 +243,8 @@ func (sm MoveNftSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "collection", colSdkAddr, "action", "GetTokensByAccountAndCollection")
+			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 		res = append(res, &token)
