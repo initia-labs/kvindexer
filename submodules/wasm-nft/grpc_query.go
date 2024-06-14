@@ -81,19 +81,22 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 		return nil, handleCollectionErr(err)
 	}
 
-	collections := []*nfttypes.IndexedCollection{}
+	indexedCollections := []*nfttypes.IndexedCollection{}
 	for _, collectionSdkAddr := range collectionSdkAddrs {
 		collection, err := q.collectionMap.Get(ctx, collectionSdkAddr)
 		if err != nil {
-			q.Logger(ctx).Warn("index mismatch found", "collection", collectionSdkAddr, "action", "CollectionsByAccount")
+			q.Logger(ctx).Warn("index mismatch found", "collection", collectionSdkAddr, "action", "CollectionsByAccount", "error", err)
+			if cosmoserr.IsOf(err, collections.ErrNotFound) {
+				pageRes.Total--
+			}
 			continue
 		}
 		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
-		collections = append(collections, &collection)
+		indexedCollections = append(indexedCollections, &collection)
 	}
 
 	return &nfttypes.QueryCollectionsResponse{
-		Collections: collections,
+		Collections: indexedCollections,
 		Pagination:  pageRes,
 	}, nil
 }
@@ -204,7 +207,10 @@ func (sm WasmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "action", "CollectionsByAccount")
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "action", "CollectionsByAccount", "error", err)
+			if cosmoserr.IsOf(err, collections.ErrNotFound) {
+				pageRes.Total--
+			}
 			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
@@ -245,7 +251,10 @@ func (sm WasmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "collection", colSdkAddr, "action", "GetTokensByAccountAndCollection")
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "collection", colSdkAddr, "action", "GetTokensByAccountAndCollection", "error", err)
+			if cosmoserr.IsOf(err, collections.ErrNotFound) {
+				pageRes.Total--
+			}
 			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
