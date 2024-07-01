@@ -59,7 +59,7 @@ func (c IndexerConfig) IsEnabled() bool {
 func DefaultConfig() IndexerConfig {
 	return IndexerConfig{
 		Enable:        true,
-		CacheSize:     1_000_000,
+		CacheSize:     100_000,
 		BackendConfig: store.DefaultConfig(),
 	}
 }
