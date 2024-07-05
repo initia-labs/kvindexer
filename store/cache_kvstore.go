@@ -1,22 +1,28 @@
 package store
 
 import (
-	"fmt"
+	"context"
 
+	"cosmossdk.io/errors"
 	cachekv "cosmossdk.io/store/cachekv"
 	"cosmossdk.io/store/types"
-	lru "github.com/hashicorp/golang-lru"
+	bigcache "github.com/allegro/bigcache/v3"
 )
 
 type CacheStore struct {
 	store types.CacheKVStore
-	cache *lru.ARCCache
+	cache *bigcache.BigCache
 }
 
-func NewCacheStore(store types.KVStore, size uint) *CacheStore {
-	cache, err := lru.NewARC(int(size))
+func NewCacheStore(store types.KVStore, size int) *CacheStore {
+	// default with no eviction and custom hard max cache size
+	cacheCfg := bigcache.DefaultConfig(0)
+	cacheCfg.Verbose = false
+	cacheCfg.HardMaxCacheSize = size
+
+	cache, err := bigcache.New(context.Background(), cacheCfg)
 	if err != nil {
-		panic(fmt.Errorf("failed to create KVStore cache: %s", err))
+		panic(err)
 	}
 
 	return &CacheStore{
@@ -28,36 +34,45 @@ func NewCacheStore(store types.KVStore, size uint) *CacheStore {
 func (c CacheStore) Get(key []byte) ([]byte, error) {
 	types.AssertValidKey(key)
 
-	v, ok := c.cache.Get(string(key))
-	if ok {
-		// cache hit
-		return v.([]byte), nil
+	v, err := c.cache.Get(string(key))
+	// cache hit
+	if err == nil {
+		return v, nil
 	}
 
-	// write to cache
+	// get from store and write to cache
 	value := c.store.Get(key)
-	c.cache.Add(string(key), value)
+	err = c.cache.Set(string(key), value)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to set cache")
+	}
 
 	return value, nil
 }
 
 func (c CacheStore) Has(key []byte) (bool, error) {
-	_, ok := c.cache.Get(string(key))
-	return ok, nil
+	_, err := c.cache.Get(string(key))
+	return err == nil, err
 }
 
 func (c CacheStore) Set(key, value []byte) error {
 	types.AssertValidKey(key)
 	types.AssertValidValue(value)
 
-	c.cache.Add(string(key), value)
+	err := c.cache.Set(string(key), value)
+	if err != nil {
+		return errors.Wrap(err, "failed to set cache")
+	}
 	c.store.Set(key, value)
 
 	return nil
 }
 
 func (c CacheStore) Delete(key []byte) error {
-	c.cache.Remove(string(key))
+	err := c.cache.Delete(string(key))
+	if err != nil && errors.IsOf(err, bigcache.ErrEntryNotFound) {
+		return errors.Wrap(err, "failed to delete cache")
+	}
 	c.store.Delete(key)
 
 	return nil
