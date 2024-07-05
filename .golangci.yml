@@ -1,29 +1,89 @@
 linters:
-  disable-all: false
-  disable:
-    - thelper
-    - varnamelen
-    - tagliatelle
-    - interfacer
-    - wrapcheck
-    - deadcode
-    - exhaustivestruct
-    - golint
-    - ifshort
-    - maligned
-    - nosnakecase
-    - scopelint
-    - structcheck
-    - varcheck
-linters-settings:
-  gocyclo:
-    min-complexity: 11
-  errcheck:
-    ignore: fmt:.*,io/ioutil:^Read.*,github.com/spf13/cobra:MarkFlagRequired,github.com/spf13/viper:BindPFlag
-  golint:
-    min-confidence: 1.1
+  enable:
+    - asciicheck
+    - bodyclose
+    - depguard
+    - dogsled
+    - dupl
+    - errcheck
+    - exportloopref
+    - goconst
+    - gofmt
+    - goimports
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - misspell
+    # - nakedret
+    - nolintlint
+    # - prealloc
+    - staticcheck
+    # - structcheck // to be fixed by golangci-lint
+    - stylecheck
+    - typecheck
+    - unconvert
+    - unused
+
 issues:
-  exclude:
-    - composite
-run:
-  tests: false
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+    - linters:
+        - stylecheck
+      text: "ST1003:"
+  max-same-issues: 50
+
+linters-settings:
+  dogsled:
+    max-blank-identifiers: 3
+  #golint:
+  #  min-confidence: 0
+  goconst:
+    ignore-tests: true
+  #maligned:
+  #  suggest-new: true
+  misspell:
+    locale: US
+  depguard:
+    rules:
+      main:
+        files:
+          - $all
+          - "!$test"
+        allow:
+          - $gostd
+          - "cosmossdk.io/collections"
+          - "cosmossdk.io/core/address"
+          - "cosmossdk.io/core/store"
+          - "cosmossdk.io/log"
+          - "cosmossdk.io/store/cachekv"
+          - "cosmossdk.io/store/dbadapter"
+          - "cosmossdk.io/store/types"
+          - "github.com/cometbft/cometbft/abci/types"
+          - "github.com/cosmos/cosmos-db"
+          - "github.com/cosmos/cosmos-sdk/baseapp"
+          - "github.com/cosmos/cosmos-sdk/client"
+          - "github.com/cosmos/cosmos-sdk/codec"
+          - "github.com/cosmos/cosmos-sdk/server/types"
+          - "github.com/cosmos/cosmos-sdk/types"
+          - "github.com/cosmos/gogoproto/grpc"
+          - "github.com/grpc-ecosystem/grpc-gateway/runtime"
+          - "github.com/hashicorp/golang-lru"
+          - "github.com/initia-labs/kvindexer/config"
+          - "github.com/initia-labs/kvindexer/store"
+          - "github.com/initia-labs/kvindexer/store/goleveldb"
+          - "github.com/initia-labs/kvindexer/x/kvindexer/keeper"
+          - "github.com/initia-labs/kvindexer/x/kvindexer/types"
+          - "github.com/pkg/errors"
+          - "github.com/spf13/cast"
+          - "github.com/spf13/cobra"
+          - "github.com/spf13/viper"
+          - "github.com/syndtr/goleveldb/leveldb/filter"
+          - "github.com/syndtr/goleveldb/leveldb/opt"
+      test:
+        files:
+          - "$test"
+        allow:
+          - $gostd
