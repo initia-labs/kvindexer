@@ -23,7 +23,7 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 	if !cfg.Enable {
 		return cfg, nil
 	}
-	cfg.CacheSize = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
+	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
 
 	cfg.BackendConfig = viper.New()
 	err := cfg.BackendConfig.MergeConfigMap(cast.ToStringMap(appOpts.Get(flagIndexerBackend)))
@@ -31,7 +31,7 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 		return nil, fmt.Errorf("failed to merge backend config: %w", err)
 	}
 
-	cfg.CacheSize = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
+	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
 
 	return cfg, nil
 }
@@ -41,7 +41,7 @@ func (c IndexerConfig) Validate() error {
 		return nil
 	}
 
-	if c.CacheSize == 0 {
+	if c.CacheCapacity == 0 {
 		return fmt.Errorf("cache capacity must be greater than 0")
 	}
 
@@ -59,7 +59,7 @@ func (c IndexerConfig) IsEnabled() bool {
 func DefaultConfig() IndexerConfig {
 	return IndexerConfig{
 		Enable:        true,
-		CacheSize:     500 * 1024 * 1024, // 500MiB
+		CacheCapacity: 500 * 1024 * 1024, // 500MiB
 		BackendConfig: store.DefaultConfig(),
 	}
 }
