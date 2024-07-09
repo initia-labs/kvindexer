@@ -23,7 +23,9 @@ type AppModuleBasic struct {
 	keeper *keeper.Keeper
 }
 
-func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) {}
+func (b AppModuleBasic) RegisterLegacyAminoCodec(amino *codec.LegacyAmino) { //nolint:staticcheck
+	/*nop*/ //types.RegisterLegacyAminoCodec(amino)
+}
 
 func (b AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, serveMux *runtime.ServeMux) {
 	err := types.RegisterQueryHandlerClient(context.Background(), serveMux, types.NewQueryClient(clientCtx))
@@ -46,8 +48,6 @@ func (b AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) 
 }
 
 // Name returns the move module's name.
-//
-//nolint:stylecheck
 func (AppModuleBasic) Name() string {
 	return types.ModuleName
 }
