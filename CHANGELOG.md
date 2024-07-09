@@ -27,7 +27,6 @@ Types of changes (Stanzas):
 "Improvements" for changes in existing functionality.
 "Deprecated" for soon-to-be removed features.
 "Bug Fixes" for any bug fixes.
-"Client Breaking" for breaking Protobuf, gRPC and REST routes used by end-users.
 "KVIndexer Breaking" for breaking KVIndexer module.
 "Submodule Breaking" for breaking submodules
 Ref: https://keepachangelog.com/en/1.0.0/
@@ -37,6 +36,6 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
-### Improvements 
+### KVIndexer breaking 
 
 * (cache) [#48](https://github.com/initia-labs/kvindexer/pull/48) Replace record-count-based lru cache with capacity-based one
