@@ -108,7 +108,7 @@ func (k *Keeper) Seal() error {
 	k.db = db
 	k.schema = &schema
 
-	k.store = store.NewCacheStore(dbadapter.Store{DB: db}, k.config.CacheSize)
+	k.store = store.NewCacheStore(dbadapter.Store{DB: db}, k.config.CacheCapacity)
 	k.sealed = true
 
 	return nil
