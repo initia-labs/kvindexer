@@ -14,11 +14,11 @@ type CacheStore struct {
 	cache *bigcache.BigCache
 }
 
-func NewCacheStore(store types.KVStore, size int) *CacheStore {
-	// default with no eviction and custom hard max cache size
+func NewCacheStore(store types.KVStore, capacity int) *CacheStore {
+	// default with no eviction and custom hard max cache capacity
 	cacheCfg := bigcache.DefaultConfig(0)
 	cacheCfg.Verbose = false
-	cacheCfg.HardMaxCacheSize = size
+	cacheCfg.HardMaxCacheSize = capacity
 
 	cache, err := bigcache.New(context.Background(), cacheCfg)
 	if err != nil {
