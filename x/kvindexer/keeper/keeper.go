@@ -3,7 +3,6 @@ package keeper
 import (
 	"context"
 	"errors"
-	"path"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -20,7 +19,6 @@ import (
 )
 
 const StoreName = "indexer"
-const DataDir = "data"
 
 type Keeper struct {
 	cdc   codec.Codec
@@ -28,8 +26,7 @@ type Keeper struct {
 
 	vmType string
 
-	config  *config.IndexerConfig
-	homeDir string
+	config *config.IndexerConfig
 
 	schemaBuilder *collections.SchemaBuilder
 	schema        *collections.Schema
@@ -57,20 +54,20 @@ func (k Keeper) Close() error {
 func NewKeeper(
 	cdc codec.Codec,
 	vmType string,
-	homeDir string,
+	db dbm.DB,
 	config *config.IndexerConfig,
 	ac, vc address.Codec,
 ) *Keeper {
 
 	k := &Keeper{
-		cdc:     cdc,
-		vmType:  vmType,
-		homeDir: homeDir,
-		config:  config,
-		schema:  nil,
-		ac:      ac,
-		vc:      vc,
-		sealed:  false,
+		cdc:    cdc,
+		vmType: vmType,
+		db:     db,
+		config: config,
+		schema: nil,
+		ac:     ac,
+		vc:     vc,
+		sealed: false,
 	}
 
 	k.submodules = make(map[string]types.Submodule)
@@ -95,20 +92,14 @@ func (k *Keeper) Seal() error {
 		return errors.New("keeper is already sealed")
 	}
 
-	db, err := store.OpenDB(path.Join(k.homeDir, DataDir), StoreName, k.config.BackendConfig)
-	if err != nil {
-		panic(err)
-	}
-
 	schema, err := k.schemaBuilder.Build()
 	if err != nil {
 		return err
 	}
 
-	k.db = db
 	k.schema = &schema
 
-	k.store = store.NewCacheStore(dbadapter.Store{DB: db}, k.config.CacheCapacity)
+	k.store = store.NewCacheStore(dbadapter.Store{DB: k.db}, k.config.CacheCapacity)
 	k.sealed = true
 
 	return nil
