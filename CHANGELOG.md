@@ -36,6 +36,9 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [v0.1.5](https://github.com/initia-labs/kvindexer/releases/tag/v0.1.5) - 2024-07-16
+
 ### KVIndexer breaking 
 
 * (cache) [#48](https://github.com/initia-labs/kvindexer/pull/48) Replace record-count-based lru cache with capacity-based one
+* (keeper) [#49] (https://github.com/initia-labs/kvindexer/pull/49) use db from outside
