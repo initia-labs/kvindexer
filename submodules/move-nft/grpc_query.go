@@ -81,18 +81,22 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 		return nil, handleCollectionErr(err)
 	}
 
-	collections := []*nfttypes.IndexedCollection{}
+	indexedCollections := []*nfttypes.IndexedCollection{}
 	for _, collectionSdkAddr := range collectionSdkAddrs {
 		collection, err := q.collectionMap.Get(ctx, collectionSdkAddr)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			q.Logger(ctx).Warn("index mismatch found", "collection", collectionSdkAddr, "action", "CollectionsByAccount", "error", err)
+			if cosmoserr.IsOf(err, collections.ErrNotFound) {
+				pageRes.Total--
+			}
+			continue
 		}
 		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
-		collections = append(collections, &collection)
+		indexedCollections = append(indexedCollections, &collection)
 	}
 
 	return &nfttypes.QueryCollectionsResponse{
-		Collections: collections,
+		Collections: indexedCollections,
 		Pagination:  pageRes,
 	}, nil
 }
@@ -201,7 +205,11 @@ func (sm MoveNftSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "action", "CollectionsByAccount", "error", err)
+			if cosmoserr.IsOf(err, collections.ErrNotFound) {
+				pageRes.Total--
+			}
+			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 		res = append(res, &token)
@@ -241,7 +249,11 @@ func (sm MoveNftSubmodule) getTokensByAccountAndCollection(ctx context.Context, 
 	for _, identifier := range identifiers {
 		token, err := sm.tokenMap.Get(ctx, identifier)
 		if err != nil {
-			return nil, handleCollectionErr(err)
+			sm.Logger(ctx).Warn("index mismatch found", "account", ownerSdkAddr, "collection", colSdkAddr, "action", "GetTokensByAccountAndCollection", "error", err)
+			if cosmoserr.IsOf(err, collections.ErrNotFound) {
+				pageRes.Total--
+			}
+			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
 		res = append(res, &token)
