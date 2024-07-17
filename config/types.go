@@ -25,6 +25,7 @@ cache-capacity = {{ .IndexerConfig.CacheCapacity }}
 
 # Backend defines the type of the backend store and its options.
 # It should have a key-value pair named 'type', and the value should exist in store supported by cosmos-db.
+# Recommend to use default value unless you know about backend db storage.
 # supported type: "goleveldb" only in current
 [indexer.backend]
 {{ range $key, $value := .IndexerConfig.BackendConfig.AllSettings }}{{ printf "%s = \"%v\"\n" $key $value }}{{end}}
