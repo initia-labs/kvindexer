@@ -20,7 +20,7 @@ const DefaultConfigTemplate = `
 # Enable defines whether the indexer is enabled.
 enable = {{ .IndexerConfig.Enable }}
 
-# CacheCapacity defines the size of the cache. (unit: bytes)
+# CacheCapacity defines the size of the cache. (unit: MiB)
 cache-capacity = {{ .IndexerConfig.CacheCapacity }}
 
 # Backend defines the type of the backend store and its options.
