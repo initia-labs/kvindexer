@@ -99,7 +99,7 @@ func (k *Keeper) Seal() error {
 
 	k.schema = &schema
 
-	k.store = store.NewCacheStore(dbadapter.Store{DB: k.db}, k.config.CacheCapacity)
+	k.store = store.NewCacheStore(dbadapter.Store{DB: k.db}, k.config.CacheCapacity*1024*1024)
 	k.sealed = true
 
 	return nil
