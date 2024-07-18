@@ -3,6 +3,8 @@ package types
 import (
 	fmt "fmt"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+	"github.com/initia-labs/kvindexer/submodules/wasm-nft/util"
 	"github.com/spf13/cast"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -17,31 +19,35 @@ type MintEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func getUint64FromMap(src EventWithAttributeMap, key string) (uint64, error) {
-	val, err := cast.ToUint64E(src.AttributesMap[key])
+func getUint64FromMap(src abci.Event, key string) (uint64, error) {
+	valuestr, err := util.GetAttributeValue(src, key)
+	if err != nil {
+		return 0, err
+	}
+	val, err := cast.ToUint64E(valuestr)
 	if err != nil {
 		return 0, fmt.Errorf("%s is invalid", key)
 	}
 	return val, nil
 }
 
-func getStringFromMap(src EventWithAttributeMap, key string) (string, error) {
-	val, found := src.AttributesMap[key]
-	if !found {
-		return "", fmt.Errorf("%s is invalid", key)
-	}
-	return val, nil
+func getStringFromMap(src abci.Event, key string) (string, error) {
+	return util.GetAttributeValue(src, key)
 }
 
-func getSdkAddressFromMap(src EventWithAttributeMap, key string) (sdk.AccAddress, error) {
-	addr, err := sdk.AccAddressFromBech32(src.AttributesMap[key])
+func getSdkAddressFromMap(src abci.Event, key string) (sdk.AccAddress, error) {
+	valuestr, err := util.GetAttributeValue(src, key)
+	if err != nil {
+		return nil, err
+	}
+	addr, err := sdk.AccAddressFromBech32(valuestr)
 	if err != nil {
 		return nil, fmt.Errorf("%s is invalid", key)
 	}
 	return addr, nil
 }
 
-func (event *MintEvent) Parse(src EventWithAttributeMap) (err error) {
+func (event *MintEvent) Parse(src abci.Event) (err error) {
 	if event.Action, err = getStringFromMap(src, "action"); err != nil {
 		return err
 	}
@@ -72,7 +78,7 @@ type TransferOrSendEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func (event *TransferOrSendEvent) Parse(src EventWithAttributeMap) (err error) {
+func (event *TransferOrSendEvent) Parse(src abci.Event) (err error) {
 	if event.Action, err = getStringFromMap(src, "action"); err != nil {
 		return err
 	}
@@ -102,7 +108,7 @@ type BurnEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func (event *BurnEvent) Parse(src EventWithAttributeMap) (err error) {
+func (event *BurnEvent) Parse(src abci.Event) (err error) {
 	if event.Action, err = getStringFromMap(src, "action"); err != nil {
 		return err
 	}

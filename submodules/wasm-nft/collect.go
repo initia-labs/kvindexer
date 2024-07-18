@@ -11,13 +11,14 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 
 	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
+	"github.com/initia-labs/kvindexer/submodules/wasm-nft/util"
 )
 
 func (sm WasmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
 	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(txResult.Events, eventTypes)
+		events := util.FilterEvent(eventType, txResult.Events)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Warn("processEvents", "error", err)
@@ -27,20 +28,22 @@ func (sm WasmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 	return nil
 }
 
-func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
-	var fn func(ctx context.Context, event types.EventWithAttributeMap) error
+func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []abci.Event) error {
+	var fn func(ctx context.Context, event abci.Event) error
 	for _, event := range events {
-		if event.Type == "wasm" {
-			switch event.AttributesMap["action"] {
-			case "mint":
-				fn = sm.handleMintEvent
-			case "transfer_nft", "send_nft":
-				fn = sm.handlerSendOrTransferEvent
-			case "burn":
-				fn = sm.handleBurnEvent
-			default:
-				continue
-			}
+		action, err := util.GetAttributeValue(event, "action")
+		if err != nil {
+			continue
+		}
+		switch action {
+		case "mint":
+			fn = sm.handleMintEvent
+		case "transfer_nft", "send_nft":
+			fn = sm.handlerSendOrTransferEvent
+		case "burn":
+			fn = sm.handleBurnEvent
+		default:
+			continue
 		}
 
 		if err := fn(ctx, event); err != nil {
@@ -51,7 +54,7 @@ func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []types.Eve
 	return nil
 }
 
-func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
 
 	data := types.MintEvent{}
@@ -104,7 +107,7 @@ func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	return nil
 }
 
-func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event types.EventWithAttributeMap) (err error) {
+func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event abci.Event) (err error) {
 	sm.Logger(ctx).Info("sent/transferred", "event", event)
 	data := types.TransferOrSendEvent{}
 	if err := data.Parse(event); err != nil {
@@ -116,7 +119,7 @@ func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event
 
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
-		sm.Logger(ctx).Debug("failed to get nft from prev owner and object addres", "collection-addr", data.ContractAddress, "token-id", data.TokenId, "prevOwner", data.Sender, "error", err)
+		sm.Logger(ctx).Debug("failed to get nft from prev owner and object address", "collection-addr", data.ContractAddress, "token-id", data.TokenId, "prevOwner", data.Sender, "error", err)
 		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")
 	}
 	token.OwnerAddr = data.Recipient.String()
@@ -150,7 +153,7 @@ func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event
 	return nil
 }
 
-func (sm WasmNFTSubmodule) handleBurnEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm WasmNFTSubmodule) handleBurnEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("burnt", "event", event)
 
 	data := types.BurnEvent{}

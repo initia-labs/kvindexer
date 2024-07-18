@@ -1,14 +1,8 @@
 package types
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 )
-
-type EventWithAttributeMap struct {
-	*abci.Event
-	AttributesMap map[string]string
-}
 
 // internal use only: struct from move resource
 type CollectionResource struct {
@@ -21,7 +15,7 @@ type CollectionResource struct {
 // internal use only: struct from move resource
 type NftResource struct {
 	TokenUri  string      `json:"token_uri"`
-	Extention interface{} `json:"extension"`
+	Extension interface{} `json:"extension"`
 }
 
 type ContractInfo struct {

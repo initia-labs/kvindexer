@@ -20,7 +20,7 @@ func (sm MoveNftSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
 	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(eventType, txResult.Events)
+		events := filterEvent(eventType, txResult.Events)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Warn("processEvents", "error", err)
@@ -30,10 +30,14 @@ func (sm MoveNftSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 	return nil
 }
 
-func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
-	var fn func(ctx context.Context, event types.EventWithAttributeMap) error
+func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []abci.Event) error {
+	var fn func(ctx context.Context, event abci.Event) error
 	for _, event := range events {
-		switch event.AttributesMap["type_tag"] {
+		typeTag, err := getAttributeValue(event, "type_tag")
+		if err != nil {
+			continue
+		}
+		switch typeTag {
 		case "0x1::collection::MintEvent":
 			fn = sm.handleMintEvent
 		case "0x1::object::TransferEvent":
@@ -53,11 +57,15 @@ func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []types.Eve
 	return nil
 }
 
-func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
 
+	datastr, err := getAttributeValue(event, "data")
+	if err != nil {
+		return errors.New("failed to get data from mint event")
+	}
 	data := types.NftMintAndBurnEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+	if err := json.Unmarshal([]byte(datastr), &data); err != nil {
 		return errors.New("failed to unmarshal mint event")
 	}
 
@@ -123,11 +131,15 @@ func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	return nil
 }
 
-func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("transferred", "event", event)
 
+	datastr, err := getAttributeValue(event, "data")
+	if err != nil {
+		return errors.New("failed to get data from transfer event")
+	}
 	data := types.NftTransferEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+	if err := json.Unmarshal([]byte(datastr), &data); err != nil {
 		return errors.New("failed to unmarshal transfer event")
 	}
 
@@ -196,12 +208,16 @@ func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event types
 	return nil
 }
 
-func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("mutated", "event", event)
 	cdc := sm.ac
 
+	datastr, err := getAttributeValue(event, "data")
+	if err != nil {
+		return errors.New("failed to get data from mutate event")
+	}
 	data := types.MutationEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+	if err := json.Unmarshal([]byte(datastr), &data); err != nil {
 		return errors.New("failed to unmarshal mutation event")
 	}
 
@@ -252,11 +268,16 @@ func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event types.Ev
 	return nil
 }
 
-func (sm MoveNftSubmodule) handleBurnEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handleBurnEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("burnt", "event", event)
 	cdc := sm.ac
+
+	datastr, err := getAttributeValue(event, "data")
+	if err != nil {
+		return errors.New("failed to get data from mutate event")
+	}
 	burnt := types.NftMintAndBurnEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &burnt); err != nil {
+	if err := json.Unmarshal([]byte(datastr), &burnt); err != nil {
 		return errors.New("failed to unmarshal burnt event")
 	}
 

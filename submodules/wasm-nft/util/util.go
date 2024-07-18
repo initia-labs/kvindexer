@@ -1,4 +1,4 @@
-package move_nft
+package util
 
 import (
 	"errors"
@@ -7,7 +7,7 @@ import (
 	abci "github.com/cometbft/cometbft/abci/types"
 )
 
-func getAttributeValue(event abci.Event, key string) (string, error) {
+func GetAttributeValue(event abci.Event, key string) (string, error) {
 	i := slices.IndexFunc(event.Attributes, func(attr abci.EventAttribute) bool {
 		return attr.Key == key
 	})
@@ -17,7 +17,7 @@ func getAttributeValue(event abci.Event, key string) (string, error) {
 	return event.Attributes[i].Value, nil
 }
 
-func filterEvent(eventType string, events []abci.Event) (filtered []abci.Event) {
+func FilterEvent(eventType string, events []abci.Event) (filtered []abci.Event) {
 	for _, event := range events {
 		if event.Type != eventType {
 			continue

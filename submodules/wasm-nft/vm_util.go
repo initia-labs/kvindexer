@@ -16,14 +16,15 @@ import (
 	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
 )
 
-var eventTypes = []string{"wasm"}
+var eventType = "wasm"
 
 var (
-	qreqCollectionContractInfo = []byte("{\"contract_info\":{}}") // {"contract_info":{}}
+	qreqCollectionContractInfo = []byte("{\"contract_info\":{}}") //nolint:unused // {"contract_info":{}}
 	qreqCollectionMinter       = []byte("{\"minter\":{}}")        // {"minter":{}}
 	qreqCollectionNumTokens    = []byte("{\"num_tokens\":{}}")    // {"num_tokens":{}}
 )
 
+//nolint:unused
 func encode(req []byte) []byte {
 	res := make([]byte, base64.StdEncoding.EncodedLen(len(req)))
 	base64.StdEncoding.Encode(res, req)
