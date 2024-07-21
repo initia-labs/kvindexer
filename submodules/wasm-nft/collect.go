@@ -45,7 +45,7 @@ func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []types.Eve
 
 		if err := fn(ctx, event); err != nil {
 			sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
-			return cosmoserr.Wrap(err, "failed to handle nft-related event")
+			// don't return here because we want to process all events
 		}
 	}
 	return nil
