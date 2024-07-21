@@ -37,6 +37,7 @@ Ref: https://keepachangelog.com/en/1.0.0/
 ## [Unreleased]
 
 * (cache) Change cache-capacity unit to MiB
+* (submodule/move-nft, submodule/wasm-nft) fix: don't abort on nft index failure
 
 ## [v0.1.5](https://github.com/initia-labs/kvindexer/releases/tag/v0.1.5) - 2024-07-16
 
