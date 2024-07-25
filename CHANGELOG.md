@@ -36,8 +36,18 @@ Ref: https://keepachangelog.com/en/1.0.0/
 
 ## [Unreleased]
 
+## [submodules/move-nft/v0.1.4](https://github.com/initia-labs/kvindexer/releases/tag/submodules/move-nft/v0.1.4) - 2024-07-26
+
+* (submodule/move-nft) fix: don't abort on nft index failure
+
+## [submodules/wasm-nft/v0.1.4](https://github.com/initia-labs/kvindexer/releases/tag/submodules/wasm-nft/v0.1.4) - 2024-07-26
+
+* (submodule/wasm-nft) fix: don't abort on nft index failure
+
+## [v0.1.6](https://github.com/initia-labs/kvindexer/releases/tag/v0.1.6) - 2024-07-26
+
+* (submodule) deprecate: pair, wasm-pair
 * (cache) Change cache-capacity unit to MiB
-* (submodule/move-nft, submodule/wasm-nft) fix: don't abort on nft index failure
 
 ## [v0.1.5](https://github.com/initia-labs/kvindexer/releases/tag/v0.1.5) - 2024-07-16
 
