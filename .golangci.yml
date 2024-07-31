@@ -2,7 +2,6 @@ linters:
   enable:
     - asciicheck
     - bodyclose
-    - depguard
     - dogsled
     - dupl
     - errcheck
@@ -27,9 +26,6 @@ linters:
 
 issues:
   exclude-rules:
-    - path: _test\.go
-      linters:
-        - gosec
     - linters:
         - stylecheck
       text: "ST1003:"
@@ -46,44 +42,3 @@ linters-settings:
   #  suggest-new: true
   misspell:
     locale: US
-  depguard:
-    rules:
-      main:
-        files:
-          - $all
-          - "!$test"
-        allow:
-          - $gostd
-          - "cosmossdk.io/collections"
-          - "cosmossdk.io/core/address"
-          - "cosmossdk.io/core/store"
-          - "cosmossdk.io/log"
-          - "cosmossdk.io/store/cachekv"
-          - "cosmossdk.io/store/dbadapter"
-          - "cosmossdk.io/store/types"
-          - "github.com/cometbft/cometbft/abci/types"
-          - "github.com/cosmos/cosmos-db"
-          - "github.com/cosmos/cosmos-sdk/baseapp"
-          - "github.com/cosmos/cosmos-sdk/client"
-          - "github.com/cosmos/cosmos-sdk/codec"
-          - "github.com/cosmos/cosmos-sdk/server/types"
-          - "github.com/cosmos/cosmos-sdk/types"
-          - "github.com/cosmos/gogoproto/grpc"
-          - "github.com/grpc-ecosystem/grpc-gateway/runtime"
-          - "github.com/hashicorp/golang-lru"
-          - "github.com/initia-labs/kvindexer/config"
-          - "github.com/initia-labs/kvindexer/store"
-          - "github.com/initia-labs/kvindexer/store/goleveldb"
-          - "github.com/initia-labs/kvindexer/x/kvindexer/keeper"
-          - "github.com/initia-labs/kvindexer/x/kvindexer/types"
-          - "github.com/pkg/errors"
-          - "github.com/spf13/cast"
-          - "github.com/spf13/cobra"
-          - "github.com/spf13/viper"
-          - "github.com/syndtr/goleveldb/leveldb/filter"
-          - "github.com/syndtr/goleveldb/leveldb/opt"
-      test:
-        files:
-          - "$test"
-        allow:
-          - $gostd
