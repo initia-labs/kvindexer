@@ -33,69 +33,32 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 	for _, event := range events {
 		// TODO: create/mint/burn in evm
 		log, ok := event.AttributesMap[evmtypes.AttributeKeyLog]
-		if ok {
-			transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
-			if err != nil {
-				continue
-			}
-			err = sm.handleEVMEvent(ctx, transferLog)
-			if err != nil {
-				sm.Logger(ctx).Error("failed to handle evm event for erc721", "error", err.Error())
-			}
+		if !ok {
+			continue
 		}
-		/*
-			var fn func(ctx context.Context, event types.EventWithAttributeMap) error
-			switch event.Type {
-				case evmtypes.EventTypeERC721Created:
-					fn = sm.handleCreateEvent
-				case evmtypes.EventTypeERC721Minted:
-					fn = sm.handleMintEvent
-				case evmtypes.EventTypeERC721Burned:
-					fn = sm.handleBurnEvent
-				default:
 
-			}
+		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
+		if err != nil {
+			sm.Logger(ctx).Debug("failed parse attribute", "error", err)
+			continue
+		}
+		var fn func(context.Context, *types.ParsedTransfer) error
+		switch transferLog.GetAction() {
+		case types.NftActionMint:
+			fn = sm.handleMintEvent
+		case types.NftActionTransfer:
+			fn = sm.handlerTransferEvent
+		case types.NftActionBurn:
+			fn = sm.handleBurnEvent
+		default:
+			sm.Logger(ctx).Debug("unknown nft action", "action", transferLog.GetAction())
+			continue
+		}
 
-			if err := fn(ctx, event); err != nil {
-				sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
-				return cosmoserr.Wrap(err, "failed to handle nft-related event")
-			}
-		*/
-	}
-	return nil
-}
-func (sm EvmNFTSubmodule) handleEVMEvent(ctx context.Context, transferLog *types.ParsedTransfer) error {
-	sm.Logger(ctx).Debug("evm event", "log", transferLog)
-
-	if transferLog == nil {
-		return errors.New("empty transfer log")
-	}
-
-	var fn func(ctx context.Context, transferLog types.ParsedTransfer) error
-	switch {
-	case transferLog.From == nil && transferLog.To != nil:
-		// mint
-		sm.Logger(ctx).Debug("mint", "from", transferLog.From, "to", transferLog.To, "tokenId", transferLog.TokenId)
-		fn = sm.handleMintEvent
-	case transferLog.From != nil && transferLog.To != nil:
-		// transfer
-		sm.Logger(ctx).Debug("transfer", "from", transferLog.From, "to", transferLog.To, "tokenId", transferLog.TokenId)
-		fn = sm.handlerTransferEvent
-	case transferLog.From != nil && transferLog.To == nil:
-		// burn
-		sm.Logger(ctx).Debug("burn", "from", transferLog.From, "tokenId", transferLog.TokenId)
-		fn = sm.handleBurnEvent
-	default:
-		return errors.New("invalid transfer log: from/to is nil")
-	}
-	if fn == nil {
-		return nil
-	}
-
-	err := fn(ctx, *transferLog)
-	if err != nil {
-		sm.Logger(ctx).Error("failed to handle evm event", "error", err.Error())
-		return err
+		if err := fn(ctx, transferLog); err != nil {
+			sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
+			return cosmoserr.Wrap(err, "failed to handle nft-related event")
+		}
 	}
 	return nil
 }
@@ -131,7 +94,7 @@ func (sm EvmNFTSubmodule) handleMintInEVMEvent(ctx context.Context, transferLog 
 	return nil
 }
 
-func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event types.ParsedTransfer) error {
+func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.ParsedTransfer) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
 
 	collection, err := sm.collectionMap.Get(ctx, event.Address)
@@ -178,7 +141,7 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Parse
 	return nil
 }
 
-func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event types.ParsedTransfer) (err error) {
+func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event *types.ParsedTransfer) (err error) {
 	sm.Logger(ctx).Info("sent/transferred", "event", event)
 
 	tpk := collections.Join[sdk.AccAddress, string](event.Address, event.TokenId)
@@ -219,7 +182,7 @@ func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event types.
 	return nil
 }
 
-func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event types.ParsedTransfer) error {
+func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.ParsedTransfer) error {
 	sm.Logger(ctx).Info("burnt", "event", event)
 
 	// remove from tokensOwnersMap
