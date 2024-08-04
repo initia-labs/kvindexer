@@ -21,7 +21,7 @@ type CollectionResource struct {
 // internal use only: struct from move resource
 type NftResource struct {
 	TokenUri  string      `json:"token_uri"`
-	Extention interface{} `json:"extension"`
+	Extension interface{} `json:"extension"`
 }
 
 type ContractInfo struct {

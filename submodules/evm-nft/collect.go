@@ -2,7 +2,8 @@ package evm_nft
 
 import (
 	"context"
-	"errors"
+
+	"github.com/pkg/errors"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -19,6 +20,7 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 
 	for _, txResult := range res.TxResults {
 		events := filterAndParseEvent(txResult.Events, eventTypes)
+		sm.Logger(ctx).Error("[DEBUG] events", "events", events)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Warn("processEvents", "error", err)
@@ -31,17 +33,23 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
 
 	for _, event := range events {
-		// TODO: create/mint/burn in evm
 		log, ok := event.AttributesMap[evmtypes.AttributeKeyLog]
 		if !ok {
-			continue
+			continue // no log means it's not evm-related event
 		}
+
+		sm.Logger(ctx).Error("[DEBUG] LOGEVENT", "log", log)
 
 		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
 		if err != nil {
 			sm.Logger(ctx).Debug("failed parse attribute", "error", err)
+			sm.Logger(ctx).Error("[DEBUG] failed parse attribute", "error", err, "log", log)
 			continue
 		}
+		sm.Logger(ctx).Error("[DEBUG] transferLog", "transferLog", transferLog)
+
+		sm.Logger(ctx).Error("[DEBUG] TL", "from", transferLog.From.Bytes(), "to", transferLog.To.Bytes())
+
 		var fn func(context.Context, *types.ParsedTransfer) error
 		switch transferLog.GetAction() {
 		case types.NftActionMint:
@@ -57,65 +65,41 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 
 		if err := fn(ctx, transferLog); err != nil {
 			sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
-			return cosmoserr.Wrap(err, "failed to handle nft-related event")
 		}
 	}
-	return nil
-}
-
-func (sm EvmNFTSubmodule) handleMintInEVMEvent(ctx context.Context, transferLog *types.ParsedTransfer) error {
-
-	_, err := sm.collectionMap.Get(ctx, transferLog.Address)
-	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return cosmoserr.Wrap(err, "failed to check collection existence")
-		}
-		// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
-		coll, err := sm.getIndexedCollectionFromVMStore(ctx, transferLog.Address)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to get collection contract info")
-		}
-		err = sm.collectionMap.Set(ctx, transferLog.Address, *coll)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to set collection")
-		}
-	}
-	err = sm.applyCollectionOwnerMap(ctx, transferLog.Address, transferLog.To, true)
-	if err != nil {
-		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
-	}
-
-	token, err := sm.getIndexedNftFromVMStore(ctx, transferLog.Address, transferLog.TokenId, &transferLog.To)
-	if err != nil {
-		return cosmoserr.Wrap(err, "failed to get token info")
-	}
-	token.CollectionName = transferLog.Address.String()
-
 	return nil
 }
 
 func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.ParsedTransfer) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
+	sm.Logger(ctx).Error("[DEBUG] minted", "event", event)
 
-	collection, err := sm.collectionMap.Get(ctx, event.Address)
+	classId, err := evmtypes.ClassIdFromCollectionAddress(ctx, sm.vmKeeper, event.Address)
+	if err != nil {
+		return cosmoserr.Wrap(err, "failed to get classId from collection address")
+	}
+	contractSdkAddr := getCosmosAddress(event.Address)
+
+	collection, err := sm.collectionMap.Get(ctx, contractSdkAddr)
 	if err != nil {
 		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
 			return cosmoserr.Wrap(err, "failed to check collection existence")
 		}
+		sm.Logger(ctx).Error("[DEBUG] collection found", "collection", collection)
 		// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
-		coll, err := sm.getIndexedCollectionFromVMStore(ctx, event.Address)
+		coll, err := sm.getIndexedCollectionFromVMStore(ctx, event.Address, classId)
 		if err != nil {
 			return cosmoserr.Wrap(err, "failed to get collection contract info")
 		}
 		collection = *coll
 
-		err = sm.collectionMap.Set(ctx, event.Address, collection)
+		err = sm.collectionMap.Set(ctx, contractSdkAddr, collection)
 		if err != nil {
 			return cosmoserr.Wrap(err, "failed to set collection")
 		}
 	}
 
-	err = sm.applyCollectionOwnerMap(ctx, event.Address, event.To, true)
+	err = sm.applyCollectionOwnerMap(ctx, contractSdkAddr, event.To, true)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
 	}
@@ -126,12 +110,12 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 	}
 	token.CollectionName = collection.Collection.Name
 
-	err = sm.tokenMap.Set(ctx, collections.Join(event.Address, event.TokenId), *token)
+	err = sm.tokenMap.Set(ctx, collections.Join(contractSdkAddr, event.TokenId), *token)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to set token")
 	}
 
-	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(event.To, event.Address, event.TokenId), true)
+	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(event.To, contractSdkAddr, event.TokenId), true)
 	if err != nil {
 		sm.Logger(ctx).Error("failed to insert into tokenOwnerSet", "event", event, "error", err)
 		return cosmoserr.Wrap(err, "failed to insert into tokenOwnerSet")
@@ -143,8 +127,9 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 
 func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event *types.ParsedTransfer) (err error) {
 	sm.Logger(ctx).Info("sent/transferred", "event", event)
+	contractSdkAddr := getCosmosAddress(event.Address)
 
-	tpk := collections.Join[sdk.AccAddress, string](event.Address, event.TokenId)
+	tpk := collections.Join[sdk.AccAddress, string](contractSdkAddr, event.TokenId)
 
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
@@ -184,9 +169,10 @@ func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event *types
 
 func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.ParsedTransfer) error {
 	sm.Logger(ctx).Info("burnt", "event", event)
+	contractSdkAddr := getCosmosAddress(event.Address)
 
 	// remove from tokensOwnersMap
-	tpk := collections.Join[sdk.AccAddress, string](event.Address, event.TokenId)
+	tpk := collections.Join[sdk.AccAddress, string](contractSdkAddr, event.TokenId)
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")
@@ -197,8 +183,10 @@ func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to delete nft from tokenMap")
 	}
 
-	ownerAddr, _ := getVMAddress(sm.ac, token.OwnerAddr)
-	ownerSdkAddr := getCosmosAddress(ownerAddr)
+	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, token.OwnerAddr)
+	if err != nil {
+		return cosmoserr.Wrap(err, "failed to get owner address from token")
+	}
 
 	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
 	if err != nil {
@@ -206,7 +194,7 @@ func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to insert token into tokenOwnerSet")
 	}
 
-	err = sm.applyCollectionOwnerMap(ctx, event.Address, ownerSdkAddr, false)
+	err = sm.applyCollectionOwnerMap(ctx, contractSdkAddr, ownerSdkAddr, false)
 	if err != nil {
 		return err // just return err, no wrap
 	}

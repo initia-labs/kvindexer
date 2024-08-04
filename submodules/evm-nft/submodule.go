@@ -16,6 +16,8 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	evmkeeper "github.com/initia-labs/minievm/x/evm/keeper"
+
 	"github.com/initia-labs/kvindexer/collection"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/evm-nft/types"
@@ -28,7 +30,7 @@ type EvmNFTSubmodule struct {
 	ac  address.Codec
 	cdc codec.Codec
 
-	vmKeeper      types.EvmNftKeeper
+	vmKeeper      *evmkeeper.Keeper
 	pairSubmodule types.PairSubmodule
 
 	collectionMap      *collections.Map[sdk.AccAddress, nfttypes.IndexedCollection]
@@ -41,7 +43,7 @@ func NewevmNFTSubmodule(
 	ac address.Codec,
 	cdc codec.Codec,
 	indexerKeeper collection.IndexerKeeper,
-	vmKeeper types.EvmNftKeeper,
+	vmKeeper *evmkeeper.Keeper,
 	pairSubmodule types.PairSubmodule,
 ) (*EvmNFTSubmodule, error) {
 	collectionsPrefix := collection.NewPrefix(types.SubmoduleName, types.CollectionsPrefix)

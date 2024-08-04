@@ -37,11 +37,11 @@ func handleCollectionErr(err error) error {
 
 // Collection implements nfttypes.QueryServer.
 func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRequest) (*nfttypes.QueryCollectionResponse, error) {
-	collectionAddr, err := getVMAddress(q.ac, req.CollectionAddr)
+
+	collectionSdkAddr, err := getCosmosAddressFromString(q.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	collectionSdkAddr := getCosmosAddress(collectionAddr)
 
 	collection, err := q.collectionMap.Get(ctx, collectionSdkAddr)
 	if err != nil {
@@ -56,11 +56,10 @@ func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRe
 
 // Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
-	accountAddr, err := getVMAddress(q.ac, req.Account)
+	accountSdkAddr, err := getCosmosAddressFromString(q.ac, req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	accountSdkAddr := getCosmosAddress(accountAddr)
 	accountAddrString := accountSdkAddr.String()
 
 	collectionSdkAddrs := []sdk.AccAddress{}
@@ -126,11 +125,10 @@ func (sm EvmNFTSubmodule) getCollectionNameFromPairSubmodule(ctx context.Context
 }
 
 func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	colSdkAddr := getCosmosAddress(collAddr)
 
 	res, pageRes, err := query.CollectionFilteredPaginate(ctx, sm.tokenMap, req.Pagination,
 		func(key collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (bool, error) {
@@ -160,11 +158,10 @@ func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttyp
 }
 
 func (sm EvmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	colSdkAddr := getCosmosAddress(collAddr)
 
 	token, err := sm.tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
@@ -178,11 +175,10 @@ func (sm EvmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, r
 }
 
 func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
-	ownerAddr, err := getVMAddress(sm.ac, req.Account)
+	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	ownerSdkAddr := getCosmosAddress(ownerAddr)
 	identifiers := []collections.Pair[sdk.AccAddress, string]{}
 
 	_, pageRes, err := query.CollectionFilteredPaginate(ctx, sm.tokenOwnerMap, req.Pagination,
@@ -216,17 +212,15 @@ func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.
 }
 
 func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	colSdkAddr := getCosmosAddress(collAddr)
 
-	ownerAddr, err := getVMAddress(sm.ac, req.Account)
+	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	ownerSdkAddr := getCosmosAddress(ownerAddr)
 	ownerAddrStr := ownerSdkAddr.String()
 
 	res, pageRes, err := query.CollectionFilteredPaginate(ctx, sm.tokenMap, req.Pagination,
@@ -257,11 +251,10 @@ func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, r
 }
 
 func (sm EvmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
-	collAddr, err := getVMAddress(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	colSdkAddr := getCosmosAddress(collAddr)
 
 	token, err := sm.tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
