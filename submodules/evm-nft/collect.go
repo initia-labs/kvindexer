@@ -188,7 +188,7 @@ func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to get owner address from token")
 	}
 
-	err = sm.tokenOwnerMap.Set(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()), true)
+	err = sm.tokenOwnerMap.Remove(ctx, collections.Join3(ownerSdkAddr, tpk.K1(), tpk.K2()))
 	if err != nil {
 		sm.Logger(ctx).Error("failed to remove from tokenOwnerSet", "owner", ownerSdkAddr, "collection-addr", tpk.K1(), "token-id", tpk.K2(), "error", err)
 		return cosmoserr.Wrap(err, "failed to insert token into tokenOwnerSet")
