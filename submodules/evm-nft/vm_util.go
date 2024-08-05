@@ -37,56 +37,32 @@ func generateQueryRequestToGetNftInfo(tokenId string) []byte {
 }
 
 func (sm EvmNFTSubmodule) getCollectionMinter(ctx context.Context, classId string) (*types.Minter, error) {
-	/*
-		rb, err := sm.vmKeeper.QuerySmart(ctx, colAddr, qreqCollectionMinter)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-
-		res := types.Minter{}
-		if err := json.Unmarshal(rb, &res); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		return &res, nil
-	*/
-	return nil, errors.New("not implemented")
+	return nil, errors.New("not supported")
 }
 
 func (sm EvmNFTSubmodule) getCollectionNumTokens(ctx context.Context, colAddr sdk.AccAddress) (*types.NumTokens, error) {
-	/*
-		rb, err := sm.vmKeeper.QuerySmart(ctx, colAddr, qreqCollectionNumTokens)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-
-		res := types.NumTokens{}
-		if err := json.Unmarshal(rb, &res); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		return &res, nil
-	*/
-	return nil, errors.New("not implemented")
+	return nil, errors.New("not supported")
 }
 
 func (sm EvmNFTSubmodule) getCollectionFromVMStore(ctx context.Context, classId string) (*types.CollectionResource, error) {
 	resource := types.CollectionResource{}
 
 	className, classUri, classData, err := sm.vmKeeper.ERC721Keeper().GetClassInfo(ctx, classId)
-	sm.Logger(ctx).Info("getCollectionContractInfo", "className", className, "classUri", classUri, "classData", classData, "error", err)
+	sm.Logger(ctx).Info("[DEBUG] getCollectionContractInfo", "className", className, "classUri", classUri, "classData", classData, "error", err)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	minter, err := sm.getCollectionMinter(ctx, classId)
-	if err != nil {
-		return nil, err
-	}
-	resource.Collection.Creator = minter.Minter
 	resource.Collection.Name = className
 	resource.Collection.Uri = classUri
 	resource.Collection.Description = classData
 
 	/* unavailable in evm
+	minter, err := sm.getCollectionMinter(ctx, classId)
+	if err != nil {
+		return nil, err
+	}
+	resource.Collection.Creator = minter.Minter
 	numTokens, err := sm.getCollectionNumTokens(ctx, classId)
 	if err != nil {
 		return nil, err
@@ -103,8 +79,9 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 		return nil, err
 	}
 
-	contractSdkAddr, err := sdk.AccAddressFromHexUnsafe(string(contractAddress.Bytes()))
+	contractSdkAddr, err := getCosmosAddressFromString(sm.ac, contractAddress.Hex())
 	if err != nil {
+		sm.Logger(ctx).Error("[DEBUG] contractAddress", "str", contractAddress.String(), "bytes", contractAddress.Bytes(), "hex", contractAddress.Hex())
 		return nil, errors.Wrap(err, "invalid contract address")
 	}
 
@@ -115,27 +92,20 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 	return &indexed, nil
 }
 
-func (sm EvmNFTSubmodule) getNftResourceFromVMStore(ctx context.Context, collectionAddr common.Address, tokenId string) (*types.NftResource, error) {
-	/*
-		resource := types.NftResource{}
+func (sm EvmNFTSubmodule) getNftResourceFromVMStore(ctx context.Context, classId, tokenId string) (*types.NftResource, error) {
+	tokenUris, _, err := sm.vmKeeper.ERC721Keeper().GetTokenInfos(ctx, classId, []string{tokenId})
+	if err != nil {
+		sm.Logger(ctx).Warn("DEBUG] getNftResourceFromVMStore", "classId", classId, "tokenId", tokenId, "error", err)
+		return nil, errors.Wrap(err, "failed to get token info")
+	}
+	resource := types.NftResource{}
+	resource.TokenUri = tokenUris[0]
 
-		q := generateQueryRequestToGetNftInfo(tokenId)
-		rb, err := sm.vmKeeper.QuerySmart(ctx, collectionAddr, q)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-
-		if err := json.Unmarshal(rb, &resource); err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-
-		return &resource, nil
-	*/
-	return nil, errors.New("not implemented")
+	return &resource, nil
 }
 
-func (sm EvmNFTSubmodule) getIndexedNftFromVMStore(ctx context.Context, contractAddress common.Address, tokenId string, ownerAddr *sdk.AccAddress) (*nfttypes.IndexedToken, error) {
-	resource, err := sm.getNftResourceFromVMStore(ctx, contractAddress, tokenId)
+func (sm EvmNFTSubmodule) getIndexedNftFromVMStore(ctx context.Context, contractAddress common.Address, classId, tokenId string, ownerAddr *sdk.AccAddress) (*nfttypes.IndexedToken, error) {
+	resource, err := sm.getNftResourceFromVMStore(ctx, classId, tokenId)
 	if err != nil {
 		return nil, err
 	}
@@ -153,24 +123,14 @@ func (sm EvmNFTSubmodule) getIndexedNftFromVMStore(ctx context.Context, contract
 	return &indexed, nil
 }
 
-/*
-func getVMAddress(ac address.Codec, addr string) (common.Address, error) {
-	panic("not implemented")
-}
-*/
-
 func getCosmosAddress(addr common.Address) sdk.AccAddress {
 	return sdk.AccAddress(addr.Bytes())
 }
 
 func getCosmosAddressFromString(ac address.Codec, addr string) (sdk.AccAddress, error) {
+	addr = strings.ToLower(addr)
 	if sdkAddr, err := sdk.AccAddressFromBech32(addr); err == nil {
 		return sdkAddr, nil
 	}
-	addr = strings.TrimPrefix(addr, "0x")
-	addrBytes, err := ac.StringToBytes(addr)
-	if err != nil {
-		return nil, err
-	}
-	return sdk.AccAddress(addrBytes), nil
+	return sdk.AccAddressFromHexUnsafe(strings.TrimPrefix(strings.TrimPrefix(addr, "0x"), "000000000000000000000000"))
 }
