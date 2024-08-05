@@ -69,6 +69,8 @@ func (c CacheStore) Set(key, value []byte) error {
 }
 
 func (c CacheStore) Delete(key []byte) error {
+	types.AssertValidKey(key)
+
 	_ = c.cache.Delete(string(key))
 	c.store.Delete(key)
 
