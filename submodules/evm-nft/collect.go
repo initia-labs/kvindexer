@@ -19,14 +19,11 @@ import (
 func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
-	for i, txResult := range res.TxResults {
+	for _, txResult := range res.TxResults {
 		events := filterAndParseEvent(txResult.Events, eventTypes)
-		sm.Logger(ctx).Error("[DEBUG] events", "events", events)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Warn("processEvents", "error", err)
-		} else {
-			sm.Logger(ctx).Warn("[DEBUG] INDEX DONE", "txIdx", i, "err", err)
 		}
 	}
 
@@ -41,17 +38,12 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 			continue // no log means it's not evm-related event
 		}
 
-		sm.Logger(ctx).Error("[DEBUG] LOG_EVENT", "log", log)
-
 		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
 		if err != nil {
 			sm.Logger(ctx).Debug("failed parse attribute", "error", err)
-			sm.Logger(ctx).Error("[DEBUG] failed parse attribute", "error", err, "log", log)
 			continue
 		}
-		sm.Logger(ctx).Error("[DEBUG] transferLog", "transferLog", transferLog)
-
-		sm.Logger(ctx).Error("[DEBUG] TL", "from", transferLog.From.Bytes(), "to", transferLog.To.Bytes())
+		sm.Logger(ctx).Info("[DEBUG] transferLog", "transferLog", transferLog)
 
 		var fn func(context.Context, *types.ParsedTransfer) error
 		switch transferLog.GetAction() {
@@ -69,7 +61,7 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 		if err := fn(ctx, transferLog); err != nil {
 			sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
 
-			sm.Logger(ctx).Error("[DEBUG] TEMPORARRILY STOPPING")
+			sm.Logger(ctx).Error("[DEBUG] TEMPORARILY STOPPING")
 			tmos.Exit(err.Error())
 		}
 	}
@@ -78,7 +70,6 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 
 func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.ParsedTransfer) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
-	sm.Logger(ctx).Error("[DEBUG] minted", "event", event)
 
 	classId, err := evmtypes.ClassIdFromCollectionAddress(ctx, sm.vmKeeper, event.Address)
 	if err != nil {
@@ -91,7 +82,6 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
 			return cosmoserr.Wrap(err, "failed to check collection existence")
 		}
-		sm.Logger(ctx).Error("[DEBUG] collection found", "collection", collection)
 		// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
 		coll, err := sm.getIndexedCollectionFromVMStore(ctx, event.Address, classId)
 		if err != nil {
@@ -106,12 +96,9 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		}
 	}
 
-	sm.Logger(ctx).Error("[DEBUG] BEFORE ADJUST", "collection", collection, "contract", contractSdkAddr, "classId", classId)
 	if err := collection.AdjustLength(1); err != nil {
-		sm.Logger(ctx).Error("[DEBUG] failed to adjust collection length", "error", err, "contract", contractSdkAddr, "collection", collection)
 		return cosmoserr.Wrap(err, "failed to adjust collection length")
 	}
-	sm.Logger(ctx).Error("[DEBUG] AFTER  ADJUST", "collection", collection, "contract", contractSdkAddr, "classId", classId)
 	err = sm.collectionMap.Set(ctx, contractSdkAddr, collection)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to set collection")
@@ -126,7 +113,6 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to parse new owner address from topic")
 	}
-	sm.Logger(ctx).Error("[DEBUG] ownerSdkAddr", "ownerSdkAddr", ownerSdkAddr)
 
 	token, err := sm.getIndexedNftFromVMStore(ctx, event.Address, classId, event.TokenId, &ownerSdkAddr)
 	if err != nil {
@@ -221,16 +207,13 @@ func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.Pars
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get collection from collectionMap")
 	}
-	sm.Logger(ctx).Error("[DEBUG] BEFORE ADJUST MIN", "collection", collection, "contract", contractSdkAddr)
 	if err := collection.AdjustLength(-1); err != nil {
-		sm.Logger(ctx).Error("[DEBUG] failed to adjust collection length", "error", err, "contract", contractSdkAddr, "collection", collection)
 		return cosmoserr.Wrap(err, "failed to adjust collection length")
 	}
 	err = sm.collectionMap.Set(ctx, contractSdkAddr, collection)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to set collection")
 	}
-	sm.Logger(ctx).Error("[DEBUG] AFTER  ADJUST MIN", "collection", collection, "contract", contractSdkAddr)
 
 	err = sm.applyCollectionOwnerMap(ctx, contractSdkAddr, ownerSdkAddr, false)
 	if err != nil {

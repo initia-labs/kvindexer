@@ -48,7 +48,6 @@ func (sm EvmNFTSubmodule) getCollectionFromVMStore(ctx context.Context, classId 
 	resource := types.CollectionResource{}
 
 	className, classUri, classData, err := sm.vmKeeper.ERC721Keeper().GetClassInfo(ctx, classId)
-	sm.Logger(ctx).Info("[DEBUG] getCollectionContractInfo", "className", className, "classUri", classUri, "classData", classData, "error", err)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -81,7 +80,6 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 
 	contractSdkAddr, err := getCosmosAddressFromString(sm.ac, contractAddress.Hex())
 	if err != nil {
-		sm.Logger(ctx).Error("[DEBUG] contractAddress", "str", contractAddress.String(), "bytes", contractAddress.Bytes(), "hex", contractAddress.Hex())
 		return nil, errors.Wrap(err, "invalid contract address")
 	}
 
@@ -95,7 +93,6 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 func (sm EvmNFTSubmodule) getNftResourceFromVMStore(ctx context.Context, classId, tokenId string) (*types.NftResource, error) {
 	tokenUris, _, err := sm.vmKeeper.ERC721Keeper().GetTokenInfos(ctx, classId, []string{tokenId})
 	if err != nil {
-		sm.Logger(ctx).Warn("DEBUG] getNftResourceFromVMStore", "classId", classId, "tokenId", tokenId, "error", err)
 		return nil, errors.Wrap(err, "failed to get token info")
 	}
 	resource := types.NftResource{}
