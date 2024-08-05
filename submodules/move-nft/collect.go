@@ -23,7 +23,7 @@ func (sm MoveNftSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 		events := filterAndParseEvent(eventType, txResult.Events)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
-			sm.Logger(ctx).Warn("processEvents", "error", err)
+			sm.Logger(ctx).Debug("processEvents", "error", err)
 		}
 	}
 
@@ -46,7 +46,7 @@ func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []types.Eve
 			continue
 		}
 		if err := fn(ctx, event); err != nil {
-			sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
+			sm.Logger(ctx).Info("failed to handle nft-related event", "error", err.Error())
 			// don't return here because we want to process all events
 		}
 	}

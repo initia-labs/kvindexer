@@ -10,7 +10,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmos "github.com/cometbft/cometbft/libs/os"
 
 	"github.com/initia-labs/kvindexer/submodules/evm-nft/types"
 	evmtypes "github.com/initia-labs/minievm/x/evm/types"
@@ -23,7 +22,7 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 		events := filterAndParseEvent(txResult.Events, eventTypes)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
-			sm.Logger(ctx).Warn("processEvents", "error", err)
+			sm.Logger(ctx).Debug("processEvents", "error", err)
 		}
 	}
 
@@ -40,10 +39,9 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 
 		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
 		if err != nil {
-			sm.Logger(ctx).Debug("failed parse attribute", "error", err)
+			sm.Logger(ctx).Info("failed parse attribute", "error", err)
 			continue
 		}
-		sm.Logger(ctx).Info("[DEBUG] transferLog", "transferLog", transferLog)
 
 		var fn func(context.Context, *types.ParsedTransfer) error
 		switch transferLog.GetAction() {
@@ -59,10 +57,7 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 		}
 
 		if err := fn(ctx, transferLog); err != nil {
-			sm.Logger(ctx).Error("failed to handle nft-related event", "error", err.Error())
-
-			sm.Logger(ctx).Error("[DEBUG] TEMPORARILY STOPPING")
-			tmos.Exit(err.Error())
+			sm.Logger(ctx).Info("failed to handle nft-related event", "error", err.Error())
 		}
 	}
 	return nil

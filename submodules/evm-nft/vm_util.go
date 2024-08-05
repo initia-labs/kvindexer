@@ -19,27 +19,18 @@ import (
 
 var eventTypes = []string{"evm"}
 
-var (
-	qreqCollectionContractInfo = []byte("{\"contract_info\":{}}") // {"contract_info":{}}
-	qreqCollectionMinter       = []byte("{\"minter\":{}}")        // {"minter":{}}
-	qreqCollectionNumTokens    = []byte("{\"num_tokens\":{}}")    // {"num_tokens":{}}
-)
-
 func encode(req []byte) []byte {
 	res := make([]byte, base64.StdEncoding.EncodedLen(len(req)))
 	base64.StdEncoding.Encode(res, req)
 	return res
 }
 
-func generateQueryRequestToGetNftInfo(tokenId string) []byte {
-	return []byte(`{"nft_info":{"token_id":"` + tokenId + `"}}`)
-	//return encode(qb)
-}
-
+// unavailable in evm - remove this function later
 func (sm EvmNFTSubmodule) getCollectionMinter(ctx context.Context, classId string) (*types.Minter, error) {
 	return nil, errors.New("not supported")
 }
 
+// unavailable in evm - remove this function later
 func (sm EvmNFTSubmodule) getCollectionNumTokens(ctx context.Context, colAddr sdk.AccAddress) (*types.NumTokens, error) {
 	return nil, errors.New("not supported")
 }
@@ -56,7 +47,7 @@ func (sm EvmNFTSubmodule) getCollectionFromVMStore(ctx context.Context, classId 
 	resource.Collection.Uri = classUri
 	resource.Collection.Description = classData
 
-	/* unavailable in evm
+	/* unavailable in evm - remove this block later
 	minter, err := sm.getCollectionMinter(ctx, classId)
 	if err != nil {
 		return nil, err

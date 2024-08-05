@@ -31,25 +31,12 @@ type ContractInfo struct {
 
 // evm-specifics
 
+// NOTE: remove this once getCollectionMinter() removed
 type Minter struct {
 	Minter string `json:"minter"`
 }
 
+// NOTE: remove this once getCollectionNumTokens() removed
 type NumTokens struct {
 	Count int64 `json:"count"`
-}
-
-type NftInfo struct {
-	TokenUri  string `json:"token_uri"`
-	Extension string `json:"extension"`
-}
-
-type OwnerOf struct {
-	Owner     string     `json:"owner"`
-	Approvals []Approval `json:"approvals"`
-}
-
-type Approval struct {
-	Spender    string `json:"spender"`
-	Expiration uint64 `json:"expiration"` // FIXME: height? timestamp?
 }
