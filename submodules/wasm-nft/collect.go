@@ -116,7 +116,7 @@ func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event
 
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
-		sm.Logger(ctx).Debug("failed to get nft from prev owner and object addres", "collection-addr", data.ContractAddress, "token-id", data.TokenId, "prevOwner", data.Sender, "error", err)
+		sm.Logger(ctx).Debug("failed to get nft from prev owner and object address", "collection-addr", data.ContractAddress, "token-id", data.TokenId, "prevOwner", data.Sender, "error", err)
 		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")
 	}
 	token.OwnerAddr = data.Recipient.String()

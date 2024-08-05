@@ -60,16 +60,9 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	accountAddrString := accountSdkAddr.String()
 
 	collectionSdkAddrs := []sdk.AccAddress{}
-	_, pageRes, err := query.CollectionFilteredPaginate(ctx, q.collectionOwnerMap, req.Pagination,
-		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (bool, error) {
-			if k.K1().String() == accountAddrString {
-				return true, nil
-			}
-			return false, nil
-		},
+	_, pageRes, err := query.CollectionPaginate(ctx, q.collectionOwnerMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, sdk.AccAddress], v uint64) (uint64, error) {
 			collectionSdkAddrs = append(collectionSdkAddrs, k.K2())
 			return v, nil
@@ -134,17 +127,12 @@ func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttyp
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	res, pageRes, err := query.CollectionFilteredPaginate(ctx, sm.tokenMap, req.Pagination,
-		func(key collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (bool, error) {
-			if slices.Equal(key.K1(), colSdkAddr) {
-				return true, nil
-			}
-			return false, nil
-		},
+	res, pageRes, err := query.CollectionPaginate(ctx, sm.tokenMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (*nfttypes.IndexedToken, error) {
 			v.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
 			return &v, nil
 		},
+		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, string](colSdkAddr),
 	)
 
 	if err != nil {
