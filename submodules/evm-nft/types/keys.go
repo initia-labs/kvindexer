@@ -2,7 +2,7 @@ package types
 
 const (
 	// SubmoduleName is the name of the submodule
-	SubmoduleName = "wasm-nft"
+	SubmoduleName = "evm-nft"
 
 	// Version is the current version of the submodule
 	Version = "v0.1.2"

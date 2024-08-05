@@ -2,7 +2,6 @@ package types
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 )
 
@@ -10,7 +9,6 @@ func (m *TokenHandle) AdjustLength(delta int64) error {
 	if m == nil {
 		return errors.New("TokenHandle is nil")
 	}
-	fmt.Printf("[DEBUG] ADJUST_LENGTH_BEFORE: %s\n", m.Length)
 
 	i, err := strconv.ParseInt(m.Length, 10, 64)
 	if err != nil && m.Length != "" {
@@ -21,9 +19,7 @@ func (m *TokenHandle) AdjustLength(delta int64) error {
 		return errors.New("TokenHandle length cannot be negative")
 	}
 
-	fmt.Printf("[DEBUG] ADJUST_LENGTH_IN: %d\n", i)
 	m.Length = strconv.FormatInt(i, 10)
-	fmt.Printf("[DEBUG] ADJUST_LENGTH_AFTER: %s\n", m.Length)
 	return nil
 }
 
