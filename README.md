@@ -11,4 +11,5 @@ Registered submodules get abci Events(i.e. FinalizeBlock and Commit) and are all
 - move-nft
 - wasm-nft
 - evm-nft
-- pair
+- pair: common for move/evm
+- wasm-pair: onlu for wasm
