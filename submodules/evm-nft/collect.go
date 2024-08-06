@@ -128,7 +128,7 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to insert into tokenOwnerSet")
 	}
 
-	sm.Logger(ctx).Warn("nft minted", "collection", collection, "token", token)
+	sm.Logger(ctx).Info("nft minted", "collection", collection, "token", token)
 	return nil
 }
 
