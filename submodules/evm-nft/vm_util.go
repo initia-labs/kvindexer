@@ -25,16 +25,6 @@ func encode(req []byte) []byte {
 	return res
 }
 
-// unavailable in evm - remove this function later
-func (sm EvmNFTSubmodule) getCollectionMinter(ctx context.Context, classId string) (*types.Minter, error) {
-	return nil, errors.New("not supported")
-}
-
-// unavailable in evm - remove this function later
-func (sm EvmNFTSubmodule) getCollectionNumTokens(ctx context.Context, colAddr sdk.AccAddress) (*types.NumTokens, error) {
-	return nil, errors.New("not supported")
-}
-
 func (sm EvmNFTSubmodule) getCollectionFromVMStore(ctx context.Context, classId string) (*types.CollectionResource, error) {
 	resource := types.CollectionResource{}
 
@@ -46,19 +36,6 @@ func (sm EvmNFTSubmodule) getCollectionFromVMStore(ctx context.Context, classId 
 	resource.Collection.Name = className
 	resource.Collection.Uri = classUri
 	resource.Collection.Description = classData
-
-	/* unavailable in evm - remove this block later
-	minter, err := sm.getCollectionMinter(ctx, classId)
-	if err != nil {
-		return nil, err
-	}
-	resource.Collection.Creator = minter.Minter
-	numTokens, err := sm.getCollectionNumTokens(ctx, classId)
-	if err != nil {
-		return nil, err
-	}
-	resource.Collection.Nfts = &nfttypes.TokenHandle{Length: strconv.FormatInt(numTokens.Count, 10)}
-	*/
 
 	return &resource, nil
 }

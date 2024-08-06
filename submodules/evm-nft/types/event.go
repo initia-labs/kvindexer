@@ -51,12 +51,10 @@ func ParseERC721TransferLog(ac address.Codec, attributeValue string) (parsed *Pa
 	}
 
 	from, err := sdk.AccAddressFromHexUnsafe(strings.TrimPrefix(strings.TrimPrefix(tl.Topics[1], "0x"), "000000000000000000000000"))
-	//from, err := sdk.AccAddressFromHexUnsafe(strings.TrimPrefix(tl.Topics[1], "0x"))
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid from address")
 	}
 	to, err := sdk.AccAddressFromHexUnsafe(strings.TrimPrefix(strings.TrimPrefix(tl.Topics[2], "0x"), "000000000000000000000000"))
-	//to, err := sdk.AccAddressFromHexUnsafe(strings.TrimPrefix(tl.Topics[2], "0x"))
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid to address")
 	}
@@ -75,7 +73,6 @@ func ParseERC721TransferLog(ac address.Codec, attributeValue string) (parsed *Pa
 
 func (pt ParsedTransfer) GetAction() NftAction {
 	emptyAddr, _ := sdk.AccAddressFromHexUnsafe("0000000000000000000000000000000000000000")
-	//emptyAddr, _ := sdk.AccAddressFromHexUnsafe("0000000000000000000000000000000000000000000000000000000000000000")
 	if pt.From.Equals(emptyAddr) && !pt.To.Equals(emptyAddr) {
 		return NftActionMint
 	}
