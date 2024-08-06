@@ -1,4 +1,4 @@
-package wasm_nft
+package evm_nft
 
 import (
 	"context"
@@ -16,19 +16,21 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	evmkeeper "github.com/initia-labs/minievm/x/evm/keeper"
+
 	"github.com/initia-labs/kvindexer/collection"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
-	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
+	"github.com/initia-labs/kvindexer/submodules/evm-nft/types"
 	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
 )
 
-var _ kvindexer.Submodule = WasmNFTSubmodule{}
+var _ kvindexer.Submodule = EvmNFTSubmodule{}
 
-type WasmNFTSubmodule struct {
+type EvmNFTSubmodule struct {
 	ac  address.Codec
 	cdc codec.Codec
 
-	vmKeeper      types.WasmKeeper
+	vmKeeper      *evmkeeper.Keeper
 	pairSubmodule types.PairSubmodule
 
 	// collectionMap: key(collection address), value(collection)
@@ -41,13 +43,13 @@ type WasmNFTSubmodule struct {
 	tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
 }
 
-func NewWasmNFTSubmodule(
+func NewEvmNFTSubmodule(
 	ac address.Codec,
 	cdc codec.Codec,
 	indexerKeeper collection.IndexerKeeper,
-	vmKeeper types.WasmKeeper,
+	vmKeeper *evmkeeper.Keeper,
 	pairSubmodule types.PairSubmodule,
-) (*WasmNFTSubmodule, error) {
+) (*EvmNFTSubmodule, error) {
 	collectionsPrefix := collection.NewPrefix(types.SubmoduleName, types.CollectionsPrefix)
 	collectionMap, err := collection.AddMap(indexerKeeper, collectionsPrefix, "collections", sdk.AccAddressKey, codec.CollValue[nfttypes.IndexedCollection](cdc))
 	if err != nil {
@@ -72,7 +74,7 @@ func NewWasmNFTSubmodule(
 		return nil, err
 	}
 
-	return &WasmNFTSubmodule{
+	return &EvmNFTSubmodule{
 		ac:  ac,
 		cdc: cdc,
 
@@ -87,39 +89,39 @@ func NewWasmNFTSubmodule(
 }
 
 // Logger returns a module-specific logger.
-func (sm WasmNFTSubmodule) Logger(ctx context.Context) log.Logger {
+func (sub EvmNFTSubmodule) Logger(ctx context.Context) log.Logger {
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 	return sdkCtx.Logger().With("module", "x/"+types.SubmoduleName)
 }
 
-func (sm WasmNFTSubmodule) Name() string {
+func (sub EvmNFTSubmodule) Name() string {
 	return types.SubmoduleName
 }
 
-func (sm WasmNFTSubmodule) Version() string {
+func (sub EvmNFTSubmodule) Version() string {
 	return types.Version
 }
 
-func (sm WasmNFTSubmodule) RegisterQueryHandlerClient(cc client.Context, mux *runtime.ServeMux) error {
+func (sub EvmNFTSubmodule) RegisterQueryHandlerClient(cc client.Context, mux *runtime.ServeMux) error {
 	return nfttypes.RegisterQueryHandlerClient(context.Background(), mux, nfttypes.NewQueryClient(cc))
 }
 
-func (sm WasmNFTSubmodule) RegisterQueryServer(s grpc.Server) {
-	nfttypes.RegisterQueryServer(s, NewQuerier(sm))
+func (sub EvmNFTSubmodule) RegisterQueryServer(s grpc.Server) {
+	nfttypes.RegisterQueryServer(s, NewQuerier(sub))
 }
 
-func (sm WasmNFTSubmodule) Prepare(ctx context.Context) error {
+func (sub EvmNFTSubmodule) Prepare(ctx context.Context) error {
 	return nil
 }
 
-func (sm WasmNFTSubmodule) Initialize(ctx context.Context) error {
+func (sub EvmNFTSubmodule) Initialize(ctx context.Context) error {
 	return nil
 }
 
-func (sm WasmNFTSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
-	return sm.finalizeBlock(ctx, req, res)
+func (sub EvmNFTSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+	return sub.finalizeBlock(ctx, req, res)
 }
 
-func (sm WasmNFTSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
+func (sub EvmNFTSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }

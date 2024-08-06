@@ -31,11 +31,11 @@ type MoveNftSubmodule struct {
 	vmKeeper      types.MoveKeeper
 	pairSubmodule types.PairSubmodule
 
-	// collectionMap: key(collection address`), value(collection)
+	// collectionMap: key(collection address), value(collection)
 	collectionMap *collections.Map[sdk.AccAddress, nfttypes.IndexedCollection]
-	// collectionOwnerMap: key(owner address, collection address), value(collection`s object address)
+	// collectionOwnerMap: key(owner address, collection address), value(owner's collection count)
 	collectionOwnerMap *collections.Map[collections.Pair[sdk.AccAddress, sdk.AccAddress], uint64]
-	// tokenMap: key(owner address, token id), value(token)
+	// tokenMap: key(collection address, token id), value(token)
 	tokenMap *collections.IndexedMap[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken, TokenIndex]
 	// tokenOwnerMap: key(owner address, collection address, token id), value(bool as placeholder)
 	tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]

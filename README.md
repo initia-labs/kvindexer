@@ -10,5 +10,6 @@ Registered submodules get abci Events(i.e. FinalizeBlock and Commit) and are all
 - tx
 - move-nft
 - wasm-nft
-- ~~pair~~ deprecated
-- ~~wasmpair~~ deprecated
+- evm-nft
+- pair: common for move/evm
+- wasm-pair: only for wasm
