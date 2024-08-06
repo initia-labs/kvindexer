@@ -38,8 +38,10 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 		}
 
 		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
-		if err != nil && !errors.Is(err, types.ErrNotERC721) {
-			sm.Logger(ctx).Info("failed parse attribute", "error", err)
+		if err != nil {
+			if !errors.Is(err, types.ErrNotERC721) {
+				sm.Logger(ctx).Info("failed parse attribute", "error", err)
+			}
 			continue
 		}
 
