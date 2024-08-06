@@ -2,7 +2,6 @@ package wasm_nft
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"strconv"
 
@@ -24,19 +23,13 @@ var (
 	qreqCollectionNumTokens    = []byte("{\"num_tokens\":{}}")    // {"num_tokens":{}}
 )
 
-func encode(req []byte) []byte {
-	res := make([]byte, base64.StdEncoding.EncodedLen(len(req)))
-	base64.StdEncoding.Encode(res, req)
-	return res
-}
-
 func generateQueryRequestToGetNftInfo(tokenId string) []byte {
 	return []byte(`{"nft_info":{"token_id":"` + tokenId + `"}}`)
 	//return encode(qb)
 }
 
 func (sm WasmNFTSubmodule) getCollectionContractInfo(ctx context.Context, colAddr sdk.AccAddress) (*types.ContractInfo, error) {
-	rb, err := sm.vmKeeper.QuerySmart(ctx, colAddr, []byte("{\"contract_info\":{}}")) //qreqCollectionContractInfo)
+	rb, err := sm.vmKeeper.QuerySmart(ctx, colAddr, qreqCollectionContractInfo)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
