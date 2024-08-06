@@ -39,7 +39,7 @@ type EvmNFTSubmodule struct {
 	tokenOwnerMap      *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
 }
 
-func NewevmNFTSubmodule(
+func NewEvmNFTSubmodule(
 	ac address.Codec,
 	cdc codec.Codec,
 	indexerKeeper collection.IndexerKeeper,
