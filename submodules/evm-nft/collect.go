@@ -38,8 +38,10 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 		}
 
 		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
-		if err != nil && !errors.Is(err, types.ErrNotERC721) {
-			sm.Logger(ctx).Info("failed parse attribute", "error", err)
+		if err != nil {
+			if !errors.Is(err, types.ErrNotERC721) {
+				sm.Logger(ctx).Info("failed parse attribute", "error", err)
+			}
 			continue
 		}
 
@@ -126,7 +128,7 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to insert into tokenOwnerSet")
 	}
 
-	sm.Logger(ctx).Warn("nft minted", "collection", collection, "token", token)
+	sm.Logger(ctx).Info("nft minted", "collection", collection, "token", token)
 	return nil
 }
 
