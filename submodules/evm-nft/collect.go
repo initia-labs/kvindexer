@@ -38,7 +38,7 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 		}
 
 		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
-		if err != nil {
+		if err != nil && !errors.Is(err, types.ErrNotERC721) {
 			sm.Logger(ctx).Info("failed parse attribute", "error", err)
 			continue
 		}
@@ -52,7 +52,7 @@ func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.Even
 		case types.NftActionBurn:
 			fn = sm.handleBurnEvent
 		default:
-			sm.Logger(ctx).Debug("unknown nft action", "action", transferLog.GetAction())
+			sm.Logger(ctx).Info("unknown nft action", "action", transferLog.GetAction())
 			continue
 		}
 

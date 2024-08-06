@@ -42,7 +42,7 @@ func ParseERC721TransferLog(ac address.Codec, attributeValue string) (parsed *Pa
 		return nil, errors.New("the attribute is not about log")
 	}
 	if !tl.IsErc721Transfer() {
-		return nil, errors.New("not erc721 transfer")
+		return nil, ErrNotERC721
 	}
 
 	addr, err := evmtypes.ContractAddressFromString(ac, tl.Address)
