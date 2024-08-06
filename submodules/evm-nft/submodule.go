@@ -35,7 +35,7 @@ type EvmNFTSubmodule struct {
 
 	// collectionMap: key(collection address), value(collection)
 	collectionMap *collections.Map[sdk.AccAddress, nfttypes.IndexedCollection]
-	// collectionOwnerMap: key(owner address, collection address), value(collection`s object address)
+	// collectionOwnerMap: key(owner address, collection address), value(owner's collection count)
 	collectionOwnerMap *collections.Map[collections.Pair[sdk.AccAddress, sdk.AccAddress], uint64]
 	// tokenMap: key(collection address, token id), value(token)
 	tokenMap *collections.Map[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken]
