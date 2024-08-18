@@ -24,7 +24,7 @@ func findAllBech32Address(str string) []string {
 }
 
 func findAllHexAddress(str string) []string {
-	return initHexRegex.FindAllString(str, -1)
+	return initBech32Regex.FindAllString(str, -1)
 }
 
 // use it because i want to make this submodule not depend on move vm/module
@@ -49,4 +49,12 @@ func accAddressFromString(addrStr string) (addr sdk.AccAddress, err error) {
 	}
 
 	return
+}
+
+func convertContractAddressToBech32(addr string) (string, error) {
+	accAddr, err := sdk.AccAddressFromHexUnsafe(strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(addr, "0x"), "000000000000000000000000")))
+	if err == nil {
+		fmt.Printf("[DEBUG] accAddr: %s -> %s -> %s\n", addr, strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(addr, "0x"), "000000000000000000000000")), accAddr.String())
+	}
+	return accAddr.String(), nil
 }

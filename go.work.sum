@@ -579,6 +579,7 @@ github.com/cosmos/ibc-apps/modules/async-icq/v8 v8.0.1-0.20240124225747-f055ce5b
 github.com/cosmos/ibc-apps/modules/async-icq/v8 v8.0.1-0.20240124225747-f055ce5b405c/go.mod h1:D3Q380FpWRFtmUQWLosPxachi6w24Og2t5u/Tww5wtY=
 github.com/cosmos/ibc-go/v8 v8.1.0/go.mod h1:o1ipS95xpdjqNcB8Drq0eI3Sn4FRLigjll42ec1ECuU=
 github.com/cosmos/interchain-security/v5 v5.0.0-alpha1/go.mod h1:c4oYjNwdfPKAhxzkwzTkkWROXKeUNPvc4VJHyNWrRU8=
+github.com/cosmos/interchain-security/v5 v5.0.0-rc0 h1:Sh5CDqLDS32q2WsO9k5j3NyBzmW+mm66c+kgRniCthA=
 github.com/cosmos/interchain-security/v5 v5.0.0-rc0/go.mod h1:h/RkwOppo5AJj+1pkQyfjqU1MPdpohD/S6oEeAXpGZY=
 github.com/cosmos/relayer/v2 v2.5.2/go.mod h1:h4Ng2QsVpxExIq5S+WvLr8slDb9MSBh82gQS4DeMwDo=
 github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsrgA7czyZG/E6dU=
@@ -857,6 +858,7 @@ github.com/googleapis/enterprise-certificate-proxy v0.0.0-20220520183353-fd19c99
 github.com/googleapis/enterprise-certificate-proxy v0.1.0/go.mod h1:17drOmN3MwGY7t0e+Ei9b45FFGA3fBs3x36SsCg1hq8=
 github.com/googleapis/enterprise-certificate-proxy v0.2.0/go.mod h1:8C0jb7/mgJe/9KK8Lm7X9ctZC2t60YyIpYEI16jx0Qg=
 github.com/googleapis/enterprise-certificate-proxy v0.2.4/go.mod h1:AwSRAtLfXpU5Nm3pW+v7rGDHp09LsPtGY9MduiEsR9k=
+github.com/googleapis/gax-go v0.0.0-20161107002406-da06d194a00e h1:CYRpN206UTHUinz3VJoLaBdy1gEGeJNsqT0mvswDcMw=
 github.com/googleapis/gax-go v0.0.0-20161107002406-da06d194a00e/go.mod h1:SFVmujtThgffbyetf+mdk2eWhX2bMyUtNHzFKcPA9HY=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
@@ -1174,6 +1176,7 @@ github.com/nishanths/exhaustive v0.12.0/go.mod h1:mEZ95wPIZW+x8kC4TgC+9YCUgiST7e
 github.com/nishanths/predeclared v0.0.0-20190419143655-18a43bb90ffc/go.mod h1:62PewwiQTlm/7Rj+cxVYqZvDIUc+JjZq6GHAC1fsObQ=
 github.com/nishanths/predeclared v0.2.2/go.mod h1:RROzoN6TnGQupbC+lqggsOlcgysk3LMK/HI84Mp280c=
 github.com/noble-assets/forwarding v0.0.0-20240416085758-ed8e9efaf69a/go.mod h1:nMEL3w1pf7+2LAQ3jqX+XaK0GWcdnwXjwlBnX7QO9ho=
+github.com/noble-assets/forwarding/v2 v2.0.0-20240514101621-172acc02aac6 h1:YQ6I+9F24PD9U/Q83/t/DCPwye8IeHXOrQWorPx2aSE=
 github.com/noble-assets/forwarding/v2 v2.0.0-20240514101621-172acc02aac6/go.mod h1:fkfElMT7VJZXXqywx+OE6qsEXddT/fwKX5XNdIl747U=
 github.com/nunnatsa/ginkgolinter v0.9.0/go.mod h1:FHaMLURXP7qImeH6bvxWJUpyH+2tuqe5j4rW1gxJRmI=
 github.com/nunnatsa/ginkgolinter v0.14.1/go.mod h1:nY0pafUSst7v7F637e7fymaMlQqI9c0Wka2fGsDkzWg=
@@ -1341,6 +1344,7 @@ github.com/sivchari/nosnakecase v1.7.0/go.mod h1:CwDzrzPea40/GB6uynrNLiorAlgFRvR
 github.com/sivchari/tenv v1.7.1/go.mod h1:64yStXKSOxDfX47NlhVwND4dHwfZDdbp2Lyl018Icvg=
 github.com/skeema/knownhosts v1.2.1/go.mod h1:xYbVRSPxqBZFrdmDyMmsOs+uX1UZC3nTN3ThzgDxUwo=
 github.com/skip-mev/block-sdk/v2 v2.1.1/go.mod h1:AOjFICNrPpq/Cq1f97CcC7ljWhxCzmfmyz4/Ir8/xFM=
+github.com/skip-mev/block-sdk/v2 v2.1.2 h1:fNKbrb+PVVzuU0JiSuWgBV4Afj5zZ1VeHQJp88wSl1g=
 github.com/skip-mev/block-sdk/v2 v2.1.2/go.mod h1:kIq7SMva0/eHKTCiG/oI5XGxD4HNVK0t71TrUZqHcvA=
 github.com/skip-mev/chaintestutil v0.0.0-20231221145345-f208ee3b1383/go.mod h1:FvYgT9wJSLvtBkwWp4mHo+A5/r9OkvHXJJh9u8RhGWk=
 github.com/snikch/goodman v0.0.0-20171125024755-10e37e294daa/go.mod h1:oJyF+mSPHbB5mVY2iO9KV3pTt/QbIkGaO8gQ2WrDbP4=
