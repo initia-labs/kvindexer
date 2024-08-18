@@ -118,7 +118,6 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 				if err != nil {
 					continue
 				}
-				fmt.Printf("[DEBUG] contractAddr: %s\n", contractAddr)
 				addrs = append(addrs, contractAddr)
 			} else {
 				addrs = findAllBech32Address(attr.Value)
@@ -143,7 +142,6 @@ func extractAddressesFromEVMLog(attrVal string) (string, error) {
 	if err := json.Unmarshal([]byte(attrVal), &log); err != nil {
 		return "", err
 	}
-	fmt.Printf("[DEBUG] log: %+v\n", log)
 	return convertContractAddressToBech32(log.Address)
 }
 
@@ -156,7 +154,6 @@ func (sm EvmTxSubmodule) storeAccTxs(ctx context.Context, addr string, txHashes 
 		sm.Logger(ctx).Info("failed to convert address", "error", err, "address", addr)
 		return err
 	}
-	sm.Logger(ctx).Warn("[DEBUG] ACCCCCCOOOUUUNT", "acc", acc, "bytes", fmt.Sprintf("%x", acc.Bytes()), "string", acc.String())
 
 	seq, err := sm.accountSequenceMap.Get(ctx, acc)
 	if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
