@@ -2,10 +2,10 @@ package types
 
 const (
 	// SubmoduleName is the name of the submodule
-	SubmoduleName = "tx"
+	SubmoduleName = "evm-tx"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.1"
+	Version = "v0.1.0"
 )
 
 // store prefixes
