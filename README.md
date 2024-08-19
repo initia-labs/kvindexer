@@ -7,7 +7,8 @@ Indexer listens StreamingManager's stream and indices streamed data
 Registered submodules get abci Events(i.e. FinalizeBlock and Commit) and are allowed to CRUD indexer key-value storage.
 
 - block
-- tx
+- tx: common for move/evm
+- evm-tx: only for wasm
 - move-nft
 - wasm-nft
 - evm-nft
