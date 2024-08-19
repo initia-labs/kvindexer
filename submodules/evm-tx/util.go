@@ -24,7 +24,7 @@ func findAllBech32Address(str string) []string {
 }
 
 func findAllHexAddress(str string) []string {
-	return initBech32Regex.FindAllString(str, -1)
+	return initHexRegex.FindAllString(str, -1)
 }
 
 // use it because i want to make this submodule not depend on move vm/module
