@@ -113,13 +113,20 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 		for _, attr := range event.Attributes {
 			var addrs []string
 
-			if event.Type == evmtypes.EventTypeEVM && attr.Key == evmtypes.AttributeKeyLog {
+			switch {
+			case event.Type == evmtypes.EventTypeEVM && attr.Key == evmtypes.AttributeKeyLog:
 				contractAddr, err := extractAddressesFromEVMLog(attr.Value)
 				if err != nil {
 					continue
 				}
 				addrs = append(addrs, contractAddr)
-			} else {
+			case (event.Type == evmtypes.EventTypeCreate || event.Type == evmtypes.EventTypeCall) && attr.Key == evmtypes.AttributeKeyContract:
+				addr, err := convertContractAddressToBech32(attr.Value)
+				if err != nil {
+					continue
+				}
+				addrs = append(addrs, addr)
+			default:
 				addrs = findAllBech32Address(attr.Value)
 				addrs = append(addrs, findAllHexAddress(attr.Value)...)
 			}
