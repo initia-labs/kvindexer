@@ -53,7 +53,7 @@ func accAddressFromString(addrStr string) (addr sdk.AccAddress, err error) {
 
 func convertContractAddressToBech32(addr string) (string, error) {
 	accAddr, err := sdk.AccAddressFromHexUnsafe(strings.ToLower(strings.TrimPrefix(strings.TrimPrefix(addr, "0x"), "000000000000000000000000")))
-	if err == nil {
+	if err != nil {
 		return "", err
 	}
 	return accAddr.String(), nil
