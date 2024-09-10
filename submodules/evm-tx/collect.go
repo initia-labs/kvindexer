@@ -23,8 +23,7 @@ import (
 )
 
 const (
-	lenTransferTopic = 4
-	transferTopic    = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+	transferTopic = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
 )
 
 func (sm EvmTxSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
@@ -148,7 +147,6 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 
 	return grepped, nil
 }
-
 func extractAddressesFromEVMLog(attrVal string) (addrs []string, err error) {
 	log := evmtypes.Log{}
 	if err = json.Unmarshal([]byte(attrVal), &log); err != nil {
@@ -161,19 +159,28 @@ func extractAddressesFromEVMLog(attrVal string) (addrs []string, err error) {
 	}
 
 	// if the topic is about transfer, we need to extract the addresses from the topics.
-	// Topics[1] is the sender, Topics[2] is the receiver.
-	if log.Topics != nil && len(log.Topics) == lenTransferTopic {
-		if log.Topics[0] == transferTopic {
-			addr, err = convertContractAddressToBech32(log.Topics[1])
-			if err == nil {
-				addrs = append(addrs, addr)
-			}
-			addr, err = convertContractAddressToBech32(log.Topics[2])
-			if err == nil {
-				addrs = append(addrs, addr)
-			}
-		}
+	if log.Topics == nil { // no topic
+		return
 	}
+	topicLen := len(log.Topics)
+	if topicLen < 2 { // no data to extract
+		return
+	}
+	if log.Topics[0] != transferTopic { // topic is not about transfer
+		return
+	}
+
+	for i := 1; i < topicLen; i++ {
+		if i == 3 { // if index is 3, it means index indicates the amount, not address. need break
+			break
+		}
+		addr, err = convertContractAddressToBech32(log.Topics[i])
+		if err != nil {
+			continue
+		}
+		addrs = append(addrs, addr)
+	}
+
 	return
 }
 
