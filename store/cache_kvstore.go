@@ -90,10 +90,8 @@ func (c CacheStore) Set(key, value []byte) error {
 func (c CacheStore) Delete(key []byte) error {
 	storetypes.AssertValidKey(key)
 
-	err := c.cache.Delete(string(key))
-	if err != nil && errors.IsOf(err, bigcache.ErrEntryNotFound) {
-		return errors.Wrap(err, "failed to delete cache")
-	}
+	// ignore cache error
+	_ = c.cache.Delete(string(key))
 	c.store.Delete(key)
 
 	return nil
