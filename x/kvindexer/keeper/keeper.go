@@ -50,7 +50,7 @@ func (k Keeper) Close() error {
 }
 
 // NewKeeper creates a new indexer Keeper instance
-// TODO: remove unncessary arguments
+// TODO: remove unnecessary arguments
 func NewKeeper(
 	cdc codec.Codec,
 	vmType string,

@@ -161,7 +161,7 @@ func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event types
 			sm.Logger(ctx).Debug("nft not found, maybe not NFT related object transfer", "object", objectSdkAddr.String(), "prevOwner", fromSdkAddr.String())
 			return nil
 		}
-		sm.Logger(ctx).Info("failed to get nft from prev owner and object addres", "err", err, "object", objectSdkAddr.String(), "prev", fromSdkAddr.String())
+		sm.Logger(ctx).Info("failed to get nft from prev owner and object address", "err", err, "object", objectSdkAddr.String(), "prev", fromSdkAddr.String())
 
 		return err
 	}
