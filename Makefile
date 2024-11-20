@@ -100,10 +100,6 @@ ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
 
-# The below include contains the tools and runsim targets.
-# FIXME: uncomment the line below
-#include contrib/devtools/Makefile
-
 all: lint test
 
 

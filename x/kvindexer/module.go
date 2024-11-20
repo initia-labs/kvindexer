@@ -19,7 +19,6 @@ var (
 
 // AppModuleBasic defines the basic application module used by the move module.
 type AppModuleBasic struct {
-	//cdc     codec.Codec
 	keeper *keeper.Keeper
 }
 

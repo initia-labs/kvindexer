@@ -28,7 +28,6 @@ type TokenIndex struct {
 func (i TokenIndex) IndexesList() []collections.Index[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken] {
 	return []collections.Index[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken]{
 		i.TokenAddress,
-		//i.OwnerAddress,
 	}
 }
 

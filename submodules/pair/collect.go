@@ -104,10 +104,6 @@ func (sm PairSubmodule) pickAttribute(attrs []abci.EventAttribute, key string) s
 	return ""
 }
 
-func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) string {
-	return port + "/" + channel
-}
-
 func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, classId string) (err error) {
 	packetData := types.PacketData{}
 
@@ -128,15 +124,6 @@ func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataSt
 	if err = json.Unmarshal(cdb, &classData); err != nil {
 		return cosmoserr.Wrap(err, "failed to unmarshal class data")
 	}
-
-	// block this part overwrite to recent
-	// _, err = sm.GetPair(ctx, false, packetData.ClassId)
-	// if err == nil {
-	// 	return nil // already exists
-	// }
-	// if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-	// 	return cosmoserr.Wrap(err, "failed to check class existence")
-	// }
 
 	err = sm.SetPair(ctx, false, false, classId, classData.Name)
 	if err != nil {
@@ -177,4 +164,8 @@ func getChainIdFromClientState(csi exportedibc.ClientState) string {
 		return ""
 	}
 	return cs.ChainId
+}
+
+func (sm PairSubmodule) generateCw721FromIcs721PortInfo(port, channel string) string {
+	return port + "/" + channel
 }

@@ -221,7 +221,6 @@ func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event types.Ev
 
 		// remove the nft from the sender's collection
 		tpk, err := sm.tokenMap.Indexes.TokenAddress.MatchExact(ctx, objectSdkAddr)
-		//objectKey, err := nftByOwner.TokenAddress.MatchExact(ctx, objectSdkAddr)
 		if err != nil {
 			return errors.New("object key not found")
 		}
