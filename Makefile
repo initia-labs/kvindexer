@@ -65,7 +65,6 @@ comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
-# TODO: 
 ldflags = 
 
 # DB backend selection

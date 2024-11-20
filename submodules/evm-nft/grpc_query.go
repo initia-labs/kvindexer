@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
+	kvcollection "github.com/initia-labs/kvindexer/collection"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 )
 
@@ -178,7 +179,7 @@ func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.
 			identifiers = append(identifiers, collections.Join(k.K2(), k.K3()))
 			return v, nil
 		},
-		WithCollectionPaginationTriplePrefix[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr),
+		kvcollection.WithCollectionPaginationTriplePrefix[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr),
 	)
 	if err != nil {
 		return nil, handleCollectionErr(err)
@@ -221,7 +222,7 @@ func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, r
 			identifiers = append(identifiers, collections.Join(k.K2(), k.K3()))
 			return v, nil
 		},
-		WithCollectionPaginationTriplePrefix2[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr, colSdkAddr),
+		kvcollection.WithCollectionPaginationTriplePrefix2[sdk.AccAddress, sdk.AccAddress, string](ownerSdkAddr, colSdkAddr),
 	)
 	if err != nil {
 		return nil, handleCollectionErr(err)
@@ -272,20 +273,4 @@ func (sm EvmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Con
 	return &nfttypes.QueryTokensResponse{
 		Tokens: []*nfttypes.IndexedToken{&token},
 	}, nil
-}
-
-// WithCollectionPaginationTriplePrefix applies a prefix to a collection, whose key is a collection.Triple,
-// being paginated that needs prefixing.
-func WithCollectionPaginationTriplePrefix[K1, K2, K3 any](prefix K1) func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
-	return func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
-		prefix := collections.TriplePrefix[K1, K2, K3](prefix)
-		o.Prefix = &prefix
-	}
-}
-
-func WithCollectionPaginationTriplePrefix2[K1, K2, K3 any](prefix K1, prefix2 K2) func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
-	return func(o *query.CollectionsPaginateOptions[collections.Triple[K1, K2, K3]]) {
-		prefix := collections.TripleSuperPrefix[K1, K2, K3](prefix, prefix2)
-		o.Prefix = &prefix
-	}
 }
