@@ -95,7 +95,7 @@ func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	_, err = sm.collectionMap.Get(ctx, collectionSdkAddr)
 	if err != nil {
 		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return errors.New("")
+			return err
 		}
 		err = sm.collectionMap.Set(ctx, collectionSdkAddr, *collection)
 		if err != nil {
