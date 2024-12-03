@@ -2,8 +2,6 @@ module github.com/initia-labs/kvindexer
 
 go 1.23.3
 
-toolchain go1.23.0
-
 require (
 	cosmossdk.io/collections v0.4.0
 	cosmossdk.io/core v0.11.0
