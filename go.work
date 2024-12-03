@@ -1,4 +1,4 @@
-go 1.23
+go 1.23.3
 
 use (
 	.
@@ -6,7 +6,7 @@ use (
 	./submodules/evm-nft
 	./submodules/move-nft
 	./submodules/pair
+	./submodules/tx
 	./submodules/wasm-nft
 	./submodules/wasm-pair
-	./submodules/tx
 )
