@@ -65,6 +65,7 @@ func (k *Keeper) RegisterSubmodules(submodules ...types.Submodule) error {
 	return nil
 }
 
+// HandleFinalizeBlock processes the FinalizeBlock event for all submodules.
 func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) (err error) {
 	defer func() {
 		if err := recover(); err != nil {

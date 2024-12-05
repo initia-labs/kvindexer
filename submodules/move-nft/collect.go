@@ -95,7 +95,7 @@ func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	_, err = sm.collectionMap.Get(ctx, collectionSdkAddr)
 	if err != nil {
 		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return errors.New("")
+			return err
 		}
 		err = sm.collectionMap.Set(ctx, collectionSdkAddr, *collection)
 		if err != nil {
@@ -221,7 +221,6 @@ func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event types.Ev
 
 		// remove the nft from the sender's collection
 		tpk, err := sm.tokenMap.Indexes.TokenAddress.MatchExact(ctx, objectSdkAddr)
-		//objectKey, err := nftByOwner.TokenAddress.MatchExact(ctx, objectSdkAddr)
 		if err != nil {
 			return errors.New("object key not found")
 		}

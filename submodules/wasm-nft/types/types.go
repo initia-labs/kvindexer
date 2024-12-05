@@ -14,8 +14,6 @@ type EventWithAttributeMap struct {
 type CollectionResource struct {
 	Type       string              `json:"type,omitempty"`
 	Collection nfttypes.Collection `json:"data"`
-	// from here is additional fields, not original collection data
-	//ObjectAddr string `json:"object_addr,omitempty"`
 }
 
 // internal use only: struct from move resource
@@ -51,5 +49,5 @@ type OwnerOf struct {
 
 type Approval struct {
 	Spender    string `json:"spender"`
-	Expiration uint64 `json:"expiration"` // FIXME: height? timestamp?
+	Expiration uint64 `json:"expiration"`
 }

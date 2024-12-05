@@ -65,7 +65,6 @@ comma := ,
 build_tags_comma_sep := $(subst $(whitespace),$(comma),$(build_tags))
 
 # process linker flags
-# TODO: 
 ldflags = 
 
 # DB backend selection
@@ -100,10 +99,6 @@ BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 ifeq (,$(findstring nostrip,$(COSMOS_BUILD_OPTIONS)))
   BUILD_FLAGS += -trimpath
 endif
-
-# The below include contains the tools and runsim targets.
-# FIXME: uncomment the line below
-#include contrib/devtools/Makefile
 
 all: lint test
 
