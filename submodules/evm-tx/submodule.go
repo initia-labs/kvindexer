@@ -122,3 +122,7 @@ func (sub EvmTxSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFin
 func (sub EvmTxSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }
+
+func (sub EvmTxSubmodule) Prune(ctx context.Context, minHeight int64) error {
+	return nil
+}

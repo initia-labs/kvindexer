@@ -12,8 +12,9 @@ import (
 
 const (
 	flagIndexerEnable        = "indexer.enable"
-	flagIndexerBackend       = "indexer.backend"
 	flagIndexerCacheCapacity = "indexer.cache-capacity"
+	flagIndexerBackend       = "indexer.backend"
+	flagIndexerRetainHeight  = "indexer.retain-height"
 )
 
 func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
@@ -23,6 +24,7 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 	if !cfg.Enable {
 		return cfg, nil
 	}
+
 	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
 
 	cfg.BackendConfig = viper.New()
@@ -31,7 +33,7 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 		return nil, fmt.Errorf("failed to merge backend config: %w", err)
 	}
 
-	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
+	cfg.RetainHeight = cast.ToUint64(appOpts.Get(flagIndexerRetainHeight))
 
 	return cfg, nil
 }
@@ -61,5 +63,6 @@ func DefaultConfig() IndexerConfig {
 		Enable:        true,
 		CacheCapacity: 500, // 500 MiB
 		BackendConfig: store.DefaultConfig(),
+		RetainHeight:  0,
 	}
 }

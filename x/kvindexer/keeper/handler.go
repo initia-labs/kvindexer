@@ -80,6 +80,11 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 		}
 	}
 
+	// pruning
+	if k.config.RetainHeight > 0 {
+		k.prune(ctx, req.Height)
+	}
+
 	return nil
 }
 
@@ -100,4 +105,25 @@ func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, chan
 	k.store.Write()
 
 	return nil
+}
+
+func (k *Keeper) prune(ctx context.Context, height int64) {
+	if running := k.pruningRunning.Swap(true); running {
+		return
+	}
+
+	go func(ctx context.Context, height int64) {
+		defer k.pruningRunning.Store(false)
+
+		minHeight := height - int64(k.config.RetainHeight)
+		if minHeight <= 0 || minHeight >= height {
+			return
+		}
+
+		for _, svc := range k.submodules {
+			if err := svc.Prune(ctx, minHeight); err != nil {
+				k.Logger(ctx).Error("failed to prune", "name", svc.Name, "error", err)
+			}
+		}
+	}(ctx, height)
 }

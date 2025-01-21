@@ -122,3 +122,7 @@ func (sub TxSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinali
 func (sub TxSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }
+
+func (sub TxSubmodule) Prune(ctx context.Context, minHeight int64) error {
+	return nil
+}

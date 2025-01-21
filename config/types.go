@@ -15,6 +15,9 @@ type IndexerConfig struct {
 	// Recommend to use default value unless you know about backend db storage.
 	// NOTE: "goleveldb" is the only supported type in the current version.
 	BackendConfig *viper.Viper `mapstructure:"indexer.backend"`
+	// RetainHeight is the height to retain indexer data.
+	// If 0, it will retain all data.
+	RetainHeight uint64 `mapstructure:"indexer.retain-height"`
 }
 
 const DefaultConfigTemplate = `
@@ -36,4 +39,8 @@ cache-capacity = {{ .IndexerConfig.CacheCapacity }}
 # supported type: "goleveldb" only in current
 [indexer.backend]
 {{ range $key, $value := .IndexerConfig.BackendConfig.AllSettings }}{{ printf "%s = \"%v\"\n" $key $value }}{{end}}
+
+# RetainHeight is the height to retain indexer data.
+# If 0, it will retain all data.
+retain-height = {{ .IndexerConfig.RetainHeight }}
 `
