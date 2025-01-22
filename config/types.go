@@ -10,14 +10,14 @@ type IndexerConfig struct {
 	Enable bool `mapstructure:"indexer.enable"`
 	// CacheCapacity defines the size of the cache used by the kvindexer. (unit: MiB)
 	CacheCapacity int `mapstructure:"indexer.cache-capacity"`
+	// RetainHeight is the height to retain indexer data.
+	// If 0, it will retain all data.
+	RetainHeight uint64 `mapstructure:"indexer.retain-height"`
 	// Backend defines the type of the backend store and its options.
 	//  It should have a key-value pair named 'type', and the value should exist in store supported by cosmos-db.
 	// Recommend to use default value unless you know about backend db storage.
 	// NOTE: "goleveldb" is the only supported type in the current version.
 	BackendConfig *viper.Viper `mapstructure:"indexer.backend"`
-	// RetainHeight is the height to retain indexer data.
-	// If 0, it will retain all data.
-	RetainHeight uint64 `mapstructure:"indexer.retain-height"`
 }
 
 const DefaultConfigTemplate = `
@@ -33,14 +33,14 @@ enable = {{ .IndexerConfig.Enable }}
 # CacheCapacity defines the size of the cache. (unit: MiB)
 cache-capacity = {{ .IndexerConfig.CacheCapacity }}
 
+# RetainHeight is the height to retain indexer data.
+# If 0, it will retain all data.
+retain-height = {{ .IndexerConfig.RetainHeight }}
+
 # Backend defines the type of the backend store and its options.
 # It should have a key-value pair named 'type', and the value should exist in store supported by cosmos-db.
 # Recommend to use default value unless you know about backend db storage.
 # supported type: "goleveldb" only in current
 [indexer.backend]
 {{ range $key, $value := .IndexerConfig.BackendConfig.AllSettings }}{{ printf "%s = \"%v\"\n" $key $value }}{{end}}
-
-# RetainHeight is the height to retain indexer data.
-# If 0, it will retain all data.
-retain-height = {{ .IndexerConfig.RetainHeight }}
 `
