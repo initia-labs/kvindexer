@@ -31,6 +31,10 @@ type TxSubmodule struct {
 	txhashesByHeightMap   *collections.Map[collections.Pair[int64, uint64], string]
 	txhashesByAccountMap  *collections.Map[collections.Pair[sdk.AccAddress, uint64], string]
 	accountSequenceMap    *collections.Map[sdk.AccAddress, uint64]
+
+	// for pruning
+	sequenceByHeightMap        *collections.Map[int64, uint64]
+	accountSequenceByHeightMap *collections.Map[collections.Triple[int64, sdk.AccAddress, uint64], bool]
 }
 
 func NewTxSubmodule(
@@ -73,15 +77,29 @@ func NewTxSubmodule(
 		return nil, err
 	}
 
+	prefixSequenceByHeight := collection.NewPrefix(types.SubmoduleName, types.SequenceByHeightPrefix)
+	sequenceByHeightMap, err := collection.AddMap(indexerKeeper, prefixSequenceByHeight, "sequence_by_height", collections.Int64Key, collections.Uint64Value)
+	if err != nil {
+		return nil, err
+	}
+
+	prefixAccountSequenceByHeight := collection.NewPrefix(types.SubmoduleName, types.AccountSequenceByHeightPrefix)
+	accountSequenceByHeightMap, err := collection.AddMap(indexerKeeper, prefixAccountSequenceByHeight, "account_sequence_by_height", collections.TripleKeyCodec(collections.Int64Key, sdk.AccAddressKey, collections.Uint64Key), collections.BoolValue)
+	if err != nil {
+		return nil, err
+	}
+
 	return &TxSubmodule{
 		cdc: cdc,
 
-		sequence:              sequence,
-		txMap:                 txMap,
-		txhashesByAccountMap:  txhashesByAccountMap,
-		txhashesBySequenceMap: txhashesBySequenceMap,
-		txhashesByHeightMap:   txhashesByHeightMap,
-		accountSequenceMap:    accountSequenceMap,
+		sequence:                   sequence,
+		txMap:                      txMap,
+		txhashesByAccountMap:       txhashesByAccountMap,
+		txhashesBySequenceMap:      txhashesBySequenceMap,
+		txhashesByHeightMap:        txhashesByHeightMap,
+		accountSequenceMap:         accountSequenceMap,
+		sequenceByHeightMap:        sequenceByHeightMap,
+		accountSequenceByHeightMap: accountSequenceByHeightMap,
 	}, nil
 }
 
@@ -124,5 +142,5 @@ func (sub TxSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, chan
 }
 
 func (sub TxSubmodule) Prune(ctx context.Context, minHeight int64) error {
-	return nil
+	return sub.prune(ctx, minHeight)
 }

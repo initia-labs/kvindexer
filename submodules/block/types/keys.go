@@ -5,7 +5,7 @@ const (
 	SubmoduleName = "block"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.0"
+	Version = "v0.1.1"
 )
 
 const (
