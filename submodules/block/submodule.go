@@ -85,3 +85,7 @@ func (sub BlockSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFin
 func (sub BlockSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }
+
+func (sub BlockSubmodule) Prune(ctx context.Context, minHeight int64) error {
+	return sub.prune(ctx, minHeight)
+}

@@ -1,8 +1,6 @@
 module github.com/initia-labs/kvindexer/submodules/evm-tx
 
-go 1.22.7
-
-toolchain go1.23.3
+go 1.23.3
 
 require (
 	cosmossdk.io/collections v0.4.0
@@ -16,7 +14,6 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/kvindexer v0.1.3
-	github.com/initia-labs/kvindexer/submodules/tx v0.1.0
 	github.com/initia-labs/minievm v0.3.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20240814211410-ddb44dafa142
 	google.golang.org/grpc v1.67.1

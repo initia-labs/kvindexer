@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
-	"github.com/initia-labs/kvindexer/submodules/tx/types"
+	"github.com/initia-labs/kvindexer/submodules/evm-tx/types"
 )
 
 var _ types.QueryServer = (*Querier)(nil)

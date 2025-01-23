@@ -12,8 +12,9 @@ import (
 
 const (
 	flagIndexerEnable        = "indexer.enable"
-	flagIndexerBackend       = "indexer.backend"
 	flagIndexerCacheCapacity = "indexer.cache-capacity"
+	flagIndexerRetainHeight  = "indexer.retain-height"
+	flagIndexerBackend       = "indexer.backend"
 )
 
 func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
@@ -23,15 +24,16 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 	if !cfg.Enable {
 		return cfg, nil
 	}
+
 	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
+
+	cfg.RetainHeight = cast.ToInt64(appOpts.Get(flagIndexerRetainHeight))
 
 	cfg.BackendConfig = viper.New()
 	err := cfg.BackendConfig.MergeConfigMap(cast.ToStringMap(appOpts.Get(flagIndexerBackend)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to merge backend config: %w", err)
 	}
-
-	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
 
 	return cfg, nil
 }
@@ -43,6 +45,10 @@ func (c IndexerConfig) Validate() error {
 
 	if c.CacheCapacity == 0 {
 		return fmt.Errorf("cache capacity must be greater than 0")
+	}
+
+	if c.RetainHeight < 0 {
+		return fmt.Errorf("retain height must be nonnegative")
 	}
 
 	if c.BackendConfig == nil {
@@ -60,6 +66,7 @@ func DefaultConfig() IndexerConfig {
 	return IndexerConfig{
 		Enable:        true,
 		CacheCapacity: 500, // 500 MiB
+		RetainHeight:  0,
 		BackendConfig: store.DefaultConfig(),
 	}
 }

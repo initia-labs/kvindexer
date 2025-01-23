@@ -123,3 +123,7 @@ func (sm WasmNFTSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFi
 func (sm WasmNFTSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }
+
+func (sub WasmNFTSubmodule) Prune(ctx context.Context, minHeight int64) error {
+	return nil
+}

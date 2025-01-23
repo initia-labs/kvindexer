@@ -3,6 +3,7 @@ package keeper
 import (
 	"context"
 	"errors"
+	"sync/atomic"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/core/address"
@@ -38,6 +39,8 @@ type Keeper struct {
 	sealed bool
 
 	submodules map[string]types.Submodule
+
+	pruningRunning *atomic.Bool
 }
 
 // Close closes indexer goleveldb
@@ -60,14 +63,15 @@ func NewKeeper(
 ) *Keeper {
 
 	k := &Keeper{
-		cdc:    cdc,
-		vmType: vmType,
-		db:     db,
-		config: config,
-		schema: nil,
-		ac:     ac,
-		vc:     vc,
-		sealed: false,
+		cdc:            cdc,
+		vmType:         vmType,
+		db:             db,
+		config:         config,
+		schema:         nil,
+		ac:             ac,
+		vc:             vc,
+		sealed:         false,
+		pruningRunning: &atomic.Bool{},
 	}
 
 	k.submodules = make(map[string]types.Submodule)

@@ -20,6 +20,7 @@ type Submodule interface {
 	Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error
 	RegisterQueryHandlerClient(ctx client.Context, mux *runtime.ServeMux) error
 	RegisterQueryServer(s grpc.Server)
+	Prune(ctx context.Context, minHeight int64) error
 
 	Name() string
 	Version() string

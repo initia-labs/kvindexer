@@ -19,7 +19,7 @@ import (
 
 	evmtypes "github.com/initia-labs/minievm/x/evm/types"
 
-	"github.com/initia-labs/kvindexer/submodules/tx/types"
+	"github.com/initia-labs/kvindexer/submodules/evm-tx/types"
 )
 
 const (
@@ -85,11 +85,12 @@ func (sm EvmTxSubmodule) processTxs(ctx context.Context, req abci.RequestFinaliz
 
 	// store tx/account pair into txAccMap
 	for addr, txHashes := range accTxMap {
-		err := sm.storeAccTxs(ctx, addr, txHashes)
+		err := sm.storeAccTxs(ctx, req.Height, addr, txHashes)
 		if err != nil {
 			sm.Logger(ctx).Info("failed to store tx/account pair", "error", err, "address", addr)
 		}
 	}
+
 	return sm.storeIndices(ctx, req.Height, txHashes)
 }
 
@@ -147,6 +148,7 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 
 	return grepped, nil
 }
+
 func extractAddressesFromEVMLog(attrVal string) (addrs []string, err error) {
 	log := evmtypes.Log{}
 	if err = json.Unmarshal([]byte(attrVal), &log); err != nil {
@@ -184,7 +186,7 @@ func extractAddressesFromEVMLog(attrVal string) (addrs []string, err error) {
 	return
 }
 
-func (sm EvmTxSubmodule) storeAccTxs(ctx context.Context, addr string, txHashes []string) error {
+func (sm EvmTxSubmodule) storeAccTxs(ctx context.Context, height int64, addr string, txHashes []string) error {
 	if len(txHashes) == 0 {
 		return nil
 	}
@@ -205,15 +207,16 @@ func (sm EvmTxSubmodule) storeAccTxs(ctx context.Context, addr string, txHashes 
 			sm.Logger(ctx).Info("failed to store tx/account pair", "error", err, "address", addr, "txhash", txHash)
 			continue
 		}
-
 	}
+
 	delta := seq + uint64(len(txHashes)+1)
 	if err = sm.accountSequenceMap.Set(ctx, acc, delta); err != nil {
 		sm.Logger(ctx).Info("failed to store account sequence", "error", err, "address", addr, "delta", delta)
 		return err
 	}
 
-	return err
+	// store (height, account, sequence) for pruning
+	return sm.accountSequenceByHeightMap.Set(ctx, collections.Join3(height, acc, delta), true)
 }
 
 func (sm EvmTxSubmodule) storeIndices(ctx context.Context, height int64, txHashes []string) error {
@@ -235,5 +238,11 @@ func (sm EvmTxSubmodule) storeIndices(ctx context.Context, height int64, txHashe
 		}
 	}
 
-	return nil
+	// store height -> sequence for pruning
+	seq, err := sm.sequence.Peek(ctx)
+	if err != nil {
+		return err
+	}
+
+	return sm.sequenceByHeightMap.Set(ctx, height, seq)
 }

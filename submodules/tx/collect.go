@@ -78,11 +78,12 @@ func (sm TxSubmodule) processTxs(ctx context.Context, req abci.RequestFinalizeBl
 
 	// store tx/account pair into txAccMap
 	for addr, txHashes := range accTxMap {
-		err := sm.storeAccTxs(ctx, addr, txHashes)
+		err := sm.storeAccTxs(ctx, req.Height, addr, txHashes)
 		if err != nil {
 			sm.Logger(ctx).Info("failed to store tx/account pair", "error", err, "address", addr)
 		}
 	}
+
 	return sm.storeIndices(ctx, req.Height, txHashes)
 }
 
@@ -123,11 +124,15 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 	return grepped, nil
 }
 
-func (sm TxSubmodule) storeAccTxs(ctx context.Context, addr string, txHashes []string) error {
+func (sm TxSubmodule) storeAccTxs(ctx context.Context, height int64, addr string, txHashes []string) error {
 	if len(txHashes) == 0 {
 		return nil
 	}
-	acc, _ := sdk.AccAddressFromBech32(addr)
+	acc, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		sm.Logger(ctx).Info("failed to convert address", "error", err, "address", addr)
+		return err
+	}
 
 	seq, err := sm.accountSequenceMap.Get(ctx, acc)
 	if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {
@@ -140,15 +145,16 @@ func (sm TxSubmodule) storeAccTxs(ctx context.Context, addr string, txHashes []s
 			sm.Logger(ctx).Info("failed to store tx/account pair", "error", err, "address", addr, "txhash", txHash)
 			continue
 		}
-
 	}
+
 	delta := seq + uint64(len(txHashes)+1)
 	if err = sm.accountSequenceMap.Set(ctx, acc, delta); err != nil {
 		sm.Logger(ctx).Info("failed to store account sequence", "error", err, "address", addr, "delta", delta)
 		return err
 	}
 
-	return err
+	// store (height, account, sequence) for pruning
+	return sm.accountSequenceByHeightMap.Set(ctx, collections.Join3(height, acc, delta), true)
 }
 
 func (sm TxSubmodule) storeIndices(ctx context.Context, height int64, txHashes []string) error {
@@ -170,5 +176,11 @@ func (sm TxSubmodule) storeIndices(ctx context.Context, height int64, txHashes [
 		}
 	}
 
-	return nil
+	// store height -> sequence for pruning
+	seq, err := sm.sequence.Peek(ctx)
+	if err != nil {
+		return err
+	}
+
+	return sm.sequenceByHeightMap.Set(ctx, height, seq)
 }

@@ -10,6 +10,9 @@ type IndexerConfig struct {
 	Enable bool `mapstructure:"indexer.enable"`
 	// CacheCapacity defines the size of the cache used by the kvindexer. (unit: MiB)
 	CacheCapacity int `mapstructure:"indexer.cache-capacity"`
+	// RetainHeight is the height to retain indexer data.
+	// If 0, it will retain all data.
+	RetainHeight int64 `mapstructure:"indexer.retain-height"`
 	// Backend defines the type of the backend store and its options.
 	//  It should have a key-value pair named 'type', and the value should exist in store supported by cosmos-db.
 	// Recommend to use default value unless you know about backend db storage.
@@ -29,6 +32,10 @@ enable = {{ .IndexerConfig.Enable }}
 
 # CacheCapacity defines the size of the cache. (unit: MiB)
 cache-capacity = {{ .IndexerConfig.CacheCapacity }}
+
+# RetainHeight is the height to retain indexer data.
+# If 0, it will retain all data.
+retain-height = {{ .IndexerConfig.RetainHeight }}
 
 # Backend defines the type of the backend store and its options.
 # It should have a key-value pair named 'type', and the value should exist in store supported by cosmos-db.
