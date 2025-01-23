@@ -27,7 +27,7 @@ func NewConfig(appOpts servertypes.AppOptions) (*IndexerConfig, error) {
 
 	cfg.CacheCapacity = cast.ToInt(appOpts.Get(flagIndexerCacheCapacity))
 
-	cfg.RetainHeight = cast.ToUint64(appOpts.Get(flagIndexerRetainHeight))
+	cfg.RetainHeight = cast.ToInt64(appOpts.Get(flagIndexerRetainHeight))
 
 	cfg.BackendConfig = viper.New()
 	err := cfg.BackendConfig.MergeConfigMap(cast.ToStringMap(appOpts.Get(flagIndexerBackend)))
@@ -45,6 +45,10 @@ func (c IndexerConfig) Validate() error {
 
 	if c.CacheCapacity == 0 {
 		return fmt.Errorf("cache capacity must be greater than 0")
+	}
+
+	if c.RetainHeight < 0 {
+		return fmt.Errorf("retain height must be nonnegative")
 	}
 
 	if c.BackendConfig == nil {

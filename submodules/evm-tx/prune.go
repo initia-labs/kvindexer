@@ -12,7 +12,10 @@ func (sub EvmTxSubmodule) prune(ctx context.Context, minHeight int64) error {
 	var sequence uint64
 	rnHeight := new(collections.Range[int64]).StartInclusive(1).EndInclusive(minHeight)
 	err := sub.sequenceByHeightMap.Walk(ctx, rnHeight, func(key int64, seq uint64) (bool, error) {
-		sequence = seq
+		if seq > sequence {
+			sequence = seq
+		}
+
 		return false, nil
 	})
 	if err != nil {
@@ -44,7 +47,11 @@ func (sub EvmTxSubmodule) prune(ctx context.Context, minHeight int64) error {
 	}
 
 	for addr, seq := range accountSequenceMap {
-		acc, _ := sdk.AccAddressFromBech32(addr)
+		acc, err := sdk.AccAddressFromBech32(addr)
+		if err != nil {
+			return err
+		}
+
 		rnPair := collections.NewPrefixedPairRange[sdk.AccAddress, uint64](acc).EndInclusive(seq)
 		if err = sub.txhashesByAccountMap.Clear(ctx, rnPair); err != nil {
 			return err

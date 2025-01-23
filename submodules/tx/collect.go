@@ -128,7 +128,11 @@ func (sm TxSubmodule) storeAccTxs(ctx context.Context, height int64, addr string
 	if len(txHashes) == 0 {
 		return nil
 	}
-	acc, _ := sdk.AccAddressFromBech32(addr)
+	acc, err := sdk.AccAddressFromBech32(addr)
+	if err != nil {
+		sm.Logger(ctx).Info("failed to convert address", "error", err, "address", addr)
+		return err
+	}
 
 	seq, err := sm.accountSequenceMap.Get(ctx, acc)
 	if err != nil && !cosmoserr.IsOf(err, collections.ErrNotFound) {

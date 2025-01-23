@@ -12,7 +12,7 @@ type IndexerConfig struct {
 	CacheCapacity int `mapstructure:"indexer.cache-capacity"`
 	// RetainHeight is the height to retain indexer data.
 	// If 0, it will retain all data.
-	RetainHeight uint64 `mapstructure:"indexer.retain-height"`
+	RetainHeight int64 `mapstructure:"indexer.retain-height"`
 	// Backend defines the type of the backend store and its options.
 	//  It should have a key-value pair named 'type', and the value should exist in store supported by cosmos-db.
 	// Recommend to use default value unless you know about backend db storage.

@@ -115,14 +115,14 @@ func (k *Keeper) prune(ctx context.Context, height int64) {
 	go func(ctx context.Context, height int64) {
 		defer k.pruningRunning.Store(false)
 
-		minHeight := height - int64(k.config.RetainHeight)
+		minHeight := height - k.config.RetainHeight
 		if minHeight <= 0 || minHeight >= height {
 			return
 		}
 
 		for _, svc := range k.submodules {
 			if err := svc.Prune(ctx, minHeight); err != nil {
-				k.Logger(ctx).Error("failed to prune", "name", svc.Name, "error", err)
+				k.Logger(ctx).Error("failed to prune", "name", svc.Name(), "error", err)
 			}
 		}
 	}(ctx, height)
