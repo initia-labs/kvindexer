@@ -27,7 +27,6 @@ require (
 	github.com/cockroachdb/datadriven v1.0.3-0.20230801171734-e384cf455877 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gobwas/ws v1.1.0 // indirect
-	github.com/initia-labs/OPinit v0.6.2 // indirect
 	github.com/initia-labs/OPinit/api v0.6.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/onsi/gomega v1.34.2 // indirect
