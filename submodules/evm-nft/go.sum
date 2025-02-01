@@ -517,6 +517,8 @@ github.com/initia-labs/OPinit/api v0.6.2 h1:nU9Rv5s/6WbV3CfmNnW3MSSmqpk7Avgfd68q
 github.com/initia-labs/OPinit/api v0.6.2/go.mod h1:gHK6DEWb3/DqQD5LjKirUx9jilAh2UioXanoQdgqVfU=
 github.com/initia-labs/initia v0.6.4 h1:61ERWEW888b0IEqI9LQUkD1ztmOtRY74nOPsuKVnJWM=
 github.com/initia-labs/initia v0.6.4/go.mod h1:d8D+AbkOVktXTx9gnRL7iN0dA/+sG98uz52zRSEhh+0=
+github.com/initia-labs/minievm v0.6.11-0.20250201070349-4c35e4ed4431 h1:mqzK8yNJpBr8Iony2xwluZQcxNEjbV3kci7iG1dyWXM=
+github.com/initia-labs/minievm v0.6.11-0.20250201070349-4c35e4ed4431/go.mod h1:+/jPIZlU11WIv5l+kYM8tVgGyZVljDXomJLLvBJKauo=
 github.com/jackpal/go-nat-pmp v1.0.2 h1:KzKSgb7qkJvOUTqYl9/Hg/me3pWgBmERKrTGD7BdWus=
 github.com/jackpal/go-nat-pmp v1.0.2/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
 github.com/jellydator/ttlcache/v3 v3.3.0 h1:BdoC9cE81qXfrxeb9eoJi9dWrdhSuwXMAnHTbnBm4Wc=
