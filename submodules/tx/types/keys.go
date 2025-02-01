@@ -5,7 +5,7 @@ const (
 	SubmoduleName = "tx"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.2"
+	Version = "v0.1.3"
 )
 
 // store prefixes

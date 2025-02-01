@@ -5,7 +5,7 @@ const (
 	SubmoduleName = "pair"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.1"
+	Version = "v0.1.2"
 )
 
 // store prefixes
