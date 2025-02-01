@@ -15,6 +15,7 @@ require (
 	github.com/cosmos/ibc-go/v8 v8.5.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/OPinit v0.6.2
+	github.com/initia-labs/kvindexer v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.67.1
 )
 
