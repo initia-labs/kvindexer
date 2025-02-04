@@ -206,7 +206,4 @@ replace (
 )
 
 // kvindexer internal
-replace (
-	github.com/initia-labs/kvindexer => ../../
-	github.com/initia-labs/kvindexer/submodules/tx => ../../submodules/tx
-)
+replace github.com/initia-labs/kvindexer => ../../
