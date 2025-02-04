@@ -17,8 +17,8 @@ require (
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/initia v0.6.4
-	github.com/initia-labs/kvindexer v0.1.9
-	github.com/initia-labs/minievm v0.6.11-0.20250201070349-4c35e4ed4431
+	github.com/initia-labs/kvindexer v0.1.10-0.20250201074115-b7f88dafd1ca
+	github.com/initia-labs/minievm v0.6.11-0.20250203095428-5e98660c505d
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.67.1
 )

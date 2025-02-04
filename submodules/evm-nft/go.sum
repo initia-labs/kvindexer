@@ -517,8 +517,14 @@ github.com/initia-labs/OPinit/api v0.6.2 h1:nU9Rv5s/6WbV3CfmNnW3MSSmqpk7Avgfd68q
 github.com/initia-labs/OPinit/api v0.6.2/go.mod h1:gHK6DEWb3/DqQD5LjKirUx9jilAh2UioXanoQdgqVfU=
 github.com/initia-labs/initia v0.6.4 h1:61ERWEW888b0IEqI9LQUkD1ztmOtRY74nOPsuKVnJWM=
 github.com/initia-labs/initia v0.6.4/go.mod h1:d8D+AbkOVktXTx9gnRL7iN0dA/+sG98uz52zRSEhh+0=
-github.com/initia-labs/minievm v0.6.11-0.20250201070349-4c35e4ed4431 h1:mqzK8yNJpBr8Iony2xwluZQcxNEjbV3kci7iG1dyWXM=
-github.com/initia-labs/minievm v0.6.11-0.20250201070349-4c35e4ed4431/go.mod h1:+/jPIZlU11WIv5l+kYM8tVgGyZVljDXomJLLvBJKauo=
+github.com/initia-labs/kvindexer/submodules/block v0.1.1-0.20250201074115-b7f88dafd1ca h1:iXAsUr4PSUGgF0fNQDfLINEcjECSgewmaWfoGVaXiAo=
+github.com/initia-labs/kvindexer/submodules/block v0.1.1-0.20250201074115-b7f88dafd1ca/go.mod h1:pp0qtx2P4byKYJM1UHLy9kYiPNfxo7dEG8+jEaR6yE8=
+github.com/initia-labs/kvindexer/submodules/evm-tx v0.1.3-0.20250201074115-b7f88dafd1ca h1:SJ49Wp9V0v0K1nIhnToxWxt3ViUarcPsJbkAFxlNtrg=
+github.com/initia-labs/kvindexer/submodules/evm-tx v0.1.3-0.20250201074115-b7f88dafd1ca/go.mod h1:d6yZ+10BPB2u/m1+5xW2ZK9M+1ukz4/rBiVtU4XTB0k=
+github.com/initia-labs/kvindexer/submodules/pair v0.1.2-0.20250201074115-b7f88dafd1ca h1:/JdrcpX4aihS0lcwaoFPcKfHe3JicKrtYAO3qBTueiQ=
+github.com/initia-labs/kvindexer/submodules/pair v0.1.2-0.20250201074115-b7f88dafd1ca/go.mod h1:K6drdR0vqnIuJ1+aZZeiHsjKHZj5/a5ld226YOdCiUw=
+github.com/initia-labs/minievm v0.6.11-0.20250203095428-5e98660c505d h1:tvPihRPlg7lTsp8qWl0xwxZKgAA2Yw5JQgHRHos3lqI=
+github.com/initia-labs/minievm v0.6.11-0.20250203095428-5e98660c505d/go.mod h1:p0WYXrKcVyYMPfS4p/GqIuvHmzaWy2+/aHrovNTwnxI=
 github.com/jackpal/go-nat-pmp v1.0.2 h1:KzKSgb7qkJvOUTqYl9/Hg/me3pWgBmERKrTGD7BdWus=
 github.com/jackpal/go-nat-pmp v1.0.2/go.mod h1:QPH045xvCAeXUZOxsnwmrtiCoxIr9eob+4orBN1SBKc=
 github.com/jellydator/ttlcache/v3 v3.3.0 h1:BdoC9cE81qXfrxeb9eoJi9dWrdhSuwXMAnHTbnBm4Wc=
