@@ -8,7 +8,7 @@ require (
 	cosmossdk.io/log v1.4.1
 	cosmossdk.io/store v1.1.1
 	github.com/allegro/bigcache/v3 v3.1.0
-	github.com/cometbft/cometbft v0.38.12
+	github.com/cometbft/cometbft v0.38.15
 	github.com/cosmos/cosmos-db v1.1.0
 	github.com/cosmos/cosmos-sdk v0.50.11
 	github.com/cosmos/gogoproto v1.7.0
@@ -26,7 +26,7 @@ require (
 require (
 	github.com/cockroachdb/datadriven v1.0.3-0.20230801171734-e384cf455877 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
-	github.com/gobwas/ws v1.1.0 // indirect
+	github.com/gobwas/ws v1.2.1 // indirect
 	github.com/initia-labs/OPinit/api v0.6.2 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.5 // indirect
 	github.com/onsi/gomega v1.34.2 // indirect
@@ -58,7 +58,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/iavl v1.2.2 // indirect
+	github.com/cosmos/iavl v1.2.4 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
