@@ -554,6 +554,7 @@ func _Query_TxsByHeight_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+var Query_serviceDesc = _Query_serviceDesc
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "indexer.tx.v1.Query",
 	HandlerType: (*QueryServer)(nil),

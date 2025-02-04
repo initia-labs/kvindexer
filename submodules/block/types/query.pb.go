@@ -486,6 +486,7 @@ func _Query_AvgBlockTime_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+var Query_serviceDesc = _Query_serviceDesc
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "indexer.block.v1.Query",
 	HandlerType: (*QueryServer)(nil),

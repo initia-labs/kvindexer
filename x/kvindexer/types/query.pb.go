@@ -329,6 +329,7 @@ func _Query_VMType_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
+var Query_serviceDesc = _Query_serviceDesc
 var _Query_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "indexer.info.Query",
 	HandlerType: (*QueryServer)(nil),
