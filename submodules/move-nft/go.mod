@@ -15,7 +15,7 @@ require (
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/initia v0.6.4
-	github.com/initia-labs/kvindexer v0.1.0
+	github.com/initia-labs/kvindexer v0.1.10
 	github.com/initia-labs/movevm v0.6.1
 	google.golang.org/grpc v1.67.1
 )
