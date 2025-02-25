@@ -125,7 +125,7 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 					continue
 				}
 				addrs = append(addrs, contractAddrs...)
-			case (event.Type == evmtypes.EventTypeCreate || event.Type == evmtypes.EventTypeCall) && attr.Key == evmtypes.AttributeKeyContract:
+			case isEvmModuleEvent(event.Type) && attr.Key == evmtypes.AttributeKeyContract:
 				addr, err := convertContractAddressToBech32(attr.Value)
 				if err != nil {
 					continue
@@ -147,6 +147,19 @@ func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
 	}
 
 	return grepped, nil
+}
+
+// isEvmModuleEvent checks if the event type is from evm module except evmtypes.EventTypeEVM.
+// return true if it is, false otherwise.
+func isEvmModuleEvent(eventType string) bool {
+	switch eventType {
+	case evmtypes.EventTypeCall, evmtypes.EventTypeCreate,
+		evmtypes.EventTypeContractCreated, evmtypes.EventTypeERC20Created,
+		evmtypes.EventTypeERC721Created, evmtypes.EventTypeERC721Minted, evmtypes.EventTypeERC721Burned:
+		return true
+	default:
+		return false
+	}
 }
 
 func extractAddressesFromEVMLog(attrVal string) (addrs []string, err error) {
