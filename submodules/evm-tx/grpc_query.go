@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/collections"
+	txdecode "cosmossdk.io/x/tx/decode"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
@@ -87,8 +88,13 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 	txs := []*sdk.TxResponse{}
 	for _, txHash := range txHashes {
 		tx, err := q.txMap.Get(ctx, *txHash)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
+		q.Logger(ctx).Info("failed to get tx", "tx_hash", *txHash, "error", err)
+		e := txdecode.ErrTxDecode
+		tx = sdk.TxResponse{
+			TxHash:    *txHash,
+			Codespace: e.Codespace(),
+			Code:      e.ABCICode(),
+			RawLog:    e.Wrap(err.Error()).Error(),
 		}
 		txs = append(txs, &tx)
 	}
