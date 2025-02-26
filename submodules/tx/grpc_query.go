@@ -114,15 +114,15 @@ func (q Querier) getTxs(ctx context.Context, txHashes []*string) (txs []*sdk.TxR
 
 func (q Querier) getTx(ctx context.Context, txHash string) (tx sdk.TxResponse) {
 	tx, err := q.txMap.Get(ctx, txHash)
-	if err != nil {
-		q.Logger(ctx).Info("failed to get tx", "tx_hash", txHash, "error", err)
-		e := txdecode.ErrTxDecode
-		tx = sdk.TxResponse{
-			TxHash:    txHash,
-			Codespace: e.Codespace(),
-			Code:      e.ABCICode(),
-			RawLog:    e.Wrap(err.Error()).Error(),
-		}
+	if err == nil {
+		return
 	}
-	return
+	q.Logger(ctx).Info("failed to get tx", "tx_hash", txHash, "error", err)
+	e := txdecode.ErrTxDecode
+	return sdk.TxResponse{
+		TxHash:    txHash,
+		Codespace: e.Codespace(),
+		Code:      e.ABCICode(),
+		RawLog:    e.Wrap(err.Error()).Error(),
+	}
 }
