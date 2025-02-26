@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"cosmossdk.io/collections"
+	txdecode "cosmossdk.io/x/tx/decode"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"google.golang.org/grpc/codes"
@@ -28,12 +29,10 @@ func (q Querier) Tx(ctx context.Context, req *types.QueryTxRequest) (*types.Quer
 	if req.TxHash == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty tx hash")
 	}
-	txHash := strings.ToLower(req.TxHash)
 
-	tx, err := q.txMap.Get(ctx, txHash)
-	if err != nil {
-		return nil, status.Error(codes.Internal, err.Error())
-	}
+	txHash := strings.ToLower(req.TxHash)
+	tx := q.getTx(ctx, txHash)
+
 	return &types.QueryTxResponse{Tx: &tx}, nil
 }
 
@@ -58,14 +57,7 @@ func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountR
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	txs := []*sdk.TxResponse{}
-	for _, txHash := range txHashes {
-		tx, err := q.txMap.Get(ctx, *txHash)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		txs = append(txs, &tx)
-	}
+	txs := q.getTxs(ctx, txHashes)
 
 	return &types.QueryTxsResponse{
 		Txs:        txs,
@@ -84,14 +76,7 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	txs := []*sdk.TxResponse{}
-	for _, txHash := range txHashes {
-		tx, err := q.txMap.Get(ctx, *txHash)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		txs = append(txs, &tx)
-	}
+	txs := q.getTxs(ctx, txHashes)
 
 	return &types.QueryTxsResponse{
 		Txs:        txs,
@@ -111,17 +96,33 @@ func (q Querier) TxsByHeight(ctx context.Context, req *types.QueryTxsByHeightReq
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 
-	txs := []*sdk.TxResponse{}
-	for _, txHash := range txHashes {
-		tx, err := q.txMap.Get(ctx, *txHash)
-		if err != nil {
-			return nil, status.Error(codes.Internal, err.Error())
-		}
-		txs = append(txs, &tx)
-	}
+	txs := q.getTxs(ctx, txHashes)
 
 	return &types.QueryTxsResponse{
 		Txs:        txs,
 		Pagination: pageRes,
 	}, nil
+}
+
+func (q Querier) getTxs(ctx context.Context, txHashes []*string) (txs []*sdk.TxResponse) {
+	for _, txHash := range txHashes {
+		tx := q.getTx(ctx, *txHash)
+		txs = append(txs, &tx)
+	}
+	return
+}
+
+func (q Querier) getTx(ctx context.Context, txHash string) sdk.TxResponse {
+	tx, err := q.txMap.Get(ctx, txHash)
+	if err == nil {
+		return tx
+	}
+	q.Logger(ctx).Info("failed to get tx", "tx_hash", txHash, "error", err)
+	e := txdecode.ErrTxDecode
+	return sdk.TxResponse{
+		TxHash:    txHash,
+		Codespace: e.Codespace(),
+		Code:      e.ABCICode(),
+		RawLog:    e.Wrap(err.Error()).Error(),
+	}
 }
