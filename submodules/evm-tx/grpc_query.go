@@ -112,10 +112,10 @@ func (q Querier) getTxs(ctx context.Context, txHashes []*string) (txs []*sdk.TxR
 	return
 }
 
-func (q Querier) getTx(ctx context.Context, txHash string) (tx sdk.TxResponse) {
+func (q Querier) getTx(ctx context.Context, txHash string) sdk.TxResponse {
 	tx, err := q.txMap.Get(ctx, txHash)
 	if err == nil {
-		return
+		return tx
 	}
 	q.Logger(ctx).Info("failed to get tx", "tx_hash", txHash, "error", err)
 	e := txdecode.ErrTxDecode
