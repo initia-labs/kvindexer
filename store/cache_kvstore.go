@@ -4,7 +4,6 @@ import (
 	"context"
 
 	corestoretypes "cosmossdk.io/core/store"
-	"cosmossdk.io/errors"
 	cachekv "cosmossdk.io/store/cachekv"
 	storetypes "cosmossdk.io/store/types"
 	bigcache "github.com/allegro/bigcache/v3"
@@ -77,10 +76,8 @@ func (c CacheStore) Set(key, value []byte) error {
 	storetypes.AssertValidKey(key)
 	storetypes.AssertValidValue(value)
 
-	err := c.cache.Set(string(key), value)
-	if err != nil {
-		return errors.Wrap(err, "failed to set cache")
-	}
+	// ignore cache error
+	_ = c.cache.Set(string(key), value)
 	c.store.Set(key, value)
 
 	return nil
