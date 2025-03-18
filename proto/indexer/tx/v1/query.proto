@@ -39,6 +39,13 @@ service Query {
       get : "/indexer/tx/v1/txs/by_height/{height}"
     };
   }
+
+  // TxCCount queries the total number of transactions
+  rpc TxCount(QueryTxCountRequest) returns (QueryTxCountResponse) {
+    option (google.api.http) = {
+      get : "/indexer/tx/v1/txs/count"
+    };
+  }
 }
 
 // QueryTxRequest is the request type for the Query/Txs RPC method
@@ -74,9 +81,17 @@ message QueryTxsByHeightRequest {
   cosmos.base.query.v1beta1.PageRequest pagination = 3;
 }
 
+// QueryTxCountRequest is the request type for the Query/Txs RPC method
+message QueryTxCountRequest {}
+
 // QueryTxsResponse is the response type for the Query/Txs RPC method
 message QueryTxsResponse {
   // txs is the list of queried transactions.
   repeated cosmos.base.abci.v1beta1.TxResponse txs = 1;
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryTxCountResponse {
+  // count is the total number of transactions.
+  uint64 count = 1;
 }
