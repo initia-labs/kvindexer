@@ -111,7 +111,7 @@ func (q Querier) TxCount(ctx context.Context, _ *types.QueryTxCountRequest) (*ty
 		return nil, status.Error(codes.Internal, err.Error())
 	}
 	return &types.QueryTxCountResponse{
-		Count: count,
+		Count: count + 1, // count is zerobase
 	}, nil
 }
 
