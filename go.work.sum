@@ -1869,6 +1869,8 @@ github.com/initia-labs/OPinit/api v0.5.1/go.mod h1:gHK6DEWb3/DqQD5LjKirUx9jilAh2
 github.com/initia-labs/OPinit/api v0.6.0/go.mod h1:gHK6DEWb3/DqQD5LjKirUx9jilAh2UioXanoQdgqVfU=
 github.com/initia-labs/cometbft v0.0.0-20241106155049-4698d4a37fe1 h1:Hqxf4a6PfCatz5vCBCovjhn4FwYaooCXIvyv4MM4Wjs=
 github.com/initia-labs/cometbft v0.0.0-20241106155049-4698d4a37fe1/go.mod h1:+wh6ap6xctVG+JOHwbl8pPKZ0GeqdPYqISu7F4b43cQ=
+github.com/initia-labs/evm v0.0.0-20241108055119-3d312736d7fb h1:oyH9gg/4f7uMCIJYnSpp7wa1NrGjSMsXTtypUfrsPLU=
+github.com/initia-labs/evm v0.0.0-20241108055119-3d312736d7fb/go.mod h1:+l/fr42Mma+xBnhefL/+z11/hcmJ2egl+ScIVPjhc7E=
 github.com/initia-labs/minievm v0.6.11-0.20250201070349-4c35e4ed4431/go.mod h1:+/jPIZlU11WIv5l+kYM8tVgGyZVljDXomJLLvBJKauo=
 github.com/initia-labs/movevm v0.2.7 h1:6UM35Cp6XQ1LgM7gnaSYouc7osSwxSQJsZgQdpXnBM4=
 github.com/initia-labs/movevm v0.2.7/go.mod h1:6MxR4GP5zH3JUc1IMgfqAe1e483mZVS7fshPknZPJ30=

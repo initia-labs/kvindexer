@@ -204,5 +204,8 @@ replace (
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
 
+// initia custom
+replace github.com/ethereum/go-ethereum => github.com/initia-labs/evm v0.0.0-20241108055119-3d312736d7fb
+
 // kvindexer internal
 replace github.com/initia-labs/kvindexer => ../../
