@@ -26,7 +26,7 @@ jobs:
       # for private repo access
       GOPRIVATE: github.com/initia-labs
       GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
-      GOLANGCI_LINT_VERSION: v1.62.2
+      GOLANGCI_LINT_VERSION: v1.64.8
     name: golangci-lint
     runs-on: ubuntu-latest
     steps:
