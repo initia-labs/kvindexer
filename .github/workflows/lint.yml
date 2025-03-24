@@ -23,17 +23,14 @@ concurrency:
 jobs:
   golangci:
     env:
-      # for private repo access
-      GOPRIVATE: github.com/initia-labs
-      GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
-      GOLANGCI_LINT_VERSION: v1.62.2
+      GOLANGCI_LINT_VERSION: v1.64.8
     name: golangci-lint
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: "1.23"
           check-latest: true
       - uses: technote-space/get-diff-action@v6.1.2
         id: git_diff
@@ -42,8 +39,7 @@ jobs:
             **/**.go
             go.mod
             go.sum
-      # for private repo access
-      - run: git config --global url.https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/.insteadOf https://github.com/
+            .golangci.yml
       # install golangci-lint
       - run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@${GOLANGCI_LINT_VERSION}
       - name: run go linters (long)
@@ -65,24 +61,19 @@ jobs:
         env:
           GIT_DIFF: ${{ env.GIT_DIFF }}
           LINT_DIFF: 1
+
   # Use --check or --exit-code when available (Go 1.19?)
   # https://github.com/golang/go/issues/27005
   tidy:
-    env:
-      # for private repo access
-      GOPRIVATE: github.com/initia-labs,github.com/skip-mev/slinky
-      GITHUB_ACCESS_TOKEN: ${{ secrets.GH_READ_TOKEN }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     name: tidy
     steps:
       - uses: actions/checkout@v4
       - name: Setup go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.23
+          go-version: "1.23"
           check-latest: true
-      # for private repo access
-      - run: git config --global url.https://${GITHUB_ACCESS_TOKEN}:x-oauth-basic@github.com/.insteadOf https://github.com/
       - run: |
           go mod tidy
           CHANGES_IN_REPO=$(git status --porcelain)

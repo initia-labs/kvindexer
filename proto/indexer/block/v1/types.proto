@@ -31,7 +31,8 @@ message Block {
   Proposer proposer = 10;
 }
 
-// Proposer represents the proposer of a block: for minitia, it is the L2 operator
+// Proposer represents the proposer of a block: for minitia, it is the L2
+// operator
 message Proposer {
   string moniker = 1;
   // actually minitias have no identity because they haven't MsgCreateValidator,

@@ -104,6 +104,17 @@ func (q Querier) TxsByHeight(ctx context.Context, req *types.QueryTxsByHeightReq
 	}, nil
 }
 
+// TxCount implements types.QueryServer.
+func (q Querier) TxCount(ctx context.Context, _ *types.QueryTxCountRequest) (*types.QueryTxCountResponse, error) {
+	count, err := q.sequence.Peek(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	return &types.QueryTxCountResponse{
+		Count: count + 1, // count is zerobase
+	}, nil
+}
+
 func (q Querier) getTxs(ctx context.Context, txHashes []*string) (txs []*sdk.TxResponse) {
 	for _, txHash := range txHashes {
 		tx := q.getTx(ctx, *txHash)

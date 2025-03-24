@@ -53,3 +53,4 @@ dependency-graph.png
 # Latex
 *.aux
 *.out
+.qodo
