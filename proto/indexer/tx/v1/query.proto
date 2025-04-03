@@ -12,6 +12,13 @@ option go_package = "github.com/initia-labs/kvindexer/submodules/tx/types";
 
 // Query provides the service definition for the Txs
 service Query {
+
+  // TxsCount queries the total number of transactions
+  rpc TxCount(QueryTxCountRequest) returns (QueryTxCountResponse) {
+    option (google.api.http) = {
+      get : "/indexer/tx/v1/txs/count"
+    };
+  }
   // Tx queries a transaction by hash
   rpc Tx(QueryTxRequest) returns (QueryTxResponse) {
     option (google.api.http) = {
@@ -40,12 +47,6 @@ service Query {
     };
   }
 
-  // TxCCount queries the total number of transactions
-  rpc TxCount(QueryTxCountRequest) returns (QueryTxCountResponse) {
-    option (google.api.http) = {
-      get : "/indexer/tx/v1/txs/count"
-    };
-  }
 }
 
 // QueryTxRequest is the request type for the Query/Txs RPC method
