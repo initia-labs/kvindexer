@@ -160,7 +160,14 @@ func (s *EvmTxSubmodule) patchTxMap(ctx context.Context) (err error) {
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set tx map")
 		}
+
+		// remove old key
+		err = oldTxMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old tx map")
+		}
 		return false, nil
+
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to walk through old tx map")
@@ -180,6 +187,12 @@ func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err err
 		err = s.txhashesByAccountMap.Set(ctx, key, value)
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set txhashedByAccount map")
+		}
+
+		// remove old key
+		err = oldTxhashesByAccountMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old txhashedByAccount map")
 		}
 		return false, nil
 	})
@@ -202,6 +215,12 @@ func (s *EvmTxSubmodule) patchTxhashesBySequenceMap(ctx context.Context) (err er
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set txhashesBySequence map")
 		}
+
+		// remove old key
+		err = oldTxhashesBySequenceMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old txhashesBySequence map")
+		}
 		return false, nil
 	})
 	if err != nil {
@@ -222,6 +241,12 @@ func (s *EvmTxSubmodule) patchTxhashesByHeightMap(ctx context.Context) (err erro
 		err = s.txhashesByHeightMap.Set(ctx, key, value)
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set txhashesByHeight map")
+		}
+
+		// remove old key
+		err = oldTxhashesByHeightMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old txhashesByHeight map")
 		}
 		return false, nil
 	})
@@ -244,6 +269,12 @@ func (s *EvmTxSubmodule) patcAccountSequenceMap(ctx context.Context) (err error)
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set accountSequence map")
 		}
+
+		// remove old key
+		err = oldAccountSequenceMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old accountSequence map")
+		}
 		return false, nil
 	})
 	if err != nil {
@@ -265,6 +296,12 @@ func (s *EvmTxSubmodule) patchSequenceByHeightMap(ctx context.Context) (err erro
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set sequenceByHeight map")
 		}
+
+		// remove old key
+		err = oldSequenceByHeightMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old sequenceByHeight map")
+		}
 		return false, nil
 	})
 	if err != nil {
@@ -285,6 +322,12 @@ func (s *EvmTxSubmodule) patchAccountSequenceByHeightMap(ctx context.Context) (e
 		err = s.accountSequenceByHeightMap.Set(ctx, key, value)
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set accountSequenceByHeight map")
+		}
+
+		// remove old key
+		err = oldAccountSequenceByHeightMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old accountSequenceByHeight map")
 		}
 		return false, nil
 	})
