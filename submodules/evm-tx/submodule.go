@@ -130,8 +130,7 @@ func (sub EvmTxSubmodule) RegisterQueryServer(s grpc.Server) {
 }
 
 func (sub EvmTxSubmodule) Prepare(ctx context.Context) error {
-	sub.PatchPrefix(ctx)
-	return nil
+	return sub.PatchPrefix(ctx)
 }
 
 func (sub EvmTxSubmodule) Initialize(ctx context.Context) error {
