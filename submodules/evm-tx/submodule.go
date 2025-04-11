@@ -35,6 +35,9 @@ type EvmTxSubmodule struct {
 	// for pruning
 	sequenceByHeightMap        *collections.Map[int64, uint64]
 	accountSequenceByHeightMap *collections.Map[collections.Triple[int64, sdk.AccAddress, uint64], bool]
+
+	// keeper
+	keeper collection.IndexerKeeper
 }
 
 func NewTxSubmodule(
@@ -100,6 +103,7 @@ func NewTxSubmodule(
 		accountSequenceMap:         accountSequenceMap,
 		sequenceByHeightMap:        sequenceByHeightMap,
 		accountSequenceByHeightMap: accountSequenceByHeightMap,
+		keeper:                     indexerKeeper,
 	}, nil
 }
 
@@ -126,6 +130,7 @@ func (sub EvmTxSubmodule) RegisterQueryServer(s grpc.Server) {
 }
 
 func (sub EvmTxSubmodule) Prepare(ctx context.Context) error {
+	sub.PatchPrefix(ctx)
 	return nil
 }
 
