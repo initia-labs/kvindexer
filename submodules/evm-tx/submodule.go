@@ -10,6 +10,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/grpc"
+	"github.com/pkg/errors"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
@@ -32,12 +33,19 @@ type EvmTxSubmodule struct {
 	txhashesByAccountMap  *collections.Map[collections.Pair[sdk.AccAddress, uint64], string]
 	accountSequenceMap    *collections.Map[sdk.AccAddress, uint64]
 
+	oldSequence              *collections.Sequence
+	oldTxMap                 *collections.Map[string, sdk.TxResponse]
+	oldTxhashesBySequenceMap *collections.Map[uint64, string]
+	oldTxhashesByHeightMap   *collections.Map[collections.Pair[int64, uint64], string]
+	oldTxhashesByAccountMap  *collections.Map[collections.Pair[sdk.AccAddress, uint64], string]
+	oldAccountSequenceMap    *collections.Map[sdk.AccAddress, uint64]
+
 	// for pruning
 	sequenceByHeightMap        *collections.Map[int64, uint64]
 	accountSequenceByHeightMap *collections.Map[collections.Triple[int64, sdk.AccAddress, uint64], bool]
 
 	// keeper
-	keeper collection.IndexerKeeper
+	//keeper collection.IndexerKeeper
 }
 
 func NewTxSubmodule(
@@ -92,6 +100,54 @@ func NewTxSubmodule(
 		return nil, err
 	}
 
+	oldPrefix := collection.NewPrefix(oldModuleName, types.SequencePrefix)
+	oldSeq, err := collection.AddSequence(indexerKeeper, oldPrefix, "sequence")
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get old sequence")
+	}
+
+	oldPrefix = collection.NewPrefix(oldModuleName, types.TxsPrefix)
+	oldTxMap, err := collection.AddMap(indexerKeeper, oldPrefix, "txs", collections.StringKey, codec.CollValue[sdk.TxResponse](cdc))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get old tx map")
+	}
+	oldPrefix = collection.NewPrefix(oldModuleName, types.AccountSequencePrefix)
+	oldAccountSequenceMap, err := collection.AddMap(indexerKeeper, oldPrefix, "account_sequences", sdk.AccAddressKey, collections.Uint64Value)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get old accountSequence map")
+	}
+	oldPrefix = collection.NewPrefix(oldModuleName, types.TxsByAccountPrefix)
+	oldTxhashesByAccountMap, err := collection.AddMap(indexerKeeper, oldPrefix, "txs_by_account", collections.PairKeyCodec(sdk.AccAddressKey, collections.Uint64Key), collections.StringValue)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get old txhashedByAccount map")
+	}
+
+	oldPrefix = collection.NewPrefix(oldModuleName, types.TxSequencePrefix)
+	oldTxhashesBySequenceMap, err := collection.AddMap(indexerKeeper, oldPrefix, "tx_sequences", collections.Uint64Key, collections.StringValue)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get old txhashesBySequence map")
+	}
+
+	oldPrefix = collection.NewPrefix(oldModuleName, types.TxByHeightPrefix)
+	oldTxhashesByHeightMap, err := collection.AddMap(indexerKeeper, oldPrefix, "txs_by_height", collections.PairKeyCodec(collections.Int64Key, collections.Uint64Key), collections.StringValue)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get old txhashesByHeight map")
+	}
+
+	/** no need
+	oldPrefix = collection.NewPrefix(oldModuleName, types.SequenceByHeightPrefix)
+	oldSequenceByHeightMap, err := collection.AddMap(s.keeper, oldPrefix, "sequence_by_height", collections.Int64Key, collections.Uint64Value)
+	if err != nil {
+		return errors.Wrap(err, "failed to get old sequenceByHeight map")
+	}
+
+	oldPrefix = collection.NewPrefix(oldModuleName, types.AccountSequenceByHeightPrefix)
+	oldAccountSequenceByHeightMap, err := collection.AddMap(s.keeper, oldPrefix, "account_sequence_by_height", collections.TripleKeyCodec(collections.Int64Key, sdk.AccAddressKey, collections.Uint64Key), collections.BoolValue)
+	if err != nil {
+		return errors.Wrap(err, "failed to get old accountSequenceByHeight map")
+	}
+	*/
+
 	return &EvmTxSubmodule{
 		cdc: cdc,
 
@@ -103,7 +159,15 @@ func NewTxSubmodule(
 		accountSequenceMap:         accountSequenceMap,
 		sequenceByHeightMap:        sequenceByHeightMap,
 		accountSequenceByHeightMap: accountSequenceByHeightMap,
-		keeper:                     indexerKeeper,
+
+		// for patcher
+		oldSequence:              oldSeq,
+		oldTxMap:                 oldTxMap,
+		oldTxhashesByAccountMap:  oldTxhashesByAccountMap,
+		oldTxhashesBySequenceMap: oldTxhashesBySequenceMap,
+		oldTxhashesByHeightMap:   oldTxhashesByHeightMap,
+		oldAccountSequenceMap:    oldAccountSequenceMap,
+		//keeper:                   indexerKeeper,
 	}, nil
 }
 
@@ -130,7 +194,7 @@ func (sub EvmTxSubmodule) RegisterQueryServer(s grpc.Server) {
 }
 
 func (sub EvmTxSubmodule) Prepare(ctx context.Context) error {
-	return sub.PatchPrefix(ctx)
+	return nil
 }
 
 func (sub EvmTxSubmodule) Initialize(ctx context.Context) error {
@@ -138,6 +202,9 @@ func (sub EvmTxSubmodule) Initialize(ctx context.Context) error {
 }
 
 func (sub EvmTxSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+	if err := sub.PatchPrefix(ctx); err != nil {
+		return err
+	}
 	return sub.finalizeBlock(ctx, req, res)
 }
 
