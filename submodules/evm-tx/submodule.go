@@ -101,35 +101,35 @@ func NewTxSubmodule(
 	}
 
 	oldPrefix := collection.NewPrefix(oldModuleName, types.SequencePrefix)
-	oldSeq, err := collection.AddSequence(indexerKeeper, oldPrefix, "sequence")
+	oldSeq, err := collection.AddSequence(indexerKeeper, oldPrefix, "osequence")
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get old sequence")
 	}
 
 	oldPrefix = collection.NewPrefix(oldModuleName, types.TxsPrefix)
-	oldTxMap, err := collection.AddMap(indexerKeeper, oldPrefix, "txs", collections.StringKey, codec.CollValue[sdk.TxResponse](cdc))
+	oldTxMap, err := collection.AddMap(indexerKeeper, oldPrefix, "otxs", collections.StringKey, codec.CollValue[sdk.TxResponse](cdc))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get old tx map")
 	}
 	oldPrefix = collection.NewPrefix(oldModuleName, types.AccountSequencePrefix)
-	oldAccountSequenceMap, err := collection.AddMap(indexerKeeper, oldPrefix, "account_sequences", sdk.AccAddressKey, collections.Uint64Value)
+	oldAccountSequenceMap, err := collection.AddMap(indexerKeeper, oldPrefix, "oaccount_sequences", sdk.AccAddressKey, collections.Uint64Value)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get old accountSequence map")
 	}
 	oldPrefix = collection.NewPrefix(oldModuleName, types.TxsByAccountPrefix)
-	oldTxhashesByAccountMap, err := collection.AddMap(indexerKeeper, oldPrefix, "txs_by_account", collections.PairKeyCodec(sdk.AccAddressKey, collections.Uint64Key), collections.StringValue)
+	oldTxhashesByAccountMap, err := collection.AddMap(indexerKeeper, oldPrefix, "otxs_by_account", collections.PairKeyCodec(sdk.AccAddressKey, collections.Uint64Key), collections.StringValue)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get old txhashedByAccount map")
 	}
 
 	oldPrefix = collection.NewPrefix(oldModuleName, types.TxSequencePrefix)
-	oldTxhashesBySequenceMap, err := collection.AddMap(indexerKeeper, oldPrefix, "tx_sequences", collections.Uint64Key, collections.StringValue)
+	oldTxhashesBySequenceMap, err := collection.AddMap(indexerKeeper, oldPrefix, "otx_sequences", collections.Uint64Key, collections.StringValue)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get old txhashesBySequence map")
 	}
 
 	oldPrefix = collection.NewPrefix(oldModuleName, types.TxByHeightPrefix)
-	oldTxhashesByHeightMap, err := collection.AddMap(indexerKeeper, oldPrefix, "txs_by_height", collections.PairKeyCodec(collections.Int64Key, collections.Uint64Key), collections.StringValue)
+	oldTxhashesByHeightMap, err := collection.AddMap(indexerKeeper, oldPrefix, "otxs_by_height", collections.PairKeyCodec(collections.Int64Key, collections.Uint64Key), collections.StringValue)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get old txhashesByHeight map")
 	}
