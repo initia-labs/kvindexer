@@ -54,6 +54,17 @@ func (s *EvmTxSubmodule) patchPrefix(ctx context.Context) (err error) {
 
 	wg.Add(1)
 	go func() {
+		err = s.patcAccountSequenceMap(ctx)
+		if err != nil {
+			s.Logger(ctx).Error("failed to patch AccountSequenceMap", "err", err)
+		} else {
+			s.Logger(ctx).Info("successfully patched AccountSequenceMap")
+		}
+		wg.Done()
+	}()
+
+	wg.Add(1)
+	go func() {
 		err = s.patchTxhashesByAccountMap(ctx)
 		if err != nil {
 			s.Logger(ctx).Error("failed to patch TxhashesByAccountMap", "err", err)
@@ -70,17 +81,6 @@ func (s *EvmTxSubmodule) patchPrefix(ctx context.Context) (err error) {
 			s.Logger(ctx).Error("failed to patch TxhashesBySequenceMap", "err", err)
 		} else {
 			s.Logger(ctx).Info("successfully patched TxhashesBySequenceMap")
-		}
-		wg.Done()
-	}()
-
-	wg.Add(1)
-	go func() {
-		err = s.patcAccountSequenceMap(ctx)
-		if err != nil {
-			s.Logger(ctx).Error("failed to patch AccountSequenceMap", "err", err)
-		} else {
-			s.Logger(ctx).Info("successfully patched AccountSequenceMap")
 		}
 		wg.Done()
 	}()
@@ -154,14 +154,7 @@ func (s *EvmTxSubmodule) patchTxMap(ctx context.Context) (err error) {
 		return errors.Wrap(err, "failed to get old tx map")
 	}
 
-	// remove previous tx map
-	err = s.txMap.Walk(ctx, nil, func(key string, value sdk.TxResponse) (stop bool, err error) {
-		err = s.txMap.Remove(ctx, key)
-		return err != nil, errors.Wrap(err, "failed to remove prev tx map")
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to walk through pref tx map")
-	}
+	// no need to patch current txMap
 
 	err = oldTxMap.Walk(ctx, nil, func(key string, value sdk.TxResponse) (stop bool, err error) {
 		err = s.txMap.Set(ctx, key, value)
@@ -184,23 +177,71 @@ func (s *EvmTxSubmodule) patchTxMap(ctx context.Context) (err error) {
 	return nil
 }
 
+func (s *EvmTxSubmodule) patcAccountSequenceMap(ctx context.Context) (err error) {
+	oldPrefix := collection.NewPrefix(oldModuleName, types.AccountSequencePrefix)
+	oldAccountSequenceMap, err := collection.AddMap(s.keeper, oldPrefix, "account_sequences", sdk.AccAddressKey, collections.Uint64Value)
+	if err != nil {
+		return errors.Wrap(err, "failed to get old accountSequence map")
+	}
+
+	err = oldAccountSequenceMap.Walk(ctx, nil, func(key sdk.AccAddress, oldVal uint64) (stop bool, err error) {
+
+		var curVal uint64
+		curVal, err = s.accountSequenceMap.Get(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to get current accountSequence map")
+		}
+		err = s.accountSequenceMap.Set(ctx, key, curVal+oldVal)
+		if err == nil {
+			return true, errors.Wrap(err, "failed to set accountSequence map")
+		}
+
+		// remove old key
+		err = oldAccountSequenceMap.Remove(ctx, key)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove old accountSequence map")
+		}
+		return false, nil
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to walk through old accountSequence map")
+	}
+
+	return nil
+}
+
 func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err error) {
 	oldPrefix := collection.NewPrefix(oldModuleName, types.TxsByAccountPrefix)
 	oldTxhashesByAccountMap, err := collection.AddMap(s.keeper, oldPrefix, "txs_by_account", collections.PairKeyCodec(sdk.AccAddressKey, collections.Uint64Key), collections.StringValue)
 	if err != nil {
 		return errors.Wrap(err, "failed to get old txhashedByAccount map")
 	}
+	// just extracted map from current store
+	curMap := make(map[collections.Pair[sdk.AccAddress, uint64]]string)
+	// key: address, value: last seq from old store
+	lastSeq := make(map[string]uint64)
 
-	// remove previous txhashesByAccountMap
 	err = s.txhashesByAccountMap.Walk(ctx, nil, func(key collections.Pair[sdk.AccAddress, uint64], value string) (stop bool, err error) {
+		curMap[key] = value
 		err = s.txhashesByAccountMap.Remove(ctx, key)
-		return err != nil, errors.Wrap(err, "failed to remove prev txhashedByAccount map")
+		return err != nil, errors.Wrap(err, "failed to pop prev txhashedByAccount map")
 	})
 	if err != nil {
-		return errors.Wrap(err, "failed to walk through prev txhashedByAccount map")
+		return errors.Wrap(err, "failed to walk through cur txhashedByAccount map")
 	}
 
 	err = oldTxhashesByAccountMap.Walk(ctx, nil, func(key collections.Pair[sdk.AccAddress, uint64], value string) (stop bool, err error) {
+
+		// get last seq from old store
+		lseq, ok := lastSeq[key.K1().String()]
+		if !ok {
+			lseq = key.K2()
+		} else {
+			if lseq < key.K2() {
+				lastSeq[key.K1().String()] = key.K2()
+			}
+		}
+
 		err = s.txhashesByAccountMap.Set(ctx, key, value)
 		if err == nil {
 			return true, errors.Wrap(err, "failed to set txhashedByAccount map")
@@ -217,6 +258,14 @@ func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err err
 		return errors.Wrap(err, "failed to walk through old txhashedByAccount map")
 	}
 
+	// re-insert curmap
+	for k, v := range curMap {
+		err = s.txhashesByAccountMap.Set(ctx, collections.Join(k.K1(), lastSeq[k.K1().String()]), v)
+		if err != nil {
+			return errors.Wrap(err, "failed to set txhashedByAccount map")
+		}
+	}
+
 	return nil
 }
 
@@ -227,14 +276,18 @@ func (s *EvmTxSubmodule) patchTxhashesBySequenceMap(ctx context.Context, oldSeq 
 		return errors.Wrap(err, "failed to get old txhashesBySequence map")
 	}
 
-	// remove previous txhashesBySequenceMap
+	// patch current txhashesBySequenceMap
 	err = s.txhashesBySequenceMap.Walk(ctx, nil, func(key uint64, value string) (stop bool, err error) {
 		err = s.txhashesBySequenceMap.Remove(ctx, key)
-		return err != nil, errors.Wrap(err, "failed to remove prev txhashesBySequence map")
+		if err != nil {
+			return true, errors.Wrap(err, "failed to remove prev txhashesBySequence map")
+		}
+		err = s.txhashesBySequenceMap.Set(ctx, key+oldSeq, value)
+		if err != nil {
+			return true, errors.Wrap(err, "failed to set txhashesBySequence map")
+		}
+		return false, nil
 	})
-	if err != nil {
-		return errors.Wrap(err, "failed to walk through prev txhashesBySequence map")
-	}
 
 	err = oldTxhashesBySequenceMap.Walk(ctx, nil, func(key uint64, value string) (stop bool, err error) {
 		err = s.txhashesBySequenceMap.Set(ctx, key, value)
@@ -287,48 +340,6 @@ func (s *EvmTxSubmodule) patchTxhashesByHeightMap(ctx context.Context) (err erro
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to walk through old txhashesByHeight map")
-	}
-
-	return nil
-}
-
-func (s *EvmTxSubmodule) patcAccountSequenceMap(ctx context.Context) (err error) {
-	oldPrefix := collection.NewPrefix(oldModuleName, types.AccountSequencePrefix)
-	oldAccountSequenceMap, err := collection.AddMap(s.keeper, oldPrefix, "account_sequences", sdk.AccAddressKey, collections.Uint64Value)
-	if err != nil {
-		return errors.Wrap(err, "failed to get old accountSequence map")
-	}
-
-	// remove previous accountSequenceMap
-	err = s.accountSequenceMap.Walk(ctx, nil, func(key sdk.AccAddress, value uint64) (stop bool, err error) {
-		err = s.accountSequenceMap.Remove(ctx, key)
-		return err != nil, errors.Wrap(err, "failed to remove prev accountSequence map")
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to walk through prev accountSequence map")
-	}
-
-	err = oldAccountSequenceMap.Walk(ctx, nil, func(key sdk.AccAddress, oldVal uint64) (stop bool, err error) {
-
-		var curVal uint64
-		curVal, err = s.accountSequenceMap.Get(ctx, key)
-		if err != nil {
-			return true, errors.Wrap(err, "failed to get current accountSequence map")
-		}
-		err = s.accountSequenceMap.Set(ctx, key, curVal+oldVal)
-		if err == nil {
-			return true, errors.Wrap(err, "failed to set accountSequence map")
-		}
-
-		// remove old key
-		err = oldAccountSequenceMap.Remove(ctx, key)
-		if err != nil {
-			return true, errors.Wrap(err, "failed to remove old accountSequence map")
-		}
-		return false, nil
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to walk through old accountSequence map")
 	}
 
 	return nil
