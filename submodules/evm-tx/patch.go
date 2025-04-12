@@ -164,6 +164,8 @@ func (s *EvmTxSubmodule) patchTxMap(ctx context.Context) (err error) {
 			return true, errors.Wrap(err, "failed to remove old tx map")
 		}
 
+		s.Logger(ctx).Info("patching tx map", "key", key, "value", value)
+
 		i++
 		if i%1000 == 0 {
 			s.Logger(ctx).Info("patching tx map", "count", i)
@@ -200,6 +202,8 @@ func (s *EvmTxSubmodule) patcAccountSequenceMap(ctx context.Context) (err error)
 			return true, errors.Wrap(err, "failed to remove old accountSequence map")
 		}
 
+		s.Logger(ctx).Info("patching account sequence map", "key", key, "oldVal", oldVal, "curVal", curVal)
+
 		i++
 		if i%1000 == 0 {
 			s.Logger(ctx).Info("patching account sequence map", "count", i)
@@ -234,7 +238,7 @@ func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err err
 	if err != nil {
 		return errors.Wrap(err, "failed to walk through cur txhashedByAccount map")
 	}
-	s.Logger(ctx).Info("patching txhashedByAccount map", "count", i, "step", "remove from current store")
+	s.Logger(ctx).Info("patched txhashedByAccount map", "count", i, "step", "remove from current store")
 
 	i = 0
 	err = s.oldTxhashesByAccountMap.Walk(ctx, nil, func(key collections.Pair[sdk.AccAddress, uint64], value string) (stop bool, err error) {
@@ -254,6 +258,8 @@ func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err err
 			return true, errors.Wrap(err, "failed to set txhashedByAccount map")
 		}
 
+		s.Logger(ctx).Info("patching txhashedByAccount map", "key", key, "value", value)
+
 		// remove old key
 		err = s.oldTxhashesByAccountMap.Remove(ctx, key)
 		if err != nil {
@@ -265,7 +271,7 @@ func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err err
 		}
 		return false, nil
 	})
-	s.Logger(ctx).Info("patching txhashedByAccount map", "count", i, "step", "migrate old store")
+	s.Logger(ctx).Info("patched txhashedByAccount map", "count", i, "step", "migrate old store")
 	if err != nil {
 		return errors.Wrap(err, "failed to walk through old txhashedByAccount map")
 	}
@@ -277,12 +283,13 @@ func (s *EvmTxSubmodule) patchTxhashesByAccountMap(ctx context.Context) (err err
 		if err != nil {
 			return errors.Wrap(err, "failed to set txhashedByAccount map")
 		}
+		s.Logger(ctx).Info("patching txhashedByAccount map", "key", k, "value", v)
 		i++
 		if i%1000 == 0 {
 			s.Logger(ctx).Info("patching txhashedByAccount map", "count", i, "step", "re-insert cur store")
 		}
 	}
-	s.Logger(ctx).Info("patching txhashedByAccount map", "count", i, "step", "re-insert cur store")
+	s.Logger(ctx).Info("patched txhashedByAccount map", "count", i, "step", "re-insert cur store")
 
 	return nil
 }
@@ -300,13 +307,14 @@ func (s *EvmTxSubmodule) patchTxhashesBySequenceMap(ctx context.Context, oldSeq 
 		if err != nil {
 			return true, errors.Wrap(err, "failed to set txhashesBySequence map")
 		}
+		s.Logger(ctx).Info("patching txhashesBySequence map", "key", key, "value", value)
 		i++
 		if i%1000 == 0 {
 			s.Logger(ctx).Info("patching txhashesBySequence map", "count", i, "step", "update current store")
 		}
 		return false, nil
 	})
-	s.Logger(ctx).Info("patching txhashesBySequence map", "count", i, "step", "update current store")
+	s.Logger(ctx).Info("patched txhashesBySequence map", "count", i, "step", "update current store")
 
 	i = 0
 	err = s.oldTxhashesBySequenceMap.Walk(ctx, nil, func(key uint64, value string) (stop bool, err error) {
@@ -320,13 +328,14 @@ func (s *EvmTxSubmodule) patchTxhashesBySequenceMap(ctx context.Context, oldSeq 
 		if err != nil {
 			return true, errors.Wrap(err, "failed to remove old txhashesBySequence map")
 		}
+		s.Logger(ctx).Info("patching txhashesBySequence map", "key", key, "value", value)
 		i++
 		if i%1000 == 0 {
 			s.Logger(ctx).Info("patching txhashesBySequence map", "count", i, "step", "migrate old store")
 		}
 		return false, nil
 	})
-	s.Logger(ctx).Info("patching txhashesBySequence map", "count", i, "step", "migrate old store")
+	s.Logger(ctx).Info("patched txhashesBySequence map", "count", i, "step", "migrate old store")
 	if err != nil {
 		return errors.Wrap(err, "failed to walk through old txhashesBySequence map")
 	}
@@ -348,6 +357,7 @@ func (s *EvmTxSubmodule) patchTxhashesByHeightMap(ctx context.Context) (err erro
 		if err != nil {
 			return true, errors.Wrap(err, "failed to remove old txhashesByHeight map")
 		}
+		s.Logger(ctx).Info("patching txhashesByHeight map", "key", key, "value", value)
 		i++
 		if i%1000 == 0 {
 			s.Logger(ctx).Info("patching txhashesByHeight map", "count", i, "step", "migrate old store")
