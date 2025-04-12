@@ -2,6 +2,7 @@ package tx
 
 import (
 	"context"
+	"fmt"
 
 	"cosmossdk.io/collections"
 	"cosmossdk.io/log"
@@ -202,7 +203,9 @@ func (sub EvmTxSubmodule) Initialize(ctx context.Context) error {
 }
 
 func (sub EvmTxSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
-	if err := sub.PatchPrefix(ctx); err != nil {
+	fmt.Printf("height: %d\n", req.Height)
+	if err := sub.PatchPrefix(ctx, req.Height > 1); err != nil {
+		sub.Logger(ctx).Error("failed to patch prefix", "error", err)
 		return err
 	}
 	return sub.finalizeBlock(ctx, req, res)
