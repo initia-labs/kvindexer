@@ -46,7 +46,7 @@ type EvmTxSubmodule struct {
 	accountSequenceByHeightMap *collections.Map[collections.Triple[int64, sdk.AccAddress, uint64], bool]
 
 	// keeper
-	//keeper collection.IndexerKeeper
+	keeper collection.IndexerKeeper
 }
 
 func NewTxSubmodule(
@@ -168,7 +168,7 @@ func NewTxSubmodule(
 		oldTxhashesBySequenceMap: oldTxhashesBySequenceMap,
 		oldTxhashesByHeightMap:   oldTxhashesByHeightMap,
 		oldAccountSequenceMap:    oldAccountSequenceMap,
-		//keeper:                   indexerKeeper,
+		keeper:                   indexerKeeper,
 	}, nil
 }
 

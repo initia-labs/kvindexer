@@ -7,4 +7,5 @@ import (
 type IndexerKeeper interface {
 	IsSealed() bool
 	GetSchemaBuilder() *collections.SchemaBuilder
+	Write() error
 }

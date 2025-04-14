@@ -109,6 +109,15 @@ func (k *Keeper) Seal() error {
 	return nil
 }
 
+func (k Keeper) Write() error {
+	if !k.IsSealed() {
+		return errors.New("keeper is not sealed")
+	}
+
+	k.store.Write()
+	return nil
+}
+
 func (k Keeper) IsSealed() bool {
 	return k.sealed
 }
