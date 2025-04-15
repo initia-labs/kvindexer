@@ -61,7 +61,6 @@ func NewKeeper(
 	config *config.IndexerConfig,
 	ac, vc address.Codec,
 ) *Keeper {
-
 	k := &Keeper{
 		cdc:            cdc,
 		vmType:         vmType,
@@ -78,6 +77,13 @@ func NewKeeper(
 
 	sb := collections.NewSchemaBuilderFromAccessor(
 		func(ctx context.Context) corestoretypes.KVStore {
+			// TODO: find more graceful way to handle this
+			// currently query called with sdkCtx.IsCheckTx() true, so we use this to return gas kvstore
+			sdkCtx := sdk.UnwrapSDKContext(ctx)
+			if sdkCtx.IsCheckTx() {
+				return store.NewGasKVStore(sdkCtx, k.store)
+			}
+
 			return k.store
 		})
 	k.schemaBuilder = sb
