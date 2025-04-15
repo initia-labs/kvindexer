@@ -79,6 +79,7 @@ func NewKeeper(
 		func(ctx context.Context) corestoretypes.KVStore {
 			// TODO: find more graceful way to handle this
 			// currently query called with sdkCtx.IsCheckTx() true, so we use this to return gas kvstore
+			// - https://github.com/cosmos/cosmos-sdk/blob/371eb7e0de11d79f3bf849029291fc39b5a36683/baseapp/abci.go#L1237
 			sdkCtx := sdk.UnwrapSDKContext(ctx)
 			if sdkCtx.IsCheckTx() {
 				return store.NewGasKVStore(sdkCtx, k.store)
