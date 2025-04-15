@@ -47,20 +47,19 @@ func (s *EvmTxSubmodule) patchPrefix(ctx context.Context) (err error) {
 		s.Logger(ctx).Info("successfully patched sequence", "oldSeq", oldSeq)
 	}
 
-	/**
-	  wg.Add(1)
-	  go func() {
-	      err = s.patchTxMap(ctx)
-	      if err != nil {
-	          s.Logger(ctx).Error("failed to patch txMap", "err", err)
-	      } else {
-	          s.Logger(ctx).Info("successfully patched txMap")
-	      }
-	      wg.Done()
-	  }()
-	  if inSync {
-	      wg.Wait()
-	  }
+	wg.Add(1)
+	go func() {
+		err = s.patchTxMap(ctx)
+		if err != nil {
+			s.Logger(ctx).Error("failed to patch txMap", "err", err)
+		} else {
+			s.Logger(ctx).Info("successfully patched txMap")
+		}
+		wg.Done()
+	}()
+	if inSync {
+		wg.Wait()
+	}
 
 	wg.Add(1)
 	go func() {
@@ -105,7 +104,6 @@ func (s *EvmTxSubmodule) patchPrefix(ctx context.Context) (err error) {
 	if inSync {
 		wg.Wait()
 	}
-	*/
 
 	wg.Add(1)
 	go func() {
