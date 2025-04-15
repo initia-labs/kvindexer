@@ -67,6 +67,7 @@ func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountR
 
 // Txs implements types.QueryServer.
 func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.QueryTxsResponse, error) {
+	req.Pagination.CountTotal = false
 	txHashes, pageRes, err := query.CollectionPaginate(ctx, q.txhashesBySequenceMap, req.Pagination,
 		func(_ uint64, value string) (*string, error) {
 			return &value, nil
@@ -77,7 +78,12 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 	}
 
 	txs := q.getTxs(ctx, txHashes)
+	txCountRes, err := q.TxCount(ctx, &types.QueryTxCountRequest{})
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
 
+	pageRes.Total = txCountRes.Count
 	return &types.QueryTxsResponse{
 		Txs:        txs,
 		Pagination: pageRes,
