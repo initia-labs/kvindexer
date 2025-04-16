@@ -475,7 +475,7 @@ func (s *EvmTxSubmodule) patchTxhashesBySequenceMap(ctx context.Context, oldSeq 
 			seqMap[key] = value
 
 			// remove old key
-			err = s.oldTxhashesBySequenceMap.Remove(ctx, key)
+			err = s.txhashesBySequenceMap.Remove(ctx, key)
 			if err != nil {
 				return res, errors.Wrap(err, "failed to remove old txhashesBySequence map")
 			}
@@ -528,21 +528,28 @@ func (s *EvmTxSubmodule) patchTxhashesBySequenceMap(ctx context.Context, oldSeq 
 			if err != nil {
 				return res, errors.Wrap(err, "failed to set txhashesBySequence map")
 			}
+
+			// remove old key
+			err = s.oldTxhashesBySequenceMap.Remove(ctx, key)
+			if err != nil {
+				return res, errors.Wrap(err, "failed to remove old txhashesBySequence map")
+			}
+			i++
+			if i%iterUnit == 0 {
+				s.Logger(ctx).Info("patching txhashesBySequence map", "count", i, "step", "migrate old store")
+			}
 			return value, nil
 		})
+
+		if err = s.keeper.Write(); err != nil {
+			s.Logger(ctx).Error("failed to write txhashesBySequence map", "err", err, "count", i, "step", "migrate old store")
+			return errors.Wrap(err, "failed to write txhashesBySequence map")
+		}
 
 		if err != nil {
 			return errors.Wrap(err, "failed to walk through old txhashesBySequence map")
 		}
 
-		i++
-		if i%iterUnit == 0 {
-			s.Logger(ctx).Info("patching txhashesBySequence map", "count", i, "step", "migrate old store")
-			if err = s.keeper.Write(); err != nil {
-				s.Logger(ctx).Error("failed to write txhashesBySequence map", "err", err, "count", i, "step", "migrate old store")
-				return errors.Wrap(err, "failed to write txhashesBySequence map")
-			}
-		}
 		if pageRes == nil || len(pageRes.NextKey) == 0 {
 			break
 		}
