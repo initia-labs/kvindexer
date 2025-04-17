@@ -5,7 +5,7 @@ const (
 	SubmoduleName = "move-nft"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.7"
+	Version = "v0.1.8"
 )
 
 // store prefixes

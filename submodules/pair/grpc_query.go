@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/pair/types"
+	"github.com/initia-labs/kvindexer/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -22,6 +23,7 @@ func NewQuerier(bs PairSubmodule) Querier {
 
 // Pairs implements types.QueryServer.
 func (q Querier) Pairs(ctx context.Context, req *types.QueryPairsRequest) (*types.QueryPairsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	pairs := []*types.Pair{}
 	var targetMap *collections.Map[string, string]
 	if req.IsNonFungible {

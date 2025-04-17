@@ -12,6 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/initia-labs/kvindexer/submodules/evm-tx/types"
+	"github.com/initia-labs/kvindexer/util"
 )
 
 var _ types.QueryServer = (*Querier)(nil)
@@ -38,6 +39,7 @@ func (q Querier) Tx(ctx context.Context, req *types.QueryTxRequest) (*types.Quer
 
 // TxsByAccount implements types.QueryServer.
 func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountRequest) (*types.QueryTxsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	if req.Account == "" {
 		return nil, status.Error(codes.InvalidArgument, "empty account")
 	}
@@ -67,7 +69,7 @@ func (q Querier) TxsByAccount(ctx context.Context, req *types.QueryTxsByAccountR
 
 // Txs implements types.QueryServer.
 func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.QueryTxsResponse, error) {
-	req.Pagination.CountTotal = false
+	util.ValidatePageRequest(req.Pagination)
 	txHashes, pageRes, err := query.CollectionPaginate(ctx, q.txhashesBySequenceMap, req.Pagination,
 		func(_ uint64, value string) (*string, error) {
 			return &value, nil
@@ -92,6 +94,7 @@ func (q Querier) Txs(ctx context.Context, req *types.QueryTxsRequest) (*types.Qu
 
 // TxsByHeight implements types.QueryServer.
 func (q Querier) TxsByHeight(ctx context.Context, req *types.QueryTxsByHeightRequest) (*types.QueryTxsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	txHashes, pageRes, err := query.CollectionPaginate(ctx, q.txhashesByHeightMap, req.Pagination,
 		func(_ collections.Pair[int64, uint64], value string) (*string, error) {
 			return &value, nil

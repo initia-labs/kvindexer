@@ -6,6 +6,7 @@ import (
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/submodules/block/types"
+	"github.com/initia-labs/kvindexer/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -35,6 +36,7 @@ func (q Querier) Block(ctx context.Context, req *types.BlockRequest) (*types.Blo
 }
 
 func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.BlocksResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	results, pageRes, err := query.CollectionPaginate(
 		ctx,
 		q.blockByHeight,
