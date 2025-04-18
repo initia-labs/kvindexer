@@ -14,6 +14,7 @@ import (
 
 	kvcollection "github.com/initia-labs/kvindexer/collection"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
+	"github.com/initia-labs/kvindexer/util"
 )
 
 var _ nfttypes.QueryServer = (*Querier)(nil)
@@ -57,6 +58,7 @@ func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRe
 
 // Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	accountAddr, err := getVMAddress(q.ac, req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
@@ -97,6 +99,7 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 
 // TokensByCollection implements nfttypes.QueryServer.
 func (q Querier) TokensByCollection(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	if req.TokenId == "" {
 		return q.getTokensByCollection(ctx, req)
 	}
@@ -105,6 +108,7 @@ func (q Querier) TokensByCollection(ctx context.Context, req *nfttypes.QueryToke
 
 // TokensByAccount implements nfttypes.QueryServer.
 func (q Querier) TokensByAccount(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	if req.CollectionAddr == "" {
 		return q.getTokensByAccount(ctx, req)
 	}

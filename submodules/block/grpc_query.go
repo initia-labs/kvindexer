@@ -2,10 +2,12 @@ package block
 
 import (
 	"context"
+	"errors"
 
 	"cosmossdk.io/collections"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/initia-labs/kvindexer/submodules/block/types"
+	"github.com/initia-labs/kvindexer/util"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -35,6 +37,7 @@ func (q Querier) Block(ctx context.Context, req *types.BlockRequest) (*types.Blo
 }
 
 func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.BlocksResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
 	results, pageRes, err := query.CollectionPaginate(
 		ctx,
 		q.blockByHeight,
@@ -44,8 +47,15 @@ func (q Querier) Blocks(ctx context.Context, req *types.BlocksRequest) (*types.B
 		},
 	)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(codes.Internal, err.Error())
 	}
+
+	latestHeight, err := q.getLatestBlockHeight(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
+	}
+	//nolint:gosec // latestHeight is always positive in practice
+	pageRes.Total = uint64(latestHeight)
 
 	return &types.BlocksResponse{
 		Blocks:     results,
@@ -85,4 +95,16 @@ func (q Querier) AvgBlockTime(ctx context.Context, req *types.AvgBlockTimeReques
 	return &types.AvgBlockTimeResponse{
 		AvgBlockTime: result,
 	}, nil
+}
+
+func (q Querier) getLatestBlockHeight(ctx context.Context) (int64, error) {
+	iter, err := q.blockByHeight.IterateRaw(ctx, nil, nil, collections.OrderDescending)
+	if err != nil {
+		return 0, err
+	}
+	defer iter.Close()
+	if !iter.Valid() {
+		return 0, errors.New("invalid iterator")
+	}
+	return iter.Key()
 }

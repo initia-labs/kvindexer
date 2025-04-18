@@ -8,9 +8,9 @@ require (
 	cosmossdk.io/log v1.4.1
 	cosmossdk.io/store v1.1.1
 	github.com/allegro/bigcache/v3 v3.1.0
-	github.com/cometbft/cometbft v0.38.15
+	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/cosmos-db v1.1.1
-	github.com/cosmos/cosmos-sdk v0.50.13-0.20250312145125-59c15d73cc4a
+	github.com/cosmos/cosmos-sdk v0.50.13
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -58,7 +58,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/iavl v1.2.4 // indirect
+	github.com/cosmos/iavl v1.2.6 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.14.0 // indirect
 	github.com/danieljoos/wincred v1.1.2 // indirect
@@ -162,9 +162,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-// initia custom
-replace github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250318052542-5ad713a56643
-
+// cosmos replaces
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
@@ -179,4 +177,27 @@ replace (
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
+)
+
+// initia custom
+// use custom version for
+//
+// cosmos-sdk
+// - https://github.com/initia-labs/cosmos-sdk/commit/2d8e8144a217545d4d4d35d4b82f0dcc711a2501
+// - https://github.com/cosmos/cosmos-sdk/pull/24526
+//
+// ibc-go
+// - https://github.com/initia-labs/ibc-go/commit/36b81501adfc4506f5b3a19886c8f5b38dec47da
+//
+// connect
+// - https://github.com/initia-labs/connect/pull/1
+replace (
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250411163041-956fe82acaaf
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847
+	github.com/cosmos/ibc-go/v8 => github.com/initia-labs/ibc-go/v8 v8.0.0-20250313020428-36b81501adfc
+	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
+
+	// cosmos/relayer seems having problem with the latest version of grpc; return nil in the below line
+	// - https://github.com/cosmos/relayer/blob/4e4e9530800d28fb2c984f1cfc7b03f05eec618c/relayer/chains/cosmos/grpc_query.go#L30
+	google.golang.org/grpc => google.golang.org/grpc v1.65.0
 )

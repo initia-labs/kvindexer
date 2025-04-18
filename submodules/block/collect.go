@@ -12,17 +12,17 @@ import (
 	"github.com/initia-labs/kvindexer/submodules/block/types"
 )
 
-func (bs BlockSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
-	bs.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
+func (sub BlockSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+	sub.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
-	if err := bs.collectBlock(ctx, req, res); err != nil {
+	if err := sub.collectBlock(ctx, req, res); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (bs BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+func (sub BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	var block types.Block
 
 	block.ChainId = sdk.UnwrapSDKContext(ctx).ChainID()
@@ -30,7 +30,7 @@ func (bs BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinal
 	block.Hash = fmt.Sprintf("%X", req.Hash)
 	block.Timestamp = req.Time
 
-	validator, found := bs.opChildKeeper.GetValidatorByConsAddr(ctx, req.ProposerAddress)
+	validator, found := sub.opChildKeeper.GetValidatorByConsAddr(ctx, req.ProposerAddress)
 	if !found {
 		return fmt.Errorf("cannot find valoper address by consensus address:%s", string(req.ProposerAddress))
 	}
@@ -41,7 +41,7 @@ func (bs BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinal
 
 	var feeCoins sdk.Coins
 	for _, txBytes := range req.Txs {
-		tx, err := parseTx(bs.cdc, txBytes)
+		tx, err := parseTx(sub.cdc, txBytes)
 		if err != nil {
 			return err
 		}
@@ -60,15 +60,15 @@ func (bs BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFinal
 	}
 
 	if req.Height > 1 {
-		prevBlock, err := bs.blockByHeight.Get(ctx, req.Height-1)
+		prevBlock, err := sub.blockByHeight.Get(ctx, req.Height-1)
 		if err != nil {
-			bs.Logger(ctx).Warn("failed to get previous block", "error", err, "height", req.Height-1)
+			sub.Logger(ctx).Warn("failed to get previous block", "error", err, "height", req.Height-1)
 			block.BlockTime = 0
 		} else {
 			block.BlockTime = req.Time.Sub(prevBlock.Timestamp).Milliseconds()
 		}
 	}
-	if err := bs.blockByHeight.Set(ctx, req.Height, block); err != nil {
+	if err := sub.blockByHeight.Set(ctx, req.Height, block); err != nil {
 		return errors.Wrap(err, "failed to set block by height")
 	}
 
