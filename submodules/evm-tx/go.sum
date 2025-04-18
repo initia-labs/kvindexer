@@ -1288,6 +1288,8 @@ github.com/initia-labs/evm v0.0.0-20250326140709-c2bb7bf52a31 h1:57hQOhx0VDgzuy/
 github.com/initia-labs/evm v0.0.0-20250326140709-c2bb7bf52a31/go.mod h1:+l/fr42Mma+xBnhefL/+z11/hcmJ2egl+ScIVPjhc7E=
 github.com/initia-labs/minievm v1.0.0-beta.15 h1:lBySU19Eim//weGl/bh3ETJZzetBw5M+6plG3lOjGvs=
 github.com/initia-labs/minievm v1.0.0-beta.15/go.mod h1:ZDEs/liibGqJwhgCC6THWvpQOUqJpS/tUvfAtGJ4N/k=
+github.com/initia-labs/minievm v1.0.0-rc.2 h1:wb+wy71OhoqvfgHhzVkKURrOQwEsWwA1eG02nVMa9oY=
+github.com/initia-labs/minievm v1.0.0-rc.2/go.mod h1:BjWCnnxLwS+PvPi37YWtbIGdzHkA5pOSPmRFd/6nR20=
 github.com/jhump/protoreflect v1.15.3 h1:6SFRuqU45u9hIZPJAoZ8c28T3nK64BNdp9w6jFonzls=
 github.com/jhump/protoreflect v1.15.3/go.mod h1:4ORHmSBmlCW8fh3xHmJMGyul1zNqZK4Elxc8qKP+p1k=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=

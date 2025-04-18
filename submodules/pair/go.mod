@@ -14,7 +14,7 @@ require (
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-go/v8 v8.7.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/initia-labs/OPinit v0.7.2
+	github.com/initia-labs/OPinit v1.0.0-rc.0
 	github.com/initia-labs/kvindexer v0.1.10
 	google.golang.org/grpc v1.70.0
 )

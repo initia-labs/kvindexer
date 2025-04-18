@@ -16,9 +16,9 @@ require (
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/initia-labs/initia v1.0.0-beta.6
-	github.com/initia-labs/kvindexer v0.1.11
-	github.com/initia-labs/minievm v1.0.0-beta.15
+	github.com/initia-labs/initia v1.0.0-rc.1
+	github.com/initia-labs/kvindexer v0.1.12
+	github.com/initia-labs/minievm v1.0.0-rc.2
 	github.com/pkg/errors v0.9.1
 	google.golang.org/grpc v1.70.0
 )
