@@ -12,7 +12,7 @@ require (
 	cosmossdk.io/math v1.4.0
 	cosmossdk.io/store v1.1.1
 	github.com/cometbft/cometbft v0.38.17
-	github.com/cosmos/cosmos-sdk v0.50.13-0.20250312145125-59c15d73cc4a
+	github.com/cosmos/cosmos-sdk v0.50.13
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/ethereum/go-ethereum v1.14.11
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -56,7 +56,7 @@ require (
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
-	github.com/cosmos/iavl v1.2.5-0.20250306174232-6cfb3dac2c71 // indirect
+	github.com/cosmos/iavl v1.2.6 // indirect
 	github.com/cosmos/ibc-go/modules/capability v1.0.1 // indirect
 	github.com/cosmos/ibc-go/v8 v8.7.0 // indirect
 	github.com/cosmos/ics23/go v0.11.0 // indirect
@@ -115,6 +115,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -188,6 +189,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
+// cosmos replaces
 replace (
 	// use cosmos fork of keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
@@ -195,17 +197,39 @@ replace (
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// TODO: remove it: https://github.com/cosmos/cosmos-sdk/issues/13134
 	github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
-
 	// Fix upstream GHSA-h395-qcrw-5vmq vulnerability.
 	// TODO Remove it: https://github.com/cosmos/cosmos-sdk/issues/10409
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.9.1
+
+	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 
 	// Downgraded to avoid bugs in following commits which caused simulations to fail.
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
 
 // initia custom
-replace github.com/ethereum/go-ethereum => github.com/initia-labs/evm v0.0.0-20241108055119-3d312736d7fb
+// use custom version for
+//
+// cosmos-sdk
+// - https://github.com/initia-labs/cosmos-sdk/commit/2d8e8144a217545d4d4d35d4b82f0dcc711a2501
+// - https://github.com/cosmos/cosmos-sdk/pull/24526
+//
+// ibc-go
+// - https://github.com/initia-labs/ibc-go/commit/36b81501adfc4506f5b3a19886c8f5b38dec47da
+//
+// connect
+// - https://github.com/initia-labs/connect/pull/1
+replace (
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250411163041-956fe82acaaf
+	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847
+	github.com/cosmos/ibc-go/v8 => github.com/initia-labs/ibc-go/v8 v8.0.0-20250313020428-36b81501adfc
+	github.com/ethereum/go-ethereum => github.com/initia-labs/evm v0.0.0-20250326140709-c2bb7bf52a31
+	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
+
+	// cosmos/relayer seems having problem with the latest version of grpc; return nil in the below line
+	// - https://github.com/cosmos/relayer/blob/4e4e9530800d28fb2c984f1cfc7b03f05eec618c/relayer/chains/cosmos/grpc_query.go#L30
+	google.golang.org/grpc => google.golang.org/grpc v1.65.0
+)
 
 // kvindexer internal
 replace github.com/initia-labs/kvindexer => ../../
