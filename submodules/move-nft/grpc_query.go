@@ -57,6 +57,63 @@ func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRe
 }
 
 // Collections implements nfttypes.QueryServer.
+func (q Querier) Collections(ctx context.Context, req *nfttypes.QueryCollectionsRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
+
+	collections, pageRes, err := query.CollectionPaginate(ctx, q.collectionMap, req.Pagination,
+		func(k sdk.AccAddress, v nfttypes.IndexedCollection) (*nfttypes.IndexedCollection, error) {
+			return &v, nil
+		},
+	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+
+	return &nfttypes.QueryCollectionsResponse{
+		Collections: collections,
+		Pagination:  pageRes,
+	}, nil
+}
+
+// CollectionsByName implements nfttypes.QueryServer.
+func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
+
+	colAddrs, pageRes, err := query.CollectionPaginate[string, string](ctx, q.collectionNameMap, req.Pagination,
+		func(k string, v string) (*string, error) {
+			return &v, nil
+		},
+		func(opt *query.CollectionsPaginateOptions[string]) {
+			opt.Prefix = &req.Name
+		},
+	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+
+	collections := []*nfttypes.IndexedCollection{}
+	for _, colAddr := range colAddrs {
+		vmAddr, err := getVMAddress(q.ac, *colAddr)
+		if err != nil {
+			return nil, status.Error(codes.InvalidArgument, err.Error())
+		}
+		sdkAddr := getCosmosAddress(vmAddr)
+		collection, err := q.collectionMap.Get(ctx, sdkAddr)
+		if err != nil {
+			q.Logger(ctx).Warn("index mismatch found", "collection", colAddr, "action", "CollectionsByName", "error", err)
+			continue
+		}
+		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
+		collections = append(collections, &collection)
+	}
+
+	return &nfttypes.QueryCollectionsResponse{
+		Collections: collections,
+		Pagination:  pageRes,
+	}, nil
+}
+
+// Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
 	accountAddr, err := getVMAddress(q.ac, req.Account)
@@ -141,7 +198,6 @@ func (sm MoveNftSubmodule) getTokensByCollection(ctx context.Context, req *nftty
 		},
 		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, string](colSdkAddr),
 	)
-
 	if err != nil {
 		return nil, handleCollectionErr(err)
 	}
@@ -154,7 +210,6 @@ func (sm MoveNftSubmodule) getTokensByCollection(ctx context.Context, req *nftty
 		Tokens:     res,
 		Pagination: pageRes,
 	}, nil
-
 }
 
 func (sm MoveNftSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {

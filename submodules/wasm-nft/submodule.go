@@ -35,10 +35,14 @@ type WasmNFTSubmodule struct {
 	collectionMap *collections.Map[sdk.AccAddress, nfttypes.IndexedCollection]
 	// collectionOwnerMap: key(owner address, collection address), value(owner's collection count)
 	collectionOwnerMap *collections.Map[collections.Pair[sdk.AccAddress, sdk.AccAddress], uint64]
+	// collectionNameMap: key(collection name), value(collection address)
+	collectionNameMap *collections.Map[string, string]
 	// tokenMap: key(collection address, token id), value(token)
 	tokenMap *collections.Map[collections.Pair[sdk.AccAddress, string], nfttypes.IndexedToken]
 	// tokenOwnerMap: key(owner address, collection address, token id), value(bool as placeholder)
 	tokenOwnerMap *collections.Map[collections.Triple[sdk.AccAddress, sdk.AccAddress, string], bool]
+	// migrationInfo stores json and internal use only
+	migrationInfo *collections.Map[string, string]
 }
 
 func NewWasmNFTSubmodule(
@@ -60,6 +64,12 @@ func NewWasmNFTSubmodule(
 		return nil, err
 	}
 
+	collectionNamesPrefix := collection.NewPrefix(types.SubmoduleName, types.CollectionNamesPrefix)
+	collectionNameMap, err := collection.AddMap(indexerKeeper, collectionNamesPrefix, "collection_names", collections.StringKey, collections.StringValue)
+	if err != nil {
+		return nil, err
+	}
+
 	tokensPrefix := collection.NewPrefix(types.SubmoduleName, types.TokensPrefix)
 	tokenMap, err := collection.AddMap(indexerKeeper, tokensPrefix, "tokens", collections.PairKeyCodec(sdk.AccAddressKey, collections.StringKey), codec.CollValue[nfttypes.IndexedToken](cdc))
 	if err != nil {
@@ -68,6 +78,12 @@ func NewWasmNFTSubmodule(
 
 	tokenOwnersPrefix := collection.NewPrefix(types.SubmoduleName, types.TokenOwnersPrefix)
 	tokenOwnerMap, err := collection.AddMap(indexerKeeper, tokenOwnersPrefix, "token_owners", collections.TripleKeyCodec(sdk.AccAddressKey, sdk.AccAddressKey, collections.StringKey), collections.BoolValue)
+	if err != nil {
+		return nil, err
+	}
+
+	migrationPrefix := collection.NewPrefix(string(types.SubmoduleName), types.MigrationPrefix)
+	migrationMap, err := collection.AddMap(indexerKeeper, migrationPrefix, "migration", collections.StringKey, collections.StringValue)
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +97,10 @@ func NewWasmNFTSubmodule(
 
 		collectionMap:      collectionMap,
 		collectionOwnerMap: collectionOwnerMap,
+		collectionNameMap:  collectionNameMap,
 		tokenMap:           tokenMap,
 		tokenOwnerMap:      tokenOwnerMap,
+		migrationInfo:      migrationMap,
 	}, nil
 }
 

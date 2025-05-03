@@ -20,6 +20,7 @@ require (
 	github.com/initia-labs/kvindexer v0.1.12
 	github.com/initia-labs/minievm v1.0.0-rc.2
 	github.com/pkg/errors v0.9.1
+	golang.org/x/mod v0.22.0
 	google.golang.org/grpc v1.70.0
 )
 

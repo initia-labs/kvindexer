@@ -12,6 +12,10 @@ const (
 const (
 	CollectionsPrefix      = 0x10
 	CollectionOwnersPrefix = 0x20
-	TokensPrefix           = 0x30
-	TokenOwnersPrefix      = 0x40
+	CollectionNamesPrefix  = 0x21
+
+	TokensPrefix      = 0x30
+	TokenOwnersPrefix = 0x40
+
+	MigrationPrefix = 0xff
 )

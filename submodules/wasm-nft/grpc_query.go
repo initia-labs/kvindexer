@@ -57,6 +57,25 @@ func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRe
 }
 
 // Collections implements nfttypes.QueryServer.
+func (q Querier) Collections(ctx context.Context, req *nfttypes.QueryCollectionsRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
+
+	collections, pageRes, err := query.CollectionPaginate(ctx, q.collectionMap, req.Pagination,
+		func(k sdk.AccAddress, v nfttypes.IndexedCollection) (*nfttypes.IndexedCollection, error) {
+			return &v, nil
+		},
+	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+
+	return &nfttypes.QueryCollectionsResponse{
+		Collections: collections,
+		Pagination:  pageRes,
+	}, nil
+}
+
+// Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
 	accountAddr, err := getVMAddress(q.ac, req.Account)
@@ -95,6 +114,11 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 		Collections: indexedCollections,
 		Pagination:  pageRes,
 	}, nil
+}
+
+// CollectionsByName implements types.QueryServer.
+func (q Querier) CollectionsByName(context.Context, *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	panic("unimplemented")
 }
 
 // TokensByCollection implements nfttypes.QueryServer.

@@ -60,22 +60,20 @@ func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Even
 		return nil
 	}
 
-	collection, err := sm.collectionMap.Get(ctx, data.ContractAddress)
+	// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
+	collection, err := sm.getIndexedCollectionFromVMStore(ctx, data.ContractAddress)
 	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return cosmoserr.Wrap(err, "failed to check collection existence")
-		}
-		// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
-		coll, err := sm.getIndexedCollectionFromVMStore(ctx, data.ContractAddress)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to get collection contract info")
-		}
-		collection = *coll
+		return cosmoserr.Wrap(err, "failed to get collection contract info")
+	}
 
-		err = sm.collectionMap.Set(ctx, data.ContractAddress, collection)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to set collection")
-		}
+	err = sm.collectionMap.Set(ctx, data.ContractAddress, *collection)
+	if err != nil {
+		return cosmoserr.Wrap(err, "failed to set collection")
+	}
+
+	err = sm.collectionNameMap.Set(ctx, collection.Collection.Name, data.ContractAddress.String())
+	if err != nil {
+		return errors.New("failed to insert collection into collectionNameMap")
 	}
 
 	err = sm.applyCollectionOwnerMap(ctx, data.ContractAddress, data.Owner, true)

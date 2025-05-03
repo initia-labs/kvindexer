@@ -56,6 +56,11 @@ func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRe
 	}, nil
 }
 
+// Collections implements types.QueryServer.
+func (q Querier) Collections(context.Context, *nfttypes.QueryCollectionsRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	panic("unimplemented")
+}
+
 // Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
@@ -94,6 +99,11 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 		Collections: indexedCollections,
 		Pagination:  pageRes,
 	}, nil
+}
+
+// CollectionsByName implements types.QueryServer.
+func (q Querier) CollectionsByName(context.Context, *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	panic("unimplemented")
 }
 
 // TokensByCollection implements nfttypes.QueryServer.
