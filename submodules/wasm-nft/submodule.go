@@ -135,6 +135,10 @@ func (sm WasmNFTSubmodule) Initialize(ctx context.Context) error {
 }
 
 func (sm WasmNFTSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+	if err := sm.migrateHandler(ctx); err != nil {
+		sm.Logger(ctx).Error("failed to migrate", "error", err)
+		return err
+	}
 	return sm.finalizeBlock(ctx, req, res)
 }
 

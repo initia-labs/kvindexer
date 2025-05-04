@@ -137,6 +137,10 @@ func (sub EvmNFTSubmodule) Initialize(ctx context.Context) error {
 }
 
 func (sub EvmNFTSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
+	if err := sub.migrateHandler(ctx); err != nil {
+		sub.Logger(ctx).Error("failed to migrate", "error", err)
+		return err
+	}
 	return sub.finalizeBlock(ctx, req, res)
 }
 

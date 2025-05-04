@@ -3,6 +3,7 @@ package move_nft
 import (
 	"context"
 	"strings"
+	"sync"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -15,30 +16,37 @@ const (
 	keyMigrateCollectionName = "migrate-collection-name"
 )
 
-func (sm MoveNftSubmodule) migrateHandler(ctx context.Context) error {
+var migrated sync.Once
 
-	value, err := sm.migrationInfo.Get(ctx, keyMigrateCollectionName)
-	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return err
-		}
-		// if not found, it means migration is needed
-		value = "v0.0.0"
-	}
-	// if current semver is less than v1.0.0, then migration is needed
-	if semver.Compare(value, "v1.0.0") < 0 {
-		// do migration
-		err = sm.migrateCollectionName_1_0_0(ctx)
-		if err != nil {
-			return err
-		}
-		err = sm.migrationInfo.Set(ctx, keyMigrateCollectionName, "v1.0.0")
-		if err != nil {
-			return err
-		}
-	}
+func (sm MoveNftSubmodule) migrateHandler(ctx context.Context) (err error) {
+	migrated.Do(func() {
 
-	return nil
+		value, e := sm.migrationInfo.Get(ctx, keyMigrateCollectionName)
+		if err != nil {
+			if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+				err = e
+				return
+			}
+			// if not found, it means migration is needed.
+			value = "v0.0.0"
+		}
+		// if current semver is less than v1.0.0, then migration is needed
+		if semver.Compare(value, "v1.0.0") < 0 {
+			// do migration
+			err = sm.migrateCollectionName_1_0_0(ctx)
+			if err != nil {
+				err = e
+				return
+			}
+			err = sm.migrationInfo.Set(ctx, keyMigrateCollectionName, "v1.0.0")
+			if err != nil {
+				err = e
+				return
+			}
+		}
+	})
+
+	return err
 }
 
 // migrateCollectionName_1_0_0 migrates the collection name to lower case and sets it in the collectionNameMap.
@@ -79,4 +87,11 @@ func appendString(s1, s2 string) string {
 		return s2
 	}
 	return s1 + "," + s2
+}
+
+func expandString(s []string) (res []string) {
+	for _, v := range s {
+		res = append(res, strings.Split(v, ",")...)
+	}
+	return res
 }

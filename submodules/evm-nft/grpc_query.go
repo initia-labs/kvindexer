@@ -101,9 +101,44 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 	}, nil
 }
 
-// CollectionsByName implements types.QueryServer.
-func (q Querier) CollectionsByName(context.Context, *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
-	panic("unimplemented")
+// CollectionsByName implements nfttypes.QueryServer.
+func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
+
+	addrgrps, pageRes, err := query.CollectionPaginate(ctx, q.collectionNameMap, req.Pagination,
+		func(k string, v string) (string, error) {
+			return v, nil
+		},
+		func(opt *query.CollectionsPaginateOptions[string]) {
+			opt.Prefix = &req.Name
+		},
+	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+	colAddrs := expandString(addrgrps)
+	collections := []*nfttypes.IndexedCollection{}
+	for _, colAddr := range colAddrs {
+
+		sdkAddr, err := sdk.AccAddressFromBech32(colAddr)
+		if err != nil {
+			q.Logger(ctx).Warn("invalid collection address found", "collection", colAddr, "action", "CollectionsByName", "error", err)
+			continue
+		}
+
+		collection, err := q.collectionMap.Get(ctx, sdkAddr)
+		if err != nil {
+			q.Logger(ctx).Warn("index mismatch found", "collection", colAddr, "action", "CollectionsByName", "error", err)
+			continue
+		}
+		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
+		collections = append(collections, &collection)
+	}
+
+	return &nfttypes.QueryCollectionsResponse{
+		Collections: collections,
+		Pagination:  pageRes,
+	}, nil
 }
 
 // TokensByCollection implements nfttypes.QueryServer.

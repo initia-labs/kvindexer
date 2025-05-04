@@ -107,6 +107,11 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to set collection")
 	}
 
+	err = sm.applyCollectionNameMap(ctx, collection.Collection.Name, contractSdkAddr)
+	if err == nil {
+		return errors.New("failed to insert collection into collectionNameMap")
+	}
+
 	err = sm.applyCollectionOwnerMap(ctx, contractSdkAddr, event.To, true)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")

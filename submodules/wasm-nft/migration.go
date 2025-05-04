@@ -3,6 +3,7 @@ package wasm_nft
 import (
 	"context"
 	"strings"
+	"sync"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -15,16 +16,18 @@ const (
 	keyMigrateCollectionName = "migrate-collection-name"
 )
 
-func (sm WasmNFTSubmodule) migrateHandler(ctx context.Context) error {
+var migrated sync.Once
 
+func (sm WasmNFTSubmodule) migrateHandler(ctx context.Context) (err error) {
 	value, err := sm.migrationInfo.Get(ctx, keyMigrateCollectionName)
 	if err != nil {
 		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
 			return err
 		}
-		// if not found, it means migration is needed
+		// if not found, it means migration is needed.
 		value = "v0.0.0"
 	}
+
 	// if current semver is less than v1.0.0, then migration is needed
 	if semver.Compare(value, "v1.0.0") < 0 {
 		// do migration
@@ -79,4 +82,11 @@ func appendString(s1, s2 string) string {
 		return s2
 	}
 	return s1 + "," + s2
+}
+
+func expandString(s []string) (res []string) {
+	for _, v := range s {
+		res = append(res, strings.Split(v, ",")...)
+	}
+	return res
 }
