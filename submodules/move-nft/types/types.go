@@ -1,28 +1,44 @@
 package types
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
-	nfttypes "github.com/initia-labs/kvindexer/nft/types"
+	"errors"
+	"strconv"
 )
 
-type EventWithAttributeMap struct {
-	*abci.Event
-	AttributesMap map[string]string
+func (m *TokenHandle) AdjustLength(delta int64) error {
+	if m == nil {
+		return errors.New("TokenHandle is nil")
+	}
+
+	i, err := strconv.ParseInt(m.Length, 10, 64)
+	if err != nil && m.Length != "" {
+		return err
+	}
+	i += delta
+	if i < 0 {
+		return errors.New("TokenHandle length cannot be negative")
+	}
+
+	m.Length = strconv.FormatInt(i, 10)
+	return nil
 }
 
-// internal use only: struct from move resource
-type CollectionResource struct {
-	Type       string              `json:"type,omitempty"`
-	Collection nfttypes.Collection `json:"data"`
-	// from here is additional fields, not original collection data
-	//ObjectAddr string `json:"object_addr,omitempty"`
+func (m *Collection) AdjustLength(delta int64) error {
+	if m == nil {
+		return errors.New("Collection is nil")
+	}
+	if m.Nfts == nil {
+		m.Nfts = &TokenHandle{}
+	}
+	return m.Nfts.AdjustLength(delta)
 }
 
-// internal use only: struct from move resource
-type NftResource struct {
-	Type string         `json:"type"`
-	Nft  nfttypes.Token `json:"data"`
-	// from here is additional fields, not original collection data
-	//CollectionAddr string `json:"collection_addr,omitempty"`
-	//ObjectAddr     string `json:"object_addr,omitempty"`
+func (m *IndexedCollection) AdjustLength(delta int64) error {
+	if m == nil {
+		return errors.New("IndexedCollection is nil")
+	}
+	if m.Collection == nil {
+		m.Collection = &Collection{}
+	}
+	return m.Collection.AdjustLength(delta)
 }

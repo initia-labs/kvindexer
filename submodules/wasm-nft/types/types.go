@@ -1,53 +1,44 @@
 package types
 
 import (
-	abci "github.com/cometbft/cometbft/abci/types"
-	nfttypes "github.com/initia-labs/kvindexer/nft/types"
+	"errors"
+	"strconv"
 )
 
-type EventWithAttributeMap struct {
-	*abci.Event
-	AttributesMap map[string]string
+func (m *TokenHandle) AdjustLength(delta int64) error {
+	if m == nil {
+		return errors.New("TokenHandle is nil")
+	}
+
+	i, err := strconv.ParseInt(m.Length, 10, 64)
+	if err != nil && m.Length != "" {
+		return err
+	}
+	i += delta
+	if i < 0 {
+		return errors.New("TokenHandle length cannot be negative")
+	}
+
+	m.Length = strconv.FormatInt(i, 10)
+	return nil
 }
 
-// internal use only: struct from move resource
-type CollectionResource struct {
-	Type       string              `json:"type,omitempty"`
-	Collection nfttypes.Collection `json:"data"`
+func (m *Collection) AdjustLength(delta int64) error {
+	if m == nil {
+		return errors.New("Collection is nil")
+	}
+	if m.Nfts == nil {
+		m.Nfts = &TokenHandle{}
+	}
+	return m.Nfts.AdjustLength(delta)
 }
 
-// internal use only: struct from move resource
-type NftResource struct {
-	TokenUri  string      `json:"token_uri"`
-	Extension interface{} `json:"extension"`
-}
-
-type ContractInfo struct {
-	Name   string `json:"name"`
-	Symbol string `json:"symbol"`
-}
-
-// wasm-specifics
-
-type Minter struct {
-	Minter string `json:"minter"`
-}
-
-type NumTokens struct {
-	Count int64 `json:"count"`
-}
-
-type NftInfo struct {
-	TokenUri  string `json:"token_uri"`
-	Extension string `json:"extension"`
-}
-
-type OwnerOf struct {
-	Owner     string     `json:"owner"`
-	Approvals []Approval `json:"approvals"`
-}
-
-type Approval struct {
-	Spender    string `json:"spender"`
-	Expiration uint64 `json:"expiration"`
+func (m *IndexedCollection) AdjustLength(delta int64) error {
+	if m == nil {
+		return errors.New("IndexedCollection is nil")
+	}
+	if m.Collection == nil {
+		m.Collection = &Collection{}
+	}
+	return m.Collection.AdjustLength(delta)
 }
