@@ -30,7 +30,6 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 }
 
 func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
-
 	for _, event := range events {
 		log, ok := event.AttributesMap[evmtypes.AttributeKeyLog]
 		if !ok {
@@ -109,7 +108,7 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 
 	err = sm.applyCollectionNameMap(ctx, collection.Collection.Name, contractSdkAddr)
 	if err == nil {
-		return errors.New("failed to insert collection into collectionNameMap")
+		return cosmoserr.Wrap(err, "failed to insert collection into collectionNameMap")
 	}
 
 	err = sm.applyCollectionOwnerMap(ctx, contractSdkAddr, event.To, true)
@@ -163,7 +162,6 @@ func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event *types
 	err = sm.applyCollectionOwnerMap(ctx, tpk.K1(), event.From, false)
 	if err != nil {
 		return errors.New("failed to decrease collection count from prev owner")
-
 	}
 	err = sm.applyCollectionOwnerMap(ctx, tpk.K1(), event.To, true)
 	if err != nil {
