@@ -5,7 +5,7 @@ const (
 	SubmoduleName = "evm-nft"
 
 	// Version is the current version of the submodule
-	Version = "v0.1.9"
+	Version = "v0.1.10"
 )
 
 // store prefixes
