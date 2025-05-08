@@ -88,10 +88,18 @@ func (sm MoveNftSubmodule) applyCollectionNameMap(ctx context.Context, name stri
 
 // appendString appends two strings with a comma separator.
 func appendString(s1, s2 string) string {
-	if s1 == "" {
-		return s2
+	strs := expandString([]string{s1, s2})
+
+	strmap := make(map[string]bool)
+	for _, str := range strs {
+		strmap[str] = true
 	}
-	return s1 + "," + s2
+
+	uniquestrs := make([]string, 0, len(strmap))
+	for str := range strmap {
+		uniquestrs = append(uniquestrs, str)
+	}
+	return strings.Join(uniquestrs, ",")
 }
 
 func expandString(s []string) (res []string) {
