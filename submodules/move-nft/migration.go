@@ -53,7 +53,7 @@ func (sm MoveNftSubmodule) migrateHandler(ctx context.Context) (err error) {
 func (sm MoveNftSubmodule) migrateCollectionName_1_0_0(ctx context.Context) error {
 
 	// itertate over all collections
-	sm.collectionMap.Walk(ctx, nil, func(key sdk.AccAddress, value types.IndexedCollection) (bool, error) {
+	return sm.collectionMap.Walk(ctx, nil, func(key sdk.AccAddress, value types.IndexedCollection) (bool, error) {
 		pairName, err := sm.getCollectionNameFromPairSubmodule(ctx, value.Collection.Name)
 		if err != nil {
 			return false, err
@@ -62,8 +62,6 @@ func (sm MoveNftSubmodule) migrateCollectionName_1_0_0(ctx context.Context) erro
 		sm.Logger(ctx).Info("migrating collection name", "original-name", value.Collection.Name, "pair-name", pairName, "address", key.String())
 		return err != nil, err
 	})
-
-	return nil
 }
 
 // applyCollectionNameMap applies the collection name map to the lowercased collection name.
