@@ -97,6 +97,9 @@ func appendString(s1, s2 string) string {
 
 	uniquestrs := make([]string, 0, len(strmap))
 	for str := range strmap {
+		if str == "" {
+			continue
+		}
 		uniquestrs = append(uniquestrs, str)
 	}
 	sort.Strings(uniquestrs)
