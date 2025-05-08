@@ -14,16 +14,16 @@ option go_package = "github.com/initia-labs/kvindexer/nft/types";
 service Query {
 
   // Collection queries a collection by its address
-  rpc Collections(QueryCollectionsRequest) returns (QueryCollectionsResponse) {
+  rpc Collection(QueryCollectionRequest) returns (QueryCollectionResponse) {
     option (google.api.http) = {
-      get : "/indexer/nft/v1/collections"
+      get : "/indexer/nft/v1/collections/{collection_addr}"
     };
   }
 
   // Collection queries a collection by its address
-  rpc Collection(QueryCollectionRequest) returns (QueryCollectionResponse) {
+  rpc Collections(QueryCollectionsRequest) returns (QueryCollectionsResponse) {
     option (google.api.http) = {
-      get : "/indexer/nft/v1/collections/{collection_addr}"
+      get : "/indexer/nft/v1/collections"
     };
   }
 
