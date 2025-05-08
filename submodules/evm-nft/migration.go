@@ -30,7 +30,6 @@ func (sm EvmNFTSubmodule) migrateHandler(ctx context.Context) (err error) {
 			// if not found, it means migration is needed.
 			value = "v0.0.0"
 		}
-
 		// if current semver is less than v1.0.0, then migration is needed
 		if semver.Compare(value, "v1.0.0") < 0 {
 			// do migration

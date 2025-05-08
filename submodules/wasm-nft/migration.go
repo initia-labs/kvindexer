@@ -19,29 +19,34 @@ const (
 var migrated sync.Once
 
 func (sm WasmNFTSubmodule) migrateHandler(ctx context.Context) (err error) {
-	value, err := sm.migrationInfo.Get(ctx, keyMigrateCollectionName)
-	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return err
-		}
-		// if not found, it means migration is needed.
-		value = "v0.0.0"
-	}
+	migrated.Do(func() {
 
-	// if current semver is less than v1.0.0, then migration is needed
-	if semver.Compare(value, "v1.0.0") < 0 {
-		// do migration
-		err = sm.migrateCollectionName_1_0_0(ctx)
-		if err != nil {
-			return err
+		value, e := sm.migrationInfo.Get(ctx, keyMigrateCollectionName)
+		if e != nil {
+			if !cosmoserr.IsOf(e, collections.ErrNotFound) {
+				err = e
+				return
+			}
+			// if not found, it means migration is needed.
+			value = "v0.0.0"
 		}
-		err = sm.migrationInfo.Set(ctx, keyMigrateCollectionName, "v1.0.0")
-		if err != nil {
-			return err
+		// if current semver is less than v1.0.0, then migration is needed
+		if semver.Compare(value, "v1.0.0") < 0 {
+			// do migration
+			err = sm.migrateCollectionName_1_0_0(ctx)
+			if err != nil {
+				err = e
+				return
+			}
+			err = sm.migrationInfo.Set(ctx, keyMigrateCollectionName, "v1.0.0")
+			if err != nil {
+				err = e
+				return
+			}
 		}
-	}
+	})
 
-	return nil
+	return err
 }
 
 // migrateCollectionName_1_0_0 migrates the collection name to lower case and sets it in the collectionNameMap.
