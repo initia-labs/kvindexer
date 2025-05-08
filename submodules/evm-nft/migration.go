@@ -22,8 +22,8 @@ func (sm EvmNFTSubmodule) migrateHandler(ctx context.Context) (err error) {
 	migrated.Do(func() {
 
 		value, e := sm.migrationInfo.Get(ctx, keyMigrateCollectionName)
-		if err != nil {
-			if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+		if e != nil {
+			if !cosmoserr.IsOf(e, collections.ErrNotFound) {
 				err = e
 				return
 			}

@@ -98,7 +98,7 @@ func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	}
 
 	err = sm.applyCollectionNameMap(ctx, collection.Collection.Name, collectionSdkAddr)
-	if err == nil {
+	if err != nil {
 		return errors.New("failed to insert collection into collectionNameMap")
 	}
 
