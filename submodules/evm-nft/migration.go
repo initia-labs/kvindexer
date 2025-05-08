@@ -55,7 +55,12 @@ func (sm EvmNFTSubmodule) migrateCollectionName_1_0_0(ctx context.Context) error
 
 	// itertate over all collections
 	sm.collectionMap.Walk(ctx, nil, func(key sdk.AccAddress, value types.IndexedCollection) (bool, error) {
-		err := sm.applyCollectionNameMap(ctx, value.Collection.Name, key)
+		pairName, err := sm.getCollectionNameFromPairSubmodule(ctx, value.Collection.Name)
+		if err != nil {
+			return false, err
+		}
+		err = sm.applyCollectionNameMap(ctx, pairName, key)
+		sm.Logger(ctx).Info("migrating collection name", "original-name", value.Collection.Name, "pair-name", pairName, "address", key.String())
 		return err != nil, err
 	})
 
@@ -86,6 +91,9 @@ func (sm EvmNFTSubmodule) applyCollectionNameMap(ctx context.Context, name strin
 func appendString(s1, s2 string) string {
 	if s1 == "" {
 		return s2
+	}
+	if s2 == "" {
+		return s1
 	}
 	return s1 + "," + s2
 }

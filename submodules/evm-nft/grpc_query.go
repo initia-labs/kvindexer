@@ -119,7 +119,8 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 // CollectionsByName implements nfttypes.QueryServer.
 func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
-	name := strings.ToLower(req.Name)
+	name := strings.ToLower(req.Name) // use lowercased name to support case insensitive search
+
 	addrgrps, pageRes, err := query.CollectionPaginate(ctx, q.collectionNameMap, req.Pagination,
 		func(k string, v string) (string, error) {
 			return v, nil
