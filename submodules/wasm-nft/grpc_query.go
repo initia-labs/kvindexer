@@ -3,6 +3,7 @@ package wasm_nft
 import (
 	"context"
 	"slices"
+	"strings"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -119,13 +120,14 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 // CollectionsByName implements nfttypes.QueryServer.
 func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
+	name := strings.ToLower(req.Name) // use lowercased name to support case insensitive search
 
 	addrgrps, pageRes, err := query.CollectionPaginate(ctx, q.collectionNameMap, req.Pagination,
 		func(k string, v string) (string, error) {
 			return v, nil
 		},
 		func(opt *query.CollectionsPaginateOptions[string]) {
-			opt.Prefix = &req.Name
+			opt.Prefix = &name
 		},
 	)
 	if err != nil {
