@@ -74,8 +74,11 @@ func (sm MoveNftSubmodule) applyCollectionNameMap(ctx context.Context, name stri
 			return err
 		}
 	}
-	addrs = appendString(addrs, addr.String())
-	err = sm.collectionNameMap.Set(ctx, name, addrs)
+	newaddrs := appendString(addrs, addr.String())
+	if newaddrs == addrs {
+		return nil
+	}
+	err = sm.collectionNameMap.Set(ctx, name, newaddrs)
 	if err != nil {
 		return err
 	}
