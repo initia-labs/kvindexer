@@ -35,12 +35,10 @@ func (sm WasmNFTSubmodule) migrateHandler(ctx context.Context) (err error) {
 			// do migration
 			err = sm.migrateCollectionName_1_0_0(ctx)
 			if err != nil {
-				err = e
 				return
 			}
 			err = sm.migrationInfo.Set(ctx, keyMigrateCollectionName, "v1.0.0")
 			if err != nil {
-				err = e
 				return
 			}
 		}
