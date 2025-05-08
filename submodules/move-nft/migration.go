@@ -2,6 +2,7 @@ package move_nft
 
 import (
 	"context"
+	"sort"
 	"strings"
 	"sync"
 
@@ -95,6 +96,7 @@ func appendString(s1, s2 string) string {
 	for str := range strmap {
 		uniquestrs = append(uniquestrs, str)
 	}
+	sort.Strings(uniquestrs)
 	return strings.Join(uniquestrs, ",")
 }
 
