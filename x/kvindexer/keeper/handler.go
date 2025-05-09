@@ -12,9 +12,9 @@ import (
 )
 
 func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
-	for name, svc := range k.submodules {
+	for _, svc := range k.submodules {
 		if err = svc.Prepare(ctxMap[svc.Name()]); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to prepare submodule %s", name))
+			return errors.Wrap(err, fmt.Sprintf("failed to prepare submodule %s", svc.Name()))
 		}
 	}
 
@@ -22,9 +22,9 @@ func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
 }
 
 func (k *Keeper) Start(ctxMap map[string]context.Context) (err error) {
-	for name, svc := range k.submodules {
+	for _, svc := range k.submodules {
 		if err = svc.Initialize(ctxMap[svc.Name()]); err != nil {
-			return errors.Wrap(err, fmt.Sprintf("failed to initialize submodule %s", name))
+			return errors.Wrap(err, fmt.Sprintf("failed to initialize submodule %s", svc.Name()))
 		}
 	}
 
