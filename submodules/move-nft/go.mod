@@ -17,6 +17,7 @@ require (
 	github.com/initia-labs/initia v0.6.4
 	github.com/initia-labs/kvindexer v0.1.10
 	github.com/initia-labs/movevm v0.6.1
+	golang.org/x/mod v0.22.0
 	google.golang.org/grpc v1.70.0
 )
 

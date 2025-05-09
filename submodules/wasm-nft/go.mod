@@ -17,6 +17,7 @@ require (
 	github.com/initia-labs/initia v1.0.0-rc.1
 	github.com/initia-labs/kvindexer v0.1.12
 	github.com/spf13/cast v1.7.1
+	golang.org/x/mod v0.22.0
 	google.golang.org/grpc v1.70.0
 )
 
@@ -98,7 +99,6 @@ require (
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
-	github.com/initia-labs/miniwasm v1.0.0-rc.1 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

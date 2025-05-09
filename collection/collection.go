@@ -9,7 +9,7 @@ import (
 
 // NewPrefix returns a new prefix
 func NewPrefix[T interface{ int | string | []byte }](submodule string, identifier T) collections.Prefix {
-	return append([]byte(submodule), []byte(collections.NewPrefix(identifier))...)
+	return collections.NewPrefix(append([]byte(submodule), []byte(collections.NewPrefix(identifier))...))
 }
 
 // AddMap adds a map collection to the keeper

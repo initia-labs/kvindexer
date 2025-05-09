@@ -38,7 +38,7 @@ type Keeper struct {
 	db     dbm.DB
 	sealed bool
 
-	submodules map[string]types.Submodule
+	submodules []types.Submodule
 
 	pruningRunning *atomic.Bool
 }
@@ -73,8 +73,6 @@ func NewKeeper(
 		sealed:         false,
 		pruningRunning: &atomic.Bool{},
 	}
-
-	k.submodules = make(map[string]types.Submodule)
 
 	sb := collections.NewSchemaBuilderFromAccessor(
 		func(ctx context.Context) corestoretypes.KVStore {
@@ -129,7 +127,7 @@ func (k Keeper) GetCodec() codec.Codec {
 	return k.cdc
 }
 
-func (k Keeper) GetSubmodules() map[string]types.Submodule {
+func (k Keeper) GetSubmodules() []types.Submodule {
 	return k.submodules
 }
 

@@ -20,13 +20,9 @@ func (q Querier) VMType(context.Context, *types.QueryVMTypeRequest) (*types.Quer
 // Versions implements types.QueryServer.
 func (q Querier) Versions(context.Context, *types.QueryVersionRequest) (*types.QueryVersionResponse, error) {
 	res := []*types.SubmoduleVersion{}
-	for name, sm := range q.submodules {
-		if name == "" {
-			name = "unknown"
-		}
-
+	for _, sm := range q.submodules {
 		res = append(res, &types.SubmoduleVersion{
-			Submodule: name,
+			Submodule: sm.Name(),
 			Version:   sm.Version(),
 		})
 	}
