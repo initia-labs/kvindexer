@@ -79,10 +79,20 @@ func (q Querier) Collections(ctx context.Context, req *nfttypes.QueryCollections
 // CollectionsByName implements nfttypes.QueryServer.
 func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
+
+	if req.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "name cannot be empty")
+	}
 	name := strings.ToLower(req.Name) // use lowercased name to support case insensitive search
+
+	q.collectionNameMap.Walk(ctx, nil, func(key string, value string) (bool, error) {
+		q.Logger(ctx).Info("collectionName IN MAP", "name", key, "address", value)
+		return false, nil
+	})
 
 	addrgrps, pageRes, err := query.CollectionPaginate(ctx, q.collectionNameMap, req.Pagination,
 		func(k string, v string) (string, error) {
+			q.Logger(ctx).Info("collection name found", "name", k, "address", v)
 			return v, nil
 		},
 		func(opt *query.CollectionsPaginateOptions[string]) {
@@ -93,6 +103,7 @@ func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryColle
 		return nil, handleCollectionErr(err)
 	}
 	colAddrs := expandString(addrgrps)
+	q.Logger(ctx).Info("found collections", "addrs", colAddrs)
 	collections := []*nfttypes.IndexedCollection{}
 	for _, colAddr := range colAddrs {
 

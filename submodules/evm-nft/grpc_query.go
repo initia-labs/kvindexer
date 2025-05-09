@@ -119,6 +119,10 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 // CollectionsByName implements nfttypes.QueryServer.
 func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
+
+	if req.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "name cannot be empty")
+	}
 	name := strings.ToLower(req.Name) // use lowercased name to support case insensitive search
 
 	addrgrps, pageRes, err := query.CollectionPaginate(ctx, q.collectionNameMap, req.Pagination,
