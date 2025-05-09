@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"runtime/debug"
-	"strings"
 
 	storetypes "cosmossdk.io/store/types"
 	abci "github.com/cometbft/cometbft/abci/types"
@@ -14,7 +13,7 @@ import (
 
 func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
 	for name, svc := range k.submodules {
-		if err = svc.Prepare(ctxMap[name]); err != nil {
+		if err = svc.Prepare(ctxMap[svc.Name()]); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to prepare submodule %s", name))
 		}
 	}
@@ -24,7 +23,7 @@ func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
 
 func (k *Keeper) Start(ctxMap map[string]context.Context) (err error) {
 	for name, svc := range k.submodules {
-		if err = svc.Initialize(ctxMap[name]); err != nil {
+		if err = svc.Initialize(ctxMap[svc.Name()]); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to initialize submodule %s", name))
 		}
 	}
@@ -41,25 +40,21 @@ func (k *Keeper) RegisterSubmodules(submodules ...types.Submodule) error {
 	if !k.config.IsEnabled() {
 		return nil
 	}
+	registeredNames := map[string]bool{}
 
-	for _, submodule := range submodules {
-		if submodule.Name() == "" {
+	for _, registered := range submodules {
+		if registered.Name() == "" {
 			return fmt.Errorf("submodule name must be set")
 		}
-		if submodule.Version() == "" {
+		if registered.Version() == "" {
 			return fmt.Errorf("submodule version must be set")
 		}
-		if _, found := k.submodules[submodule.Name()]; found {
-			return fmt.Errorf("submodule %s is duplicated", submodule.Name())
+		if _, found := registeredNames[registered.Name()]; found {
+			return fmt.Errorf("submodule %s is duplicated", registered.Name())
 		}
+		registeredNames[registered.Name()] = true
 
-		for prevName := range k.submodules {
-			if strings.HasPrefix(prevName, submodule.Name()) || strings.HasPrefix(submodule.Name(), prevName) {
-				return fmt.Errorf("submodule %s is overlapping with %s", submodule.Name(), prevName)
-			}
-		}
-
-		k.submodules[submodule.Name()] = submodule
+		k.submodules = append(k.submodules, registered)
 	}
 
 	return nil
