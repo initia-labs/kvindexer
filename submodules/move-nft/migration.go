@@ -2,6 +2,7 @@ package move_nft
 
 import (
 	"context"
+	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -16,6 +17,9 @@ import (
 const (
 	keyMigrateCollectionName = "migrate-collection-name"
 )
+
+// regexStripNonAlnum is used to strip non-alphanumeric characters from the collection name.
+var regexStripNonAlnum = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 var migrated sync.Once
 
@@ -53,12 +57,8 @@ func (sm MoveNftSubmodule) migrateCollectionName_1_0_0(ctx context.Context) erro
 
 	// itertate over all collections
 	return sm.collectionMap.Walk(ctx, nil, func(key sdk.AccAddress, value types.IndexedCollection) (bool, error) {
-		pairName, err := sm.getCollectionNameFromPairSubmodule(ctx, value.Collection.Name)
-		if err != nil {
-			return false, err
-		}
-		err = sm.applyCollectionNameMap(ctx, pairName, key)
-		sm.Logger(ctx).Info("migrating collection name", "original-name", value.Collection.Name, "pair-name", pairName, "address", key.String())
+		err := sm.applyCollectionNameMap(ctx, value.Collection.Name, key)
+		sm.Logger(ctx).Info("migrating collection name", "original-name", value.Collection.Name, "address", key.String())
 		return err != nil, err
 	})
 }
@@ -66,7 +66,8 @@ func (sm MoveNftSubmodule) migrateCollectionName_1_0_0(ctx context.Context) erro
 // applyCollectionNameMap applies the collection name map to the lowercased collection name.
 func (sm MoveNftSubmodule) applyCollectionNameMap(ctx context.Context, name string, addr sdk.AccAddress) error {
 	// use lowercased name to support case insensitive search
-	name = strings.ToLower(name)
+	name, _ = sm.getCollectionNameFromPairSubmodule(ctx, name)
+	name = strings.ToLower(stripNonAlnum(name))
 
 	addrs, err := sm.collectionNameMap.Get(ctx, name)
 	if err != nil {
@@ -111,4 +112,8 @@ func expandString(s []string) (res []string) {
 		res = append(res, strings.Split(v, ",")...)
 	}
 	return res
+}
+
+func stripNonAlnum(in string) string {
+	return regexStripNonAlnum.ReplaceAllString(in, "")
 }
