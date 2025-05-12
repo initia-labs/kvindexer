@@ -12,6 +12,10 @@ import (
 )
 
 func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
+	if !k.config.IsEnabled() {
+		return nil
+	}
+
 	for _, svc := range k.submodules {
 		if err = svc.Prepare(ctxMap[svc.Name()]); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to prepare submodule %s", svc.Name()))
@@ -22,6 +26,10 @@ func (k *Keeper) Prepare(ctxMap map[string]context.Context) (err error) {
 }
 
 func (k *Keeper) Start(ctxMap map[string]context.Context) (err error) {
+	if !k.config.IsEnabled() {
+		return nil
+	}
+
 	for _, svc := range k.submodules {
 		if err = svc.Initialize(ctxMap[svc.Name()]); err != nil {
 			return errors.Wrap(err, fmt.Sprintf("failed to initialize submodule %s", svc.Name()))
@@ -40,6 +48,7 @@ func (k *Keeper) RegisterSubmodules(submodules ...types.Submodule) error {
 	if !k.config.IsEnabled() {
 		return nil
 	}
+
 	registeredNames := map[string]bool{}
 
 	for _, registered := range submodules {
@@ -62,6 +71,10 @@ func (k *Keeper) RegisterSubmodules(submodules ...types.Submodule) error {
 
 // HandleFinalizeBlock processes the FinalizeBlock event for all submodules.
 func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) (err error) {
+	if !k.config.IsEnabled() {
+		return nil
+	}
+
 	defer func() {
 		if err := recover(); err != nil {
 			k.Logger(ctx).Error("panic in HandleFinalizeBlock", "err", err)
@@ -84,6 +97,10 @@ func (k *Keeper) HandleFinalizeBlock(ctx context.Context, req abci.RequestFinali
 }
 
 func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) (err error) {
+	if !k.config.IsEnabled() {
+		return nil
+	}
+
 	defer func() {
 		if err := recover(); err != nil {
 			k.Logger(ctx).Error("panic in HandleCommit", "err", err)
@@ -103,6 +120,7 @@ func (k *Keeper) HandleCommit(ctx context.Context, res abci.ResponseCommit, chan
 }
 
 func (k *Keeper) prune(ctx context.Context, height int64) {
+
 	if running := k.pruningRunning.Swap(true); running {
 		return
 	}
