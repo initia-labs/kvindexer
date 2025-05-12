@@ -3,8 +3,6 @@ package wasm_nft
 import (
 	"context"
 	"regexp"
-	"sort"
-	"strings"
 	"sync"
 
 	"cosmossdk.io/collections"
@@ -61,59 +59,4 @@ func (sm WasmNFTSubmodule) migrateCollectionName_1_0_0(ctx context.Context) erro
 		sm.Logger(ctx).Info("migrating collection name", "original-name", value.Collection.Name, "address", key.String())
 		return err != nil, err
 	})
-}
-
-// applyCollectionNameMap applies the collection name map to the lowercased collection name.
-func (sm WasmNFTSubmodule) applyCollectionNameMap(ctx context.Context, name string, addr sdk.AccAddress) error {
-	// use lowercased name to support case insensitive search
-	name, _ = sm.getCollectionNameFromPairSubmodule(ctx, name)
-	name = strings.ToLower(stripNonAlnum(name))
-
-	addrs, err := sm.collectionNameMap.Get(ctx, name)
-	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return err
-		}
-	}
-	newaddrs := appendString(addrs, addr.String())
-	if newaddrs == addrs {
-		return nil
-	}
-	err = sm.collectionNameMap.Set(ctx, name, newaddrs)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// appendString appends two strings with a comma separator.
-func appendString(s1, s2 string) string {
-	strs := expandString([]string{s1, s2})
-
-	strmap := make(map[string]bool)
-	for _, str := range strs {
-		strmap[str] = true
-	}
-
-	uniquestrs := make([]string, 0, len(strmap))
-	for str := range strmap {
-		if str == "" {
-			continue
-		}
-		uniquestrs = append(uniquestrs, str)
-	}
-	sort.Strings(uniquestrs)
-	return strings.Join(uniquestrs, ",")
-}
-
-func expandString(s []string) (res []string) {
-	for _, v := range s {
-		res = append(res, strings.Split(v, ",")...)
-	}
-	return res
-}
-
-func stripNonAlnum(in string) string {
-	return regexStripNonAlnum.ReplaceAllString(in, "")
 }

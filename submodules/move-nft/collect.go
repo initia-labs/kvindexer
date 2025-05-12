@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strings"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -321,5 +322,29 @@ func (sm MoveNftSubmodule) applyCollectionOwnerMap(ctx context.Context, collecti
 	if err != nil {
 		return errors.New("failed to update collection count in collectionOwnersMap")
 	}
+	return nil
+}
+
+// applyCollectionNameMap applies the collection name map to the lowercased collection name.
+func (sm MoveNftSubmodule) applyCollectionNameMap(ctx context.Context, name string, addr sdk.AccAddress) error {
+	// use lowercased name to support case insensitive search
+	name, _ = sm.getCollectionNameFromPairSubmodule(ctx, name)
+	name = strings.ToLower(stripNonAlnum(name))
+
+	addrs, err := sm.collectionNameMap.Get(ctx, name)
+	if err != nil {
+		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+			return err
+		}
+	}
+	newaddrs := appendString(addrs, addr.String())
+	if newaddrs == addrs {
+		return nil
+	}
+	err = sm.collectionNameMap.Set(ctx, name, newaddrs)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
