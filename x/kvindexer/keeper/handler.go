@@ -40,6 +40,11 @@ func (k *Keeper) Start(ctxMap map[string]context.Context) (err error) {
 }
 
 func (k Keeper) Validate() error {
+	if k.config.IsEnabled() {
+		if k.db == nil {
+			return fmt.Errorf("db is nil")
+		}
+	}
 	// NOP for now
 	return nil
 }
