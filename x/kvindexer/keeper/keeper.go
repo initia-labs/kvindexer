@@ -94,6 +94,12 @@ func (k *Keeper) Seal() error {
 		return errors.New("keeper is already sealed")
 	}
 
+	// just mark it as sealed if the indexer is disabled
+	if !k.config.IsEnabled() {
+		k.sealed = true
+		return nil
+	}
+
 	schema, err := k.schemaBuilder.Build()
 	if err != nil {
 		return err
