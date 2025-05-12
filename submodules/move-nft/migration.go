@@ -2,7 +2,6 @@ package move_nft
 
 import (
 	"context"
-	"regexp"
 	"sync"
 
 	"cosmossdk.io/collections"
@@ -15,9 +14,6 @@ import (
 const (
 	keyMigrateCollectionName = "migrate-collection-name"
 )
-
-// regexStripNonAlnum is used to strip non-alphanumeric characters from the collection name.
-var regexStripNonAlnum = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 var migrated sync.Once
 

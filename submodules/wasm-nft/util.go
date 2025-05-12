@@ -1,12 +1,16 @@
 package wasm_nft
 
 import (
+	"regexp"
 	"sort"
 	"strings"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
 )
+
+// regexStripNonAlnum is used to strip non-alphanumeric characters from the collection name.
+var regexStripNonAlnum = regexp.MustCompile("[^a-zA-Z0-9]+")
 
 func parseEvent(event abci.Event) types.EventWithAttributeMap {
 	eventWithMap := types.EventWithAttributeMap{Event: &event, AttributesMap: make(map[string]string)}
