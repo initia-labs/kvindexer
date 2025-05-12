@@ -41,12 +41,12 @@ func (sm PairSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinal
 		for _, msg := range tx.GetMsgs() {
 			switch msg := msg.(type) {
 			case *opchildtypes.MsgFinalizeTokenDeposit:
-				err = sm.collectOPfungibleTokens(ctx, msg)
+				err = sm.collectOPFungibleTokens(ctx, msg)
 				if err != nil {
 					sm.Logger(ctx).Warn("collectOPfungibleTokens", "error", err)
 				}
 			case *channeltypes.MsgRecvPacket:
-				err = sm.collectIBCNonfungibleTokens(ctx, res.TxResults[txIdx])
+				err = sm.collectIBCNonFungibleTokens(ctx, res.TxResults[txIdx])
 				if err != nil {
 					sm.Logger(ctx).Warn("collectIBCNonfungibleTokens", "error", err)
 				}
@@ -67,7 +67,7 @@ func (sm PairSubmodule) parseTx(txBytes []byte) (*tx.Tx, error) {
 	return &tx, nil
 }
 
-func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchildtypes.MsgFinalizeTokenDeposit) (err error) {
+func (sm PairSubmodule) collectOPFungibleTokens(ctx context.Context, msg *opchildtypes.MsgFinalizeTokenDeposit) (err error) {
 	err = sm.SetPair(ctx, false, true, msg.Amount.Denom, msg.BaseDenom)
 	if err != nil {
 		sm.Logger(ctx).Warn("SetPair", "error", err, "denom", msg.Amount.Denom, "baseDenom", msg.BaseDenom)
@@ -75,7 +75,7 @@ func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchil
 	return nil
 }
 
-func (sm PairSubmodule) collectIBCNonfungibleTokens(ctx context.Context, txResult *abci.ExecTxResult) (err error) {
+func (sm PairSubmodule) collectIBCNonFungibleTokens(ctx context.Context, txResult *abci.ExecTxResult) (err error) {
 	var packetData, classId string
 	for _, event := range txResult.Events {
 		if event.Type == "recv_packet" {
@@ -87,7 +87,7 @@ func (sm PairSubmodule) collectIBCNonfungibleTokens(ctx context.Context, txResul
 			classId = sm.pickAttribute(event.Attributes, "class_id")
 		}
 	}
-	err = sm.pricessIbcNftPairEvent(ctx, packetData, classId)
+	err = sm.processIbcNftPairEvent(ctx, packetData, classId)
 	if err != nil {
 		sm.Logger(ctx).Warn("failed to handle recv_packet event", "error", err, "recv_packet.packet_data", packetData)
 	}
@@ -104,7 +104,7 @@ func (sm PairSubmodule) pickAttribute(attrs []abci.EventAttribute, key string) s
 	return ""
 }
 
-func (sm PairSubmodule) pricessIbcNftPairEvent(ctx context.Context, packetDataStr, classId string) (err error) {
+func (sm PairSubmodule) processIbcNftPairEvent(ctx context.Context, packetDataStr, classId string) (err error) {
 	packetData := types.PacketData{}
 
 	if packetDataStr == "" || classId == "" {

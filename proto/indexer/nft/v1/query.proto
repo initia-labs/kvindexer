@@ -20,11 +20,26 @@ service Query {
     };
   }
 
+  // Collection queries a collection by its address
+  rpc Collections(QueryCollectionsRequest) returns (QueryCollectionsResponse) {
+    option (google.api.http) = {
+      get : "/indexer/nft/v1/collections"
+    };
+  }
+
   // Collections queries all the collections of an account
   rpc CollectionsByAccount(QueryCollectionsByAccountRequest)
       returns (QueryCollectionsResponse) {
     option (google.api.http) = {
       get : "/indexer/nft/v1/collections/by_account/{account}"
+    };
+  }
+
+  // Collections queries all the collections by case-insensitive name
+  rpc CollectionsByName(QueryCollectionsByNameRequest)
+      returns (QueryCollectionsResponse) {
+    option (google.api.http) = {
+      get : "/indexer/nft/v1/collections/by_name/{name}"
     };
   }
 
@@ -55,10 +70,23 @@ message QueryCollectionRequest {
 // method
 message QueryCollectionResponse { IndexedCollection collection = 1; }
 
-// QueryCollectionsRequest is the request type for the Query/Collections RPC
+// QueryCollectionsRequest is thre request type for the Query/Collection RPC
 // method
+message QueryCollectionsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryCollectionsByAccountRequest is the request type
+// for the Query/Collections RPC method
 message QueryCollectionsByAccountRequest {
   string account = 1 [ (cosmos_proto.scalar) = "cosmos.AddressString" ];
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryCollectionsByNameRequest is the request type
+// for the Query/Collections RPC method
+message QueryCollectionsByNameRequest {
+  string name = 1;
   cosmos.base.query.v1beta1.PageRequest pagination = 2;
 }
 

@@ -3,6 +3,7 @@ package wasm_nft
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -60,22 +61,20 @@ func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Even
 		return nil
 	}
 
-	collection, err := sm.collectionMap.Get(ctx, data.ContractAddress)
+	// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
+	collection, err := sm.getIndexedCollectionFromVMStore(ctx, data.ContractAddress)
 	if err != nil {
-		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
-			return cosmoserr.Wrap(err, "failed to check collection existence")
-		}
-		// if not found, it means this is the first minting of the collection, so we need to set into collectionMap
-		coll, err := sm.getIndexedCollectionFromVMStore(ctx, data.ContractAddress)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to get collection contract info")
-		}
-		collection = *coll
+		return cosmoserr.Wrap(err, "failed to get collection contract info")
+	}
 
-		err = sm.collectionMap.Set(ctx, data.ContractAddress, collection)
-		if err != nil {
-			return cosmoserr.Wrap(err, "failed to set collection")
-		}
+	err = sm.collectionMap.Set(ctx, data.ContractAddress, *collection)
+	if err != nil {
+		return cosmoserr.Wrap(err, "failed to set collection")
+	}
+
+	err = sm.applyCollectionNameMap(ctx, collection.Collection.Name, data.ContractAddress)
+	if err != nil {
+		return cosmoserr.Wrap(err, "failed to insert collection into collectionNameMap")
 	}
 
 	err = sm.applyCollectionOwnerMap(ctx, data.ContractAddress, data.Owner, true)
@@ -211,5 +210,29 @@ func (sm WasmNFTSubmodule) applyCollectionOwnerMap(ctx context.Context, collecti
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to update collection count in collectionOwnersMap")
 	}
+	return nil
+}
+
+// applyCollectionNameMap applies the collection name map to the lowercased collection name.
+func (sm WasmNFTSubmodule) applyCollectionNameMap(ctx context.Context, name string, addr sdk.AccAddress) error {
+	// use lowercased name to support case insensitive search
+	name, _ = sm.getCollectionNameFromPairSubmodule(ctx, name)
+	name = strings.ToLower(stripNonAlnum(name))
+
+	addrs, err := sm.collectionNameMap.Get(ctx, name)
+	if err != nil {
+		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+			return err
+		}
+	}
+	newaddrs := appendString(addrs, addr.String())
+	if newaddrs == addrs {
+		return nil
+	}
+	err = sm.collectionNameMap.Set(ctx, name, newaddrs)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -3,6 +3,7 @@ package wasm_nft
 import (
 	"context"
 	"slices"
+	"strings"
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
@@ -57,6 +58,25 @@ func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRe
 }
 
 // Collections implements nfttypes.QueryServer.
+func (q Querier) Collections(ctx context.Context, req *nfttypes.QueryCollectionsRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
+
+	collections, pageRes, err := query.CollectionPaginate(ctx, q.collectionMap, req.Pagination,
+		func(k sdk.AccAddress, v nfttypes.IndexedCollection) (*nfttypes.IndexedCollection, error) {
+			return &v, nil
+		},
+	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+
+	return &nfttypes.QueryCollectionsResponse{
+		Collections: collections,
+		Pagination:  pageRes,
+	}, nil
+}
+
+// Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
 	accountAddr, err := getVMAddress(q.ac, req.Account)
@@ -93,6 +113,50 @@ func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCo
 
 	return &nfttypes.QueryCollectionsResponse{
 		Collections: indexedCollections,
+		Pagination:  pageRes,
+	}, nil
+}
+
+// CollectionsByName implements nfttypes.QueryServer.
+func (q Querier) CollectionsByName(ctx context.Context, req *nfttypes.QueryCollectionsByNameRequest) (*nfttypes.QueryCollectionsResponse, error) {
+	util.ValidatePageRequest(req.Pagination)
+	if req.Name == "" {
+		return nil, status.Error(codes.InvalidArgument, "name cannot be empty")
+	}
+	name := strings.ToLower(req.Name) // use lowercased name to support case insensitive search
+
+	addrgrps, pageRes, err := query.CollectionPaginate(ctx, q.collectionNameMap, req.Pagination,
+		func(k string, v string) (string, error) {
+			return v, nil
+		},
+		func(opt *query.CollectionsPaginateOptions[string]) {
+			opt.Prefix = &name
+		},
+	)
+	if err != nil {
+		return nil, handleCollectionErr(err)
+	}
+	colAddrs := expandString(addrgrps)
+	collections := []*nfttypes.IndexedCollection{}
+	for _, colAddr := range colAddrs {
+
+		sdkAddr, err := sdk.AccAddressFromBech32(colAddr)
+		if err != nil {
+			q.Logger(ctx).Warn("invalid collection address found", "collection", colAddr, "action", "CollectionsByName", "error", err)
+			continue
+		}
+
+		collection, err := q.collectionMap.Get(ctx, sdkAddr)
+		if err != nil {
+			q.Logger(ctx).Warn("index mismatch found", "collection", colAddr, "action", "CollectionsByName", "error", err)
+			continue
+		}
+		collection.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, collection.Collection.Name)
+		collections = append(collections, &collection)
+	}
+
+	return &nfttypes.QueryCollectionsResponse{
+		Collections: collections,
 		Pagination:  pageRes,
 	}, nil
 }

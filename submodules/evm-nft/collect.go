@@ -2,6 +2,7 @@ package evm_nft
 
 import (
 	"context"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -30,7 +31,6 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 }
 
 func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
-
 	for _, event := range events {
 		log, ok := event.AttributesMap[evmtypes.AttributeKeyLog]
 		if !ok {
@@ -101,6 +101,11 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to set collection")
 	}
 
+	err = sm.applyCollectionNameMap(ctx, collection.Collection.Name, contractSdkAddr)
+	if err != nil {
+		return cosmoserr.Wrap(err, "failed to insert collection into collectionNameMap")
+	}
+
 	err = sm.applyCollectionOwnerMap(ctx, contractSdkAddr, event.To, true)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
@@ -152,7 +157,6 @@ func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event *types
 	err = sm.applyCollectionOwnerMap(ctx, tpk.K1(), event.From, false)
 	if err != nil {
 		return errors.New("failed to decrease collection count from prev owner")
-
 	}
 	err = sm.applyCollectionOwnerMap(ctx, tpk.K1(), event.To, true)
 	if err != nil {
@@ -243,5 +247,29 @@ func (sm EvmNFTSubmodule) applyCollectionOwnerMap(ctx context.Context, collectio
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to update collection count in collectionOwnersMap")
 	}
+	return nil
+}
+
+// applyCollectionNameMap applies the collection name map to the lowercased collection name.
+func (sm EvmNFTSubmodule) applyCollectionNameMap(ctx context.Context, name string, addr sdk.AccAddress) error {
+	// use lowercased name to support case insensitive search
+	name, _ = sm.getCollectionNameFromPairSubmodule(ctx, name)
+	name = strings.ToLower(stripNonAlnum(name))
+
+	addrs, err := sm.collectionNameMap.Get(ctx, name)
+	if err != nil {
+		if !cosmoserr.IsOf(err, collections.ErrNotFound) {
+			return err
+		}
+	}
+	newaddrs := appendString(addrs, addr.String())
+	if newaddrs == addrs {
+		return nil
+	}
+	err = sm.collectionNameMap.Set(ctx, name, newaddrs)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
