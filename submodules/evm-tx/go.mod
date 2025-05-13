@@ -16,8 +16,8 @@ require (
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/initia-labs/kvindexer v0.1.12
-	github.com/initia-labs/minievm v1.0.0-rc.2
+	github.com/initia-labs/kvindexer v0.1.13
+	github.com/initia-labs/minievm v1.0.7
 	google.golang.org/genproto/googleapis/api v0.0.0-20241202173237-19429a94021a
 	google.golang.org/grpc v1.70.0
 )
@@ -106,7 +106,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
+	github.com/initia-labs/OPinit/api v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -211,10 +211,10 @@ replace (
 // connect
 // - https://github.com/initia-labs/connect/pull/1
 replace (
-	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250411163041-956fe82acaaf
+	github.com/cometbft/cometbft => github.com/initia-labs/cometbft v0.0.0-20250423153228-2a8797de61ac
 	github.com/cosmos/cosmos-sdk => github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847
 	github.com/cosmos/ibc-go/v8 => github.com/initia-labs/ibc-go/v8 v8.0.0-20250313020428-36b81501adfc
-	github.com/ethereum/go-ethereum => github.com/initia-labs/evm v0.0.0-20250326140709-c2bb7bf52a31
+	github.com/ethereum/go-ethereum => github.com/initia-labs/evm v0.0.0-20250502185204-604b1666eb18
 	github.com/skip-mev/connect/v2 => github.com/initia-labs/connect/v2 v2.3.1
 
 	// cosmos/relayer seems having problem with the latest version of grpc; return nil in the below line

@@ -14,7 +14,7 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.13
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/initia-labs/initia v1.0.0-rc.1
+	github.com/initia-labs/initia v1.0.0
 	github.com/initia-labs/kvindexer v0.1.12
 	github.com/spf13/cast v1.7.1
 	golang.org/x/mod v0.22.0
@@ -98,7 +98,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
+	github.com/initia-labs/OPinit/api v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

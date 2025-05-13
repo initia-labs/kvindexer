@@ -1,8 +1,8 @@
 module github.com/initia-labs/kvindexer/submodules/move-nft
 
-go 1.23.3
+go 1.23.6
 
-toolchain go1.23.5
+toolchain go1.24.3
 
 require (
 	cosmossdk.io/collections v0.4.0
@@ -14,9 +14,9 @@ require (
 	github.com/cosmos/cosmos-sdk v0.50.13
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/initia-labs/initia v0.6.4
+	github.com/initia-labs/initia v1.0.0
 	github.com/initia-labs/kvindexer v0.1.10
-	github.com/initia-labs/movevm v0.6.1
+	github.com/initia-labs/movevm v1.0.0
 	golang.org/x/mod v0.22.0
 	google.golang.org/grpc v1.70.0
 )
@@ -100,8 +100,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.15.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/initia-labs/OPinit v1.0.0-rc.0 // indirect
-	github.com/initia-labs/OPinit/api v1.0.0-beta.1 // indirect
+	github.com/initia-labs/OPinit/api v1.0.0 // indirect
 	github.com/jmhodges/levigo v1.0.0 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -131,7 +130,6 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sasha-s/go-deadlock v0.3.5 // indirect
-	github.com/skip-mev/block-sdk/v2 v2.1.5 // indirect
 	github.com/skip-mev/connect/v2 v2.3.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
