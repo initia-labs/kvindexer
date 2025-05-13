@@ -1134,10 +1134,10 @@ github.com/improbable-eng/grpc-web v0.15.0 h1:BN+7z6uNXZ1tQGcNAuaU1YjsLTApzkjt2t
 github.com/improbable-eng/grpc-web v0.15.0/go.mod h1:1sy9HKV4Jt9aEs9JSnkWlRJPuPtwNr0l57L4f878wP8=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/initia-labs/OPinit/api v1.0.0-beta.1 h1:aWv4PAW0eVDQy5m2n4BJmdhy6RdpCcRSLJAWGzbwMO8=
-github.com/initia-labs/OPinit/api v1.0.0-beta.1/go.mod h1:Qz11o6zlTtJe495JO7FhEyLhJLPit0rEuLN4pweKL24=
-github.com/initia-labs/cometbft v0.0.0-20250411163041-956fe82acaaf h1:C31RGhcc3xY/nJEppnlEks9aJPtaBRawALdsOBzKfjQ=
-github.com/initia-labs/cometbft v0.0.0-20250411163041-956fe82acaaf/go.mod h1:U7pfdKUi2qzLMTUtwCB8KySK0O2qDOF8GFO6vPZ0fXM=
+github.com/initia-labs/OPinit/api v1.0.0 h1:l1WjRl8dK1HoEn+1mPXCmEnRqLwXrfoBA9CI1lAUnnU=
+github.com/initia-labs/OPinit/api v1.0.0/go.mod h1:Qz11o6zlTtJe495JO7FhEyLhJLPit0rEuLN4pweKL24=
+github.com/initia-labs/cometbft v0.0.0-20250423153228-2a8797de61ac h1:HUAeU6+G3Nk1BIZv4jAwEqoUMStVfhVjSy/PSJjlnLQ=
+github.com/initia-labs/cometbft v0.0.0-20250423153228-2a8797de61ac/go.mod h1:pX0eththSiU5rMgVpLPn2kK295Pz2/UQB427WWLequI=
 github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847 h1:MUusHIRbaraL//dic8nCj7wXvVLT3LvKbS0k+Bj12oM=
 github.com/initia-labs/cosmos-sdk v0.0.0-20250415174140-9fd233bcf847/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
 github.com/jmhodges/levigo v1.0.0 h1:q5EC36kV79HWeTBWsod3mG11EgStG3qArTKcvlksN1U=
