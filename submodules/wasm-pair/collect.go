@@ -11,7 +11,6 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	exportedibc "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -58,14 +57,12 @@ func (sm PairSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinal
 	return nil
 }
 
-func (sm PairSubmodule) parseTx(txBytes []byte) (*tx.Tx, error) {
-	tx := tx.Tx{}
-	err := sm.cdc.Unmarshal(txBytes, &tx)
+func (sm PairSubmodule) parseTx(txBytes []byte) (sdk.Tx, error) {
+	tx, err := sm.encodingConfig.TxConfig.TxDecoder()(txBytes)
 	if err != nil {
 		return nil, err
 	}
-
-	return &tx, nil
+	return tx, nil
 }
 
 func (sm PairSubmodule) collectOPfungibleTokens(ctx context.Context, msg *opchildtypes.MsgFinalizeTokenDeposit) (err error) {

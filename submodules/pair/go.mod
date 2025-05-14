@@ -15,6 +15,7 @@ require (
 	github.com/cosmos/ibc-go/v8 v8.7.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/OPinit v1.0.1
+	github.com/initia-labs/initia v1.0.0
 	github.com/initia-labs/kvindexer v0.1.10
 	google.golang.org/grpc v1.70.0
 )
@@ -22,7 +23,6 @@ require (
 require (
 	cloud.google.com/go/storage v1.43.0 // indirect
 	cosmossdk.io/api v0.7.6 // indirect
-	cosmossdk.io/client/v2 v2.0.0-beta.4 // indirect
 	cosmossdk.io/core v0.11.1 // indirect
 	cosmossdk.io/depinject v1.1.0 // indirect
 	cosmossdk.io/math v1.4.0 // indirect

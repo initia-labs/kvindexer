@@ -41,11 +41,15 @@ func (sub BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFina
 
 	var feeCoins sdk.Coins
 	for _, txBytes := range req.Txs {
-		tx, err := parseTx(sub.cdc, txBytes)
+		tx, err := sub.parseTx(txBytes)
 		if err != nil {
 			return err
 		}
-		f := tx.GetFee()
+		feeTx, ok := tx.(sdk.FeeTx)
+		if !ok {
+			sub.Logger(ctx).Debug("not a fee tx", "tx", tx)
+		}
+		f := feeTx.GetFee()
 		feeCoins = feeCoins.Add(f...)
 	}
 
@@ -73,4 +77,12 @@ func (sub BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFina
 	}
 
 	return nil
+}
+
+func (sub BlockSubmodule) parseTx(txBytes []byte) (sdk.Tx, error) {
+	tx, err := sub.encodingConfig.TxConfig.TxDecoder()(txBytes)
+	if err != nil {
+		return nil, err
+	}
+	return tx, nil
 }
