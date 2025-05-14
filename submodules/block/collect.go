@@ -48,6 +48,7 @@ func (sub BlockSubmodule) collectBlock(ctx context.Context, req abci.RequestFina
 		feeTx, ok := tx.(sdk.FeeTx)
 		if !ok {
 			sub.Logger(ctx).Debug("not a fee tx", "tx", tx)
+			continue
 		}
 		f := feeTx.GetFee()
 		feeCoins = feeCoins.Add(f...)
