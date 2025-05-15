@@ -5,7 +5,7 @@ const (
 	SubmoduleName = "evm-tx"
 
 	// Version is the current version of the submodule
-	Version = "v0.2.2"
+	Version = "v0.3.0"
 )
 
 // store prefixes

@@ -10,7 +10,6 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx"
 
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	exportedibc "github.com/cosmos/ibc-go/v8/modules/core/exported"
@@ -57,14 +56,12 @@ func (sm PairSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinal
 	return nil
 }
 
-func (sm PairSubmodule) parseTx(txBytes []byte) (*tx.Tx, error) {
-	tx := tx.Tx{}
-	err := sm.cdc.Unmarshal(txBytes, &tx)
+func (sm PairSubmodule) parseTx(txBytes []byte) (sdk.Tx, error) {
+	tx, err := sm.encodingConfig.TxConfig.TxDecoder()(txBytes)
 	if err != nil {
 		return nil, err
 	}
-
-	return &tx, nil
+	return tx, nil
 }
 
 func (sm PairSubmodule) collectOPFungibleTokens(ctx context.Context, msg *opchildtypes.MsgFinalizeTokenDeposit) (err error) {
@@ -135,7 +132,6 @@ func (sm PairSubmodule) processIbcNftPairEvent(ctx context.Context, packetDataSt
 }
 
 func (sm PairSubmodule) collectIBCFungibleTokens(ctx context.Context) error {
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	traces := sm.transferKeeper.GetAllDenomTraces(sdkCtx)
@@ -149,7 +145,6 @@ func (sm PairSubmodule) collectIBCFungibleTokens(ctx context.Context) error {
 			sm.Logger(ctx).Warn("failed to set fungible pair", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom, "error", err)
 			return err
 		}
-		sm.Logger(ctx).Info("fungible pair added", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom)
 	}
 
 	return nil

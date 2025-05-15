@@ -7,10 +7,8 @@ import (
 
 	"cosmossdk.io/collections"
 	cosmoserr "cosmossdk.io/errors"
-	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/tx"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cometbft/cometbft/crypto/tmhash"
@@ -18,6 +16,10 @@ import (
 
 	"github.com/initia-labs/kvindexer/submodules/tx/types"
 )
+
+type intoAny interface {
+	AsAny() *codectypes.Any
+}
 
 func (sm TxSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
@@ -35,15 +37,16 @@ func (sm TxSubmodule) processTxs(ctx context.Context, req abci.RequestFinalizeBl
 
 	txHashes := []string{}
 	for idx, txBytes := range req.Txs {
-		tx, err := parseTx(sm.cdc, txBytes)
+
+		tx, err := sm.parseTx(txBytes)
 		if err != nil {
 			sm.Logger(ctx).Info("failed to parse tx", "error", err, "index", idx)
 			continue
 		}
 
-		any, err := codectypes.NewAnyWithValue(tx)
-		if err != nil {
-			sm.Logger(ctx).Info("failed to unpack any", "error", err, "index", idx)
+		p, ok := tx.(intoAny)
+		if !ok {
+			sm.Logger(ctx).Info("failed to cast tx", "error", err, "index", idx)
 			continue
 		}
 
@@ -56,9 +59,9 @@ func (sm TxSubmodule) processTxs(ctx context.Context, req abci.RequestFinalizeBl
 			// No Index, Tx and Proof here. sdk.NewResponseTxResult() don't use them
 		}
 
-		txr := sdk.NewResponseResultTx(&resultTx, any, req.Time.UTC().Format(time.RFC3339))
+		txr := sdk.NewResponseResultTx(&resultTx, p.AsAny(), req.Time.UTC().Format(time.RFC3339))
 
-		if err := sm.txMap.Set(ctx, txHashStr, *txr); err != nil {
+		if err = sm.txMap.Set(ctx, txHashStr, *txr); err != nil {
 			sm.Logger(ctx).Info("failed to store tx", "error", err, "index", idx)
 			continue
 		}
@@ -96,13 +99,12 @@ func uniqueAppend(slice []string, elem string) []string {
 	return append(slice, elem)
 }
 
-func parseTx(cdc codec.Codec, txBytes []byte) (*tx.Tx, error) {
-	tx := tx.Tx{}
-	err := cdc.Unmarshal(txBytes, &tx)
+func (sm TxSubmodule) parseTx(txBytes []byte) (sdk.Tx, error) {
+	tx, err := sm.encodingConfig.TxConfig.TxDecoder()(txBytes)
 	if err != nil {
 		return nil, err
 	}
-	return &tx, nil
+	return tx, nil
 }
 
 func grepAddressesFromTx(txr *sdk.TxResponse) ([]string, error) {
