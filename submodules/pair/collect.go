@@ -132,7 +132,6 @@ func (sm PairSubmodule) processIbcNftPairEvent(ctx context.Context, packetDataSt
 }
 
 func (sm PairSubmodule) collectIBCFungibleTokens(ctx context.Context) error {
-
 	sdkCtx := sdk.UnwrapSDKContext(ctx)
 
 	traces := sm.transferKeeper.GetAllDenomTraces(sdkCtx)
@@ -146,7 +145,6 @@ func (sm PairSubmodule) collectIBCFungibleTokens(ctx context.Context) error {
 			sm.Logger(ctx).Warn("failed to set fungible pair", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom, "error", err)
 			return err
 		}
-		sm.Logger(ctx).Info("fungible pair added", "ibcDenom", trace.IBCDenom(), "baseDenom", trace.BaseDenom)
 	}
 
 	return nil
