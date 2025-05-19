@@ -20,7 +20,6 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
 	for _, txResult := range res.TxResults {
-		//events := filterAndParseEvent(txResult.Events, eventTypes)
 		events := filterEvents(txResult.Events, eventTypes)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
@@ -113,7 +112,7 @@ func (sm EvmNFTSubmodule) handleMintEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to insert collection into collectionOwnersMap")
 	}
 
-	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, event.To.String())
+	ownerSdkAddr, err := getCosmosAddressFromString(event.To.String())
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to parse new owner address from topic")
 	}
@@ -143,7 +142,7 @@ func (sm EvmNFTSubmodule) handlerTransferEvent(ctx context.Context, event *types
 	sm.Logger(ctx).Info("sent/transferred", "event", event)
 	contractSdkAddr := getCosmosAddress(event.Address)
 
-	tpk := collections.Join[sdk.AccAddress, string](contractSdkAddr, event.TokenId)
+	tpk := collections.Join(contractSdkAddr, event.TokenId)
 
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
@@ -185,7 +184,7 @@ func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.Pars
 	contractSdkAddr := getCosmosAddress(event.Address)
 
 	// remove from tokensOwnersMap
-	tpk := collections.Join[sdk.AccAddress, string](contractSdkAddr, event.TokenId)
+	tpk := collections.Join(contractSdkAddr, event.TokenId)
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")
@@ -196,7 +195,7 @@ func (sm EvmNFTSubmodule) handleBurnEvent(ctx context.Context, event *types.Pars
 		return cosmoserr.Wrap(err, "failed to delete nft from tokenMap")
 	}
 
-	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, token.OwnerAddr)
+	ownerSdkAddr, err := getCosmosAddressFromString(token.OwnerAddr)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get owner address from token")
 	}

@@ -116,7 +116,7 @@ func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event
 		return nil
 	}
 
-	tpk := collections.Join[sdk.AccAddress, string](data.ContractAddress, data.TokenId)
+	tpk := collections.Join(data.ContractAddress, data.TokenId)
 
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
@@ -164,7 +164,7 @@ func (sm WasmNFTSubmodule) handleBurnEvent(ctx context.Context, event abci.Event
 	}
 
 	// remove from tokensOwnersMap
-	tpk := collections.Join[sdk.AccAddress, string](data.ContractAddress, data.TokenId)
+	tpk := collections.Join(data.ContractAddress, data.TokenId)
 	token, err := sm.tokenMap.Get(ctx, tpk)
 	if err != nil {
 		return cosmoserr.Wrap(err, "failed to get nft from tokenMap")

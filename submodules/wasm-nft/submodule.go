@@ -149,6 +149,6 @@ func (sm WasmNFTSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, 
 	return nil
 }
 
-func (sub WasmNFTSubmodule) Prune(ctx context.Context, minHeight int64) error {
+func (sm WasmNFTSubmodule) Prune(ctx context.Context, minHeight int64) error {
 	return nil
 }

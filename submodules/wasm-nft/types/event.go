@@ -30,6 +30,7 @@ type MintEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
+//nolint:dupl
 func (event *MintEvent) Parse(src abci.Event) (err error) {
 	for _, attr := range src.Attributes {
 		switch attr.Key {
@@ -71,9 +72,10 @@ type TransferOrSendEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
+//nolint:dupl
 func (event *TransferOrSendEvent) Parse(src abci.Event) (err error) {
 	for _, attr := range src.Attributes {
-		switch string(attr.Key) {
+		switch attr.Key {
 		case eventKeyAction:
 			event.Action = attr.Value
 		case eventKeyContractAddress:
@@ -113,7 +115,7 @@ type BurnEvent struct {
 
 func (event *BurnEvent) Parse(src abci.Event) (err error) {
 	for _, attr := range src.Attributes {
-		switch string(attr.Key) {
+		switch attr.Key {
 		case eventKeyAction:
 			event.Action = attr.Value
 		case eventKeyContractAddress:
