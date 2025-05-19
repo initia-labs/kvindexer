@@ -41,7 +41,7 @@ func handleCollectionErr(err error) error {
 // Collection implements nfttypes.QueryServer.
 func (q Querier) Collection(ctx context.Context, req *nfttypes.QueryCollectionRequest) (*nfttypes.QueryCollectionResponse, error) {
 
-	collectionSdkAddr, err := getCosmosAddressFromString(q.ac, req.CollectionAddr)
+	collectionSdkAddr, err := getCosmosAddressFromString(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -80,7 +80,7 @@ func (q Querier) Collections(ctx context.Context, req *nfttypes.QueryCollections
 // Collections implements nfttypes.QueryServer.
 func (q Querier) CollectionsByAccount(ctx context.Context, req *nfttypes.QueryCollectionsByAccountRequest) (*nfttypes.QueryCollectionsResponse, error) {
 	util.ValidatePageRequest(req.Pagination)
-	accountSdkAddr, err := getCosmosAddressFromString(q.ac, req.Account)
+	accountSdkAddr, err := getCosmosAddressFromString(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -193,7 +193,7 @@ func (sm EvmNFTSubmodule) getCollectionNameFromPairSubmodule(ctx context.Context
 }
 
 func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
-	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -221,7 +221,7 @@ func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttyp
 }
 
 func (sm EvmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByCollectionRequest) (*nfttypes.QueryTokensResponse, error) {
-	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -238,7 +238,7 @@ func (sm EvmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, r
 }
 
 func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
-	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, req.Account)
+	ownerSdkAddr, err := getCosmosAddressFromString(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -276,12 +276,12 @@ func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.
 }
 
 func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
-	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	ownerSdkAddr, err := getCosmosAddressFromString(sm.ac, req.Account)
+	ownerSdkAddr, err := getCosmosAddressFromString(req.Account)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -323,7 +323,7 @@ func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, r
 }
 
 func (sm EvmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Context, req *nfttypes.QueryTokensByAccountRequest) (*nfttypes.QueryTokensResponse, error) {
-	colSdkAddr, err := getCosmosAddressFromString(sm.ac, req.CollectionAddr)
+	colSdkAddr, err := getCosmosAddressFromString(req.CollectionAddr)
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
