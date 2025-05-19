@@ -7,7 +7,6 @@ import (
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/client"
-	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/gogoproto/grpc"
 
@@ -15,6 +14,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
+	"github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/kvindexer/collection"
 	pairtypes "github.com/initia-labs/kvindexer/pair/types"
 	"github.com/initia-labs/kvindexer/submodules/wasm-pair/types"
@@ -24,7 +24,7 @@ import (
 var _ kvindexer.Submodule = PairSubmodule{}
 
 type PairSubmodule struct {
-	cdc codec.Codec
+	encodingConfig params.EncodingConfig
 
 	channelKeeper  types.ChannelKeeper
 	transferKeeper types.TransferKeeper
@@ -34,7 +34,7 @@ type PairSubmodule struct {
 }
 
 func NewPairSubmodule(
-	cdc codec.Codec,
+	encodingConfig params.EncodingConfig,
 	indexerKeeper collection.IndexerKeeper,
 	channelKeeper types.ChannelKeeper,
 	transferKeeper types.TransferKeeper,
@@ -52,7 +52,7 @@ func NewPairSubmodule(
 	}
 
 	return &PairSubmodule{
-		cdc: cdc,
+		encodingConfig: encodingConfig,
 
 		channelKeeper:  channelKeeper,
 		transferKeeper: transferKeeper,

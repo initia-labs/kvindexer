@@ -16,6 +16,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	"github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/kvindexer/collection"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
@@ -25,8 +26,8 @@ import (
 var _ kvindexer.Submodule = WasmNFTSubmodule{}
 
 type WasmNFTSubmodule struct {
-	ac  address.Codec
-	cdc codec.Codec
+	ac             address.Codec
+	encodingConfig params.EncodingConfig
 
 	vmKeeper      types.WasmKeeper
 	pairSubmodule types.PairSubmodule
@@ -47,11 +48,13 @@ type WasmNFTSubmodule struct {
 
 func NewWasmNFTSubmodule(
 	ac address.Codec,
-	cdc codec.Codec,
+	encodingConfig params.EncodingConfig,
 	indexerKeeper collection.IndexerKeeper,
 	vmKeeper types.WasmKeeper,
 	pairSubmodule types.PairSubmodule,
 ) (*WasmNFTSubmodule, error) {
+	cdc := encodingConfig.Codec
+
 	collectionsPrefix := collection.NewPrefix(types.SubmoduleName, types.CollectionsPrefix)
 	collectionMap, err := collection.AddMap(indexerKeeper, collectionsPrefix, "collections", sdk.AccAddressKey, codec.CollValue[nfttypes.IndexedCollection](cdc))
 	if err != nil {
@@ -89,8 +92,8 @@ func NewWasmNFTSubmodule(
 	}
 
 	return &WasmNFTSubmodule{
-		ac:  ac,
-		cdc: cdc,
+		ac:             ac,
+		encodingConfig: encodingConfig,
 
 		vmKeeper:      vmKeeper,
 		pairSubmodule: pairSubmodule,

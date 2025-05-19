@@ -15,6 +15,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
+	"github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/kvindexer/collection"
 	"github.com/initia-labs/kvindexer/submodules/evm-tx/types"
 	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
@@ -23,7 +24,7 @@ import (
 var _ kvindexer.Submodule = EvmTxSubmodule{}
 
 type EvmTxSubmodule struct {
-	cdc codec.Codec
+	encodingConfig params.EncodingConfig
 
 	sequence              *collections.Sequence
 	txMap                 *collections.Map[string, sdk.TxResponse]
@@ -38,9 +39,11 @@ type EvmTxSubmodule struct {
 }
 
 func NewTxSubmodule(
-	cdc codec.Codec,
+	encodingConfig params.EncodingConfig,
 	indexerKeeper collection.IndexerKeeper,
 ) (*EvmTxSubmodule, error) {
+	cdc := encodingConfig.Codec
+
 	sequencePrefix := collection.NewPrefix(types.SubmoduleName, types.SequencePrefix)
 	sequence, err := collection.AddSequence(indexerKeeper, sequencePrefix, "sequence")
 	if err != nil {
@@ -90,7 +93,7 @@ func NewTxSubmodule(
 	}
 
 	return &EvmTxSubmodule{
-		cdc: cdc,
+		encodingConfig: encodingConfig,
 
 		sequence:                   sequence,
 		txMap:                      txMap,

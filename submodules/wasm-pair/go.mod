@@ -15,15 +15,14 @@ require (
 	github.com/cosmos/ibc-go/v8 v8.7.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/initia-labs/OPinit v1.0.1
+	github.com/initia-labs/initia v1.0.0
 	github.com/initia-labs/kvindexer v0.1.12
 	google.golang.org/grpc v1.70.0
 )
 
 require (
-	cloud.google.com/go/compute/metadata v0.5.2 // indirect
 	cloud.google.com/go/storage v1.43.0 // indirect
 	cosmossdk.io/api v0.7.6 // indirect
-	cosmossdk.io/client/v2 v2.0.0-beta.4 // indirect
 	cosmossdk.io/core v0.11.1 // indirect
 	cosmossdk.io/depinject v1.1.0 // indirect
 	cosmossdk.io/math v1.4.0 // indirect
@@ -144,8 +143,6 @@ require (
 	github.com/zondax/ledger-go v0.14.3 // indirect
 	go.etcd.io/bbolt v1.4.0-alpha.0.0.20240404170359-43604f3112c5 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.opentelemetry.io/otel v1.32.0 // indirect
-	go.opentelemetry.io/otel/trace v1.32.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/crypto v0.32.0 // indirect
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect

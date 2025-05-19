@@ -15,6 +15,7 @@ import (
 
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 
+	"github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/kvindexer/collection"
 	"github.com/initia-labs/kvindexer/submodules/block/types"
 	kvindexer "github.com/initia-labs/kvindexer/x/kvindexer/types"
@@ -23,7 +24,7 @@ import (
 var _ kvindexer.Submodule = BlockSubmodule{}
 
 type BlockSubmodule struct {
-	cdc codec.Codec
+	encodingConfig params.EncodingConfig
 
 	opChildKeeper types.OPChildKeeper
 
@@ -31,20 +32,20 @@ type BlockSubmodule struct {
 }
 
 func NewBlockSubmodule(
-	cdc codec.Codec,
+	encodingConfig params.EncodingConfig,
 	indexerKeeper collection.IndexerKeeper,
 	opChildKeeper types.OPChildKeeper,
 ) (*BlockSubmodule, error) {
 	prefixBlock := collection.NewPrefix(types.SubmoduleName, types.BlockPrefix)
-	blockByHeight, err := collection.AddMap(indexerKeeper, prefixBlock, "block_by_height", collections.Int64Key, codec.CollValue[types.Block](cdc))
+	blockByHeight, err := collection.AddMap(indexerKeeper, prefixBlock, "block_by_height", collections.Int64Key, codec.CollValue[types.Block](encodingConfig.Codec))
 	if err != nil {
 		return nil, err
 	}
 
 	return &BlockSubmodule{
-		cdc:           cdc,
-		opChildKeeper: opChildKeeper,
-		blockByHeight: blockByHeight,
+		encodingConfig: encodingConfig,
+		opChildKeeper:  opChildKeeper,
+		blockByHeight:  blockByHeight,
 	}, nil
 }
 

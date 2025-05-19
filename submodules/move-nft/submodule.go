@@ -16,6 +16,7 @@ import (
 
 	abci "github.com/cometbft/cometbft/abci/types"
 
+	"github.com/initia-labs/initia/app/params"
 	"github.com/initia-labs/kvindexer/collection"
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
@@ -25,8 +26,8 @@ import (
 var _ kvindexer.Submodule = MoveNftSubmodule{}
 
 type MoveNftSubmodule struct {
-	ac  address.Codec
-	cdc codec.Codec
+	ac             address.Codec
+	encodingConfig params.EncodingConfig
 
 	vmKeeper      types.MoveKeeper
 	pairSubmodule types.PairSubmodule
@@ -47,11 +48,13 @@ type MoveNftSubmodule struct {
 
 func NewMoveNftSubmodule(
 	ac address.Codec,
-	cdc codec.Codec,
+	encodingConfig params.EncodingConfig,
 	indexerKeeper collection.IndexerKeeper,
 	vmKeeper types.MoveKeeper,
 	pairSubmodule types.PairSubmodule,
 ) (*MoveNftSubmodule, error) {
+	cdc := encodingConfig.Codec
+
 	collectionsPrefix := collection.NewPrefix(types.SubmoduleName, types.CollectionsPrefix)
 	collectionMap, err := collection.AddMap(indexerKeeper, collectionsPrefix, "collections", sdk.AccAddressKey, codec.CollValue[nfttypes.IndexedCollection](cdc))
 	if err != nil {
@@ -89,8 +92,8 @@ func NewMoveNftSubmodule(
 	}
 
 	return &MoveNftSubmodule{
-		ac:  ac,
-		cdc: cdc,
+		ac:             ac,
+		encodingConfig: encodingConfig,
 
 		vmKeeper:      vmKeeper,
 		pairSubmodule: pairSubmodule,
