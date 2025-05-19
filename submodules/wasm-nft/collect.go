@@ -18,7 +18,7 @@ func (sm WasmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
 	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(txResult.Events, eventTypes)
+		events := filterEvents(txResult.Events, eventTypes)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Warn("processEvents", "error", err)
@@ -28,20 +28,25 @@ func (sm WasmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 	return nil
 }
 
-func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
-	var fn func(ctx context.Context, event types.EventWithAttributeMap) error
+func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []abci.Event) error {
+	var fn func(ctx context.Context, event abci.Event) error
 	for _, event := range events {
-		if event.Type == "wasm" {
-			switch event.AttributesMap["action"] {
-			case "mint":
-				fn = sm.handleMintEvent
-			case "transfer_nft", "send_nft":
-				fn = sm.handlerSendOrTransferEvent
-			case "burn":
-				fn = sm.handleBurnEvent
-			default:
-				continue
+		actionValue := ""
+		for _, attr := range event.Attributes {
+			if attr.Key == actionKey {
+				actionValue = attr.Value
+				break
 			}
+		}
+		switch actionValue {
+		case "mint":
+			fn = sm.handleMintEvent
+		case "transfer_nft", "send_nft":
+			fn = sm.handlerSendOrTransferEvent
+		case "burn":
+			fn = sm.handleBurnEvent
+		default:
+			continue
 		}
 
 		if err := fn(ctx, event); err != nil {
@@ -52,7 +57,7 @@ func (sm WasmNFTSubmodule) processEvents(ctx context.Context, events []types.Eve
 	return nil
 }
 
-func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
 
 	data := types.MintEvent{}
@@ -103,7 +108,7 @@ func (sm WasmNFTSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	return nil
 }
 
-func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event types.EventWithAttributeMap) (err error) {
+func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event abci.Event) (err error) {
 	sm.Logger(ctx).Info("sent/transferred", "event", event)
 	data := types.TransferOrSendEvent{}
 	if err := data.Parse(event); err != nil {
@@ -149,7 +154,7 @@ func (sm WasmNFTSubmodule) handlerSendOrTransferEvent(ctx context.Context, event
 	return nil
 }
 
-func (sm WasmNFTSubmodule) handleBurnEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm WasmNFTSubmodule) handleBurnEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("burnt", "event", event)
 
 	data := types.BurnEvent{}

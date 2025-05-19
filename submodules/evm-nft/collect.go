@@ -20,7 +20,8 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
 	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(txResult.Events, eventTypes)
+		//events := filterAndParseEvent(txResult.Events, eventTypes)
+		events := filterEvents(txResult.Events, eventTypes)
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Debug("processEvents", "error", err)
@@ -30,36 +31,37 @@ func (sm EvmNFTSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFin
 	return nil
 }
 
-func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
+func (sm EvmNFTSubmodule) processEvents(ctx context.Context, events []abci.Event) error {
 	for _, event := range events {
-		log, ok := event.AttributesMap[evmtypes.AttributeKeyLog]
-		if !ok {
-			continue // no log means it's not evm-related event
-		}
-
-		transferLog, err := types.ParseERC721TransferLog(sm.ac, log)
-		if err != nil {
-			if !errors.Is(err, types.ErrNotERC721) {
-				sm.Logger(ctx).Info("failed parse attribute", "error", err)
+		for _, attr := range event.Attributes {
+			if attr.Key != evmtypes.AttributeKeyLog {
+				continue
 			}
-			continue
-		}
 
-		var fn func(context.Context, *types.ParsedTransfer) error
-		switch transferLog.GetAction() {
-		case types.NftActionMint:
-			fn = sm.handleMintEvent
-		case types.NftActionTransfer:
-			fn = sm.handlerTransferEvent
-		case types.NftActionBurn:
-			fn = sm.handleBurnEvent
-		default:
-			sm.Logger(ctx).Info("unknown nft action", "action", transferLog.GetAction())
-			continue
-		}
+			transferLog, err := types.ParseERC721TransferLog(sm.ac, attr.Value)
+			if err != nil {
+				if !errors.Is(err, types.ErrNotERC721) {
+					sm.Logger(ctx).Info("failed parse attribute", "error", err)
+				}
+				continue
+			}
 
-		if err := fn(ctx, transferLog); err != nil {
-			sm.Logger(ctx).Info("failed to handle nft-related event", "error", err.Error())
+			var fn func(context.Context, *types.ParsedTransfer) error
+			switch transferLog.GetAction() {
+			case types.NftActionMint:
+				fn = sm.handleMintEvent
+			case types.NftActionTransfer:
+				fn = sm.handlerTransferEvent
+			case types.NftActionBurn:
+				fn = sm.handleBurnEvent
+			default:
+				sm.Logger(ctx).Info("unknown nft action", "action", transferLog.GetAction())
+				continue
+			}
+
+			if err := fn(ctx, transferLog); err != nil {
+				sm.Logger(ctx).Info("failed to handle nft-related event", "error", err.Error())
+			}
 		}
 	}
 	return nil

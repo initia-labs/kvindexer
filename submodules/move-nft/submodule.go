@@ -145,6 +145,7 @@ func (sub MoveNftSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestF
 	return sub.finalizeBlock(ctx, req, res)
 }
 
+//nolint:stylecheck
 func (sub MoveNftSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }

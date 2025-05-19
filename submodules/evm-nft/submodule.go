@@ -147,6 +147,7 @@ func (sub EvmNFTSubmodule) FinalizeBlock(ctx context.Context, req abci.RequestFi
 	return sub.finalizeBlock(ctx, req, res)
 }
 
+//nolint:stylecheck // ignoring ST1016 for consistency with existing code
 func (sub EvmNFTSubmodule) Commit(ctx context.Context, res abci.ResponseCommit, changeSet []*storetypes.StoreKVPair) error {
 	return nil
 }

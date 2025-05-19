@@ -6,26 +6,21 @@ import (
 	"strings"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
 )
 
 // regexStripNonAlnum is used to strip non-alphanumeric characters from the collection name.
 var regexStripNonAlnum = regexp.MustCompile("[^a-zA-Z0-9]+")
 
-func parseEvent(event abci.Event) types.EventWithAttributeMap {
-	eventWithMap := types.EventWithAttributeMap{Event: &event, AttributesMap: make(map[string]string)}
-	for _, attribute := range event.Attributes {
-		eventWithMap.AttributesMap[attribute.GetKey()] = attribute.GetValue()
+func filterEvents(events []abci.Event, eventType []string) (filtered []abci.Event) {
+	eventTypeMap := make(map[string]bool)
+	for _, eventType := range eventType {
+		eventTypeMap[eventType] = true
 	}
-	return eventWithMap
-}
 
-func filterAndParseEvent(eventType string, events []abci.Event) (filtered []types.EventWithAttributeMap) {
 	for _, event := range events {
-		if event.Type != eventType {
-			continue
+		if isTarget, found := eventTypeMap[event.Type]; found && isTarget {
+			filtered = append(filtered, event)
 		}
-		filtered = append(filtered, parseEvent(event))
 	}
 	return
 }

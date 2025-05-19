@@ -17,11 +17,13 @@ import (
 	"github.com/initia-labs/kvindexer/submodules/move-nft/types"
 )
 
+const attributeKey = "data"
+
 func (sm MoveNftSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFinalizeBlock, res abci.ResponseFinalizeBlock) error {
 	sm.Logger(ctx).Debug("finalizeBlock", "submodule", types.SubmoduleName, "txs", len(req.Txs), "height", req.Height)
 
 	for _, txResult := range res.TxResults {
-		events := filterAndParseEvent(eventType, txResult.Events)
+		events := filterEvents(txResult.Events, []string{eventType})
 		err := sm.processEvents(ctx, events)
 		if err != nil {
 			sm.Logger(ctx).Debug("processEvents", "error", err)
@@ -31,10 +33,18 @@ func (sm MoveNftSubmodule) finalizeBlock(ctx context.Context, req abci.RequestFi
 	return nil
 }
 
-func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []types.EventWithAttributeMap) error {
-	var fn func(ctx context.Context, event types.EventWithAttributeMap) error
+func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []abci.Event) error {
+	var fn func(ctx context.Context, event abci.Event) error
 	for _, event := range events {
-		switch event.AttributesMap["type_tag"] {
+		typeTag := ""
+		for _, attr := range event.Attributes {
+			if attr.Key == "type_tag" {
+				typeTag = attr.Value
+				break
+			}
+		}
+
+		switch typeTag {
 		case "0x1::collection::MintEvent":
 			fn = sm.handleMintEvent
 		case "0x1::object::TransferEvent":
@@ -54,11 +64,22 @@ func (sm MoveNftSubmodule) processEvents(ctx context.Context, events []types.Eve
 	return nil
 }
 
-func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Debug("minted", "event", event)
 
+	attributeData := ""
+	for _, attr := range event.Attributes {
+		if attr.Key == attributeKey {
+			attributeData = attr.Value
+			break
+		}
+	}
+	if attributeData == "" {
+		return errors.New("failed to get data from event")
+	}
+
 	data := types.NftMintAndBurnEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+	if err := json.Unmarshal([]byte(attributeData), &data); err != nil {
 		return errors.New("failed to unmarshal mint event")
 	}
 
@@ -123,11 +144,22 @@ func (sm MoveNftSubmodule) handleMintEvent(ctx context.Context, event types.Even
 	return nil
 }
 
-func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("transferred", "event", event)
 
+	attributeData := ""
+	for _, attr := range event.Attributes {
+		if attr.Key == attributeData {
+			attributeData = attr.Value
+			break
+		}
+	}
+	if attributeData == "" {
+		return errors.New("failed to get data from event")
+	}
+
 	data := types.NftTransferEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+	if err := json.Unmarshal([]byte(attributeData), &data); err != nil {
 		return errors.New("failed to unmarshal transfer event")
 	}
 
@@ -196,12 +228,23 @@ func (sm MoveNftSubmodule) handlerTransferEvent(ctx context.Context, event types
 	return nil
 }
 
-func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("mutated", "event", event)
 	cdc := sm.ac
 
+	attributeData := ""
+	for _, attr := range event.Attributes {
+		if attr.Key == attributeKey {
+			attributeData = attr.Value
+			break
+		}
+	}
+	if attributeData == "" {
+		return errors.New("failed to get data from event")
+	}
+
 	data := types.MutationEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &data); err != nil {
+	if err := json.Unmarshal([]byte(attributeData), &data); err != nil {
 		return errors.New("failed to unmarshal mutation event")
 	}
 
@@ -251,11 +294,23 @@ func (sm MoveNftSubmodule) handleMutateEvent(ctx context.Context, event types.Ev
 	return nil
 }
 
-func (sm MoveNftSubmodule) handleBurnEvent(ctx context.Context, event types.EventWithAttributeMap) error {
+func (sm MoveNftSubmodule) handleBurnEvent(ctx context.Context, event abci.Event) error {
 	sm.Logger(ctx).Info("burnt", "event", event)
 	cdc := sm.ac
+
+	attributeData := ""
+	for _, attr := range event.Attributes {
+		if attr.Key == attributeKey {
+			attributeData = attr.Value
+			break
+		}
+	}
+	if attributeData == "" {
+		return errors.New("failed to get data from event")
+	}
+
 	burnt := types.NftMintAndBurnEventData{}
-	if err := json.Unmarshal([]byte(event.AttributesMap["data"]), &burnt); err != nil {
+	if err := json.Unmarshal([]byte(attributeData), &burnt); err != nil {
 		return errors.New("failed to unmarshal burnt event")
 	}
 

@@ -3,9 +3,22 @@ package types
 import (
 	fmt "fmt"
 
+	abci "github.com/cometbft/cometbft/abci/types"
+
 	"github.com/spf13/cast"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+)
+
+const (
+	eventKeyAction          = "action"
+	eventKeyContractAddress = "_contract_address"
+	eventKeyMinter          = "minter"
+	eventKeyOwner           = "owner"
+	eventKeyRecipient       = "recipient"
+	eventKeySender          = "sender"
+	eventKeyTokenId         = "token_id"
+	eventKeyMsgIndex        = "msg_index"
 )
 
 type MintEvent struct {
@@ -17,48 +30,34 @@ type MintEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func getUint64FromMap(src EventWithAttributeMap, key string) (uint64, error) {
-	val, err := cast.ToUint64E(src.AttributesMap[key])
-	if err != nil {
-		return 0, fmt.Errorf("%s is invalid", key)
-	}
-	return val, nil
-}
-
-func getStringFromMap(src EventWithAttributeMap, key string) (string, error) {
-	val, found := src.AttributesMap[key]
-	if !found {
-		return "", fmt.Errorf("%s is invalid", key)
-	}
-	return val, nil
-}
-
-func getSdkAddressFromMap(src EventWithAttributeMap, key string) (sdk.AccAddress, error) {
-	addr, err := sdk.AccAddressFromBech32(src.AttributesMap[key])
-	if err != nil {
-		return nil, fmt.Errorf("%s is invalid", key)
-	}
-	return addr, nil
-}
-
-func (event *MintEvent) Parse(src EventWithAttributeMap) (err error) {
-	if event.Action, err = getStringFromMap(src, "action"); err != nil {
-		return err
-	}
-	if event.ContractAddress, err = getSdkAddressFromMap(src, "_contract_address"); err != nil {
-		return err
-	}
-	if event.Minter, err = getSdkAddressFromMap(src, "minter"); err != nil {
-		return err
-	}
-	if event.Owner, err = getSdkAddressFromMap(src, "owner"); err != nil {
-		return err
-	}
-	if event.TokenId, err = getStringFromMap(src, "token_id"); err != nil {
-		return err
-	}
-	if event.MsgIdx, err = getUint64FromMap(src, "msg_index"); err != nil {
-		return err
+func (event *MintEvent) Parse(src abci.Event) (err error) {
+	for _, attr := range src.Attributes {
+		switch attr.Key {
+		case eventKeyAction:
+			event.Action = attr.Value
+		case eventKeyContractAddress:
+			event.ContractAddress, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("_contract_address is invalid")
+			}
+		case eventKeyMinter:
+			event.Minter, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("minter is invalid")
+			}
+		case eventKeyOwner:
+			event.Owner, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("owner is invalid")
+			}
+		case eventKeyTokenId:
+			event.TokenId = attr.Value
+		case eventKeyMsgIndex:
+			event.MsgIdx, err = cast.ToUint64E(attr.Value)
+			if err != nil {
+				return fmt.Errorf("msg_index is invalid")
+			}
+		}
 	}
 	return nil
 }
@@ -72,24 +71,34 @@ type TransferOrSendEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func (event *TransferOrSendEvent) Parse(src EventWithAttributeMap) (err error) {
-	if event.Action, err = getStringFromMap(src, "action"); err != nil {
-		return err
-	}
-	if event.ContractAddress, err = getSdkAddressFromMap(src, "_contract_address"); err != nil {
-		return err
-	}
-	if event.Recipient, err = getSdkAddressFromMap(src, "recipient"); err != nil {
-		return err
-	}
-	if event.Sender, err = getSdkAddressFromMap(src, "sender"); err != nil {
-		return err
-	}
-	if event.TokenId, err = getStringFromMap(src, "token_id"); err != nil {
-		return err
-	}
-	if event.MsgIdx, err = getUint64FromMap(src, "msg_index"); err != nil {
-		return err
+func (event *TransferOrSendEvent) Parse(src abci.Event) (err error) {
+	for _, attr := range src.Attributes {
+		switch string(attr.Key) {
+		case eventKeyAction:
+			event.Action = attr.Value
+		case eventKeyContractAddress:
+			event.ContractAddress, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("_contract_address is invalid")
+			}
+		case eventKeyRecipient:
+			event.Recipient, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("recipient is invalid")
+			}
+		case eventKeySender:
+			event.Sender, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("sender is invalid")
+			}
+		case eventKeyTokenId:
+			event.TokenId = attr.Value
+		case eventKeyMsgIndex:
+			event.MsgIdx, err = cast.ToUint64E(attr.Value)
+			if err != nil {
+				return fmt.Errorf("msg_index is invalid")
+			}
+		}
 	}
 	return nil
 }
@@ -102,21 +111,29 @@ type BurnEvent struct {
 	MsgIdx          uint64         `json:"msg_index"`
 }
 
-func (event *BurnEvent) Parse(src EventWithAttributeMap) (err error) {
-	if event.Action, err = getStringFromMap(src, "action"); err != nil {
-		return err
-	}
-	if event.ContractAddress, err = getSdkAddressFromMap(src, "_contract_address"); err != nil {
-		return err
-	}
-	if event.Sender, err = getSdkAddressFromMap(src, "sender"); err != nil {
-		return err
-	}
-	if event.TokenId, err = getStringFromMap(src, "token_id"); err != nil {
-		return err
-	}
-	if event.MsgIdx, err = getUint64FromMap(src, "msg_index"); err != nil {
-		return err
+func (event *BurnEvent) Parse(src abci.Event) (err error) {
+	for _, attr := range src.Attributes {
+		switch string(attr.Key) {
+		case eventKeyAction:
+			event.Action = attr.Value
+		case eventKeyContractAddress:
+			event.ContractAddress, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("_contract_address is invalid")
+			}
+		case eventKeySender:
+			event.Sender, err = sdk.AccAddressFromBech32(attr.Value)
+			if err != nil {
+				return fmt.Errorf("sender is invalid")
+			}
+		case eventKeyTokenId:
+			event.TokenId = attr.Value
+		case eventKeyMsgIndex:
+			event.MsgIdx, err = cast.ToUint64E(attr.Value)
+			if err != nil {
+				return fmt.Errorf("msg_index is invalid")
+			}
+		}
 	}
 	return nil
 }

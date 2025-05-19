@@ -15,6 +15,8 @@ import (
 	"github.com/initia-labs/kvindexer/submodules/wasm-nft/types"
 )
 
+const actionKey = "action"
+
 var eventTypes = []string{"wasm"}
 
 var (
