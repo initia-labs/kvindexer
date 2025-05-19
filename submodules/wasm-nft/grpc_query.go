@@ -63,6 +63,7 @@ func (q Querier) Collections(ctx context.Context, req *nfttypes.QueryCollections
 
 	collections, pageRes, err := query.CollectionPaginate(ctx, q.collectionMap, req.Pagination,
 		func(k sdk.AccAddress, v nfttypes.IndexedCollection) (*nfttypes.IndexedCollection, error) {
+			v.Collection.Name, _ = q.getCollectionNameFromPairSubmodule(ctx, v.Collection.Name)
 			return &v, nil
 		},
 	)
