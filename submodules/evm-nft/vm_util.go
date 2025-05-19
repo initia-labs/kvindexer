@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"strings"
 
-	"cosmossdk.io/core/address"
 	"github.com/pkg/errors"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -46,7 +45,7 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 		return nil, err
 	}
 
-	contractSdkAddr, err := getCosmosAddressFromString(sm.ac, contractAddress.Hex())
+	contractSdkAddr, err := getCosmosAddressFromString(contractAddress.Hex())
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid contract address")
 	}
@@ -92,7 +91,7 @@ func getCosmosAddress(addr common.Address) sdk.AccAddress {
 	return sdk.AccAddress(addr.Bytes())
 }
 
-func getCosmosAddressFromString(ac address.Codec, addr string) (sdk.AccAddress, error) {
+func getCosmosAddressFromString(addr string) (sdk.AccAddress, error) {
 	addr = strings.ToLower(addr)
 	if sdkAddr, err := sdk.AccAddressFromBech32(addr); err == nil {
 		return sdkAddr, nil
