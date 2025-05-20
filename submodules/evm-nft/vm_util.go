@@ -14,6 +14,7 @@ import (
 
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/evm-nft/types"
+	evmtypes "github.com/initia-labs/minievm/x/evm/types"
 )
 
 var eventTypes = []string{"evm"}
@@ -58,7 +59,14 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 }
 
 func (sm EvmNFTSubmodule) getNftResourceFromVMStore(ctx context.Context, classId, tokenId string) (*types.NftResource, error) {
-	tokenUris, _, err := sm.vmKeeper.ERC721Keeper().GetTokenInfos(ctx, classId, []string{tokenId})
+	var err error
+	var tokenUris []string
+
+	if strings.HasPrefix(classId, evmtypes.IBCPrefix) {
+		_, tokenUris, err = sm.vmKeeper.GetOriginTokenInfos(ctx, classId, []string{tokenId})
+	} else {
+		tokenUris, _, err = sm.vmKeeper.ERC721Keeper().GetTokenInfos(ctx, classId, []string{tokenId})
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get token info")
 	}
