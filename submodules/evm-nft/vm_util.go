@@ -95,6 +95,30 @@ func (sm EvmNFTSubmodule) getIndexedNftFromVMStore(ctx context.Context, contract
 	return &indexed, nil
 }
 
+func (sm EvmNFTSubmodule) setNFTURIIfUnset(ctx context.Context, indexed *nfttypes.IndexedToken) error {
+	if indexed.Nft == nil || (indexed.Nft != nil && indexed.Nft.Uri != "") {
+		return nil
+	}
+
+	contractAddr, err := evmtypes.ContractAddressFromString(sm.ac, indexed.CollectionAddr)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse contract address")
+	}
+
+	classId, err := sm.vmKeeper.GetClassIdByContractAddr(ctx, contractAddr)
+	if err != nil {
+		return errors.Wrap(err, "failed to get classId from contract address")
+	}
+
+	resource, err := sm.getNftResourceFromVMStore(ctx, classId, indexed.Nft.TokenId)
+	if err != nil {
+		return errors.Wrap(err, "failed to get token info")
+	}
+	indexed.Nft.Uri = resource.TokenUri
+
+	return nil
+}
+
 func getCosmosAddress(addr common.Address) sdk.AccAddress {
 	return sdk.AccAddress(addr.Bytes())
 }

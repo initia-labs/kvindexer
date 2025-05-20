@@ -201,12 +201,10 @@ func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttyp
 	res, pageRes, err := query.CollectionPaginate(ctx, sm.tokenMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (*nfttypes.IndexedToken, error) {
 			v.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
-
-			if v.Nft.Uri == "" {
-				resource, _ := sm.getNftResourceFromVMStore(ctx, k.K1().String(), k.K2())
-				v.Nft.Uri = resource.TokenUri
+			err = sm.setNFTURIIfUnset(ctx, &v)
+			if err != nil {
+				sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
 			}
-
 			return &v, nil
 		},
 		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, string](colSdkAddr),
@@ -237,10 +235,9 @@ func (sm EvmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, r
 		return nil, handleCollectionErr(err)
 	}
 	token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
-
-	if token.Nft.Uri == "" {
-		resource, _ := sm.getNftResourceFromVMStore(ctx, req.CollectionAddr, req.TokenId)
-		token.Nft.Uri = resource.TokenUri
+	err = sm.setNFTURIIfUnset(ctx, &token)
+	if err != nil {
+		sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
 	}
 
 	return &nfttypes.QueryTokensResponse{
@@ -277,10 +274,9 @@ func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.
 			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
-
-		if token.Nft.Uri == "" {
-			resource, _ := sm.getNftResourceFromVMStore(ctx, identifier.K1().String(), identifier.K2())
-			token.Nft.Uri = resource.TokenUri
+		err = sm.setNFTURIIfUnset(ctx, &token)
+		if err != nil {
+			sm.Logger(ctx).Info("failed to set token uri", "token", token, "error", err)
 		}
 
 		res = append(res, &token)
@@ -325,9 +321,9 @@ func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, r
 			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
-		if token.Nft.Uri == "" {
-			resource, _ := sm.getNftResourceFromVMStore(ctx, identifier.K1().String(), identifier.K2())
-			token.Nft.Uri = resource.TokenUri
+		err = sm.setNFTURIIfUnset(ctx, &token)
+		if err != nil {
+			sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
 		}
 		res = append(res, &token)
 	}
@@ -355,9 +351,9 @@ func (sm EvmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Con
 	}
 
 	token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
-	if token.Nft.Uri == "" {
-		resource, _ := sm.getNftResourceFromVMStore(ctx, colSdkAddr.String(), req.TokenId)
-		token.Nft.Uri = resource.TokenUri
+	err = sm.setNFTURIIfUnset(ctx, &token)
+	if err != nil {
+		sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
 	}
 
 	if token.OwnerAddr != req.Account {
