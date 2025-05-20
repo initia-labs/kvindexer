@@ -29,7 +29,7 @@ type TokenPairsResponse struct {
 
 type MetadataResource struct {
 	Resource struct {
-		Address     string `json:"address"`
+		Address      string `json:"address"`
 		StructTag    string `json:"struct_tag"`
 		MoveResource string `json:"move_resource"`
 		RawBytes     []byte `json:"raw_bytes"`
@@ -47,18 +47,9 @@ type NftClassData struct {
 }
 
 type PacketData struct {
-	ClassData string         `json:"class_data"`
-	ClassId   string         `json:"class_id"`
-	ClassUri  string         `json:"class_uri"`
+	ClassData string         `json:"classData"`
+	ClassId   string         `json:"classId"`
+	ClassUri  string         `json:"classUri"`
 	Receiver  sdk.AccAddress `json:"receiver"`
 	Sender    sdk.AccAddress `json:"sender"`
-	//TokenData []string       `json:"tokenData"`
-	//TokenIds  []string       `json:"tokenIds"`
-	//TokenUris []string       `json:"tokenUris"`
-}
-
-type ClassTrace struct {
-	TraceHash string `json:"trace_hash"`
-	ClassId   string `json:"class_id"`
-	//MsgIndex  int    `json:"msg_index"`
 }
