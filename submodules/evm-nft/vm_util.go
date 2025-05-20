@@ -14,6 +14,7 @@ import (
 
 	nfttypes "github.com/initia-labs/kvindexer/nft/types"
 	"github.com/initia-labs/kvindexer/submodules/evm-nft/types"
+	evmtypes "github.com/initia-labs/minievm/x/evm/types"
 )
 
 var eventTypes = []string{"evm"}
@@ -58,7 +59,14 @@ func (sm EvmNFTSubmodule) getIndexedCollectionFromVMStore(ctx context.Context, c
 }
 
 func (sm EvmNFTSubmodule) getNftResourceFromVMStore(ctx context.Context, classId, tokenId string) (*types.NftResource, error) {
-	tokenUris, _, err := sm.vmKeeper.ERC721Keeper().GetTokenInfos(ctx, classId, []string{tokenId})
+	var err error
+	var tokenUris []string
+
+	if strings.HasPrefix(classId, evmtypes.IBCPrefix) {
+		_, tokenUris, err = sm.vmKeeper.GetOriginTokenInfos(ctx, classId, []string{tokenId})
+	} else {
+		tokenUris, _, err = sm.vmKeeper.ERC721Keeper().GetTokenInfos(ctx, classId, []string{tokenId})
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get token info")
 	}
@@ -85,6 +93,30 @@ func (sm EvmNFTSubmodule) getIndexedNftFromVMStore(ctx context.Context, contract
 	}
 
 	return &indexed, nil
+}
+
+func (sm EvmNFTSubmodule) setUriIfUnset(ctx context.Context, indexed *nfttypes.IndexedToken) error {
+	if indexed.Nft == nil || (indexed.Nft != nil && indexed.Nft.Uri != "") {
+		return nil
+	}
+
+	contractAddr, err := evmtypes.ContractAddressFromString(sm.ac, indexed.CollectionAddr)
+	if err != nil {
+		return errors.Wrap(err, "failed to parse contract address")
+	}
+
+	classId, err := sm.vmKeeper.GetClassIdByContractAddr(ctx, contractAddr)
+	if err != nil {
+		return errors.Wrap(err, "failed to get classId from contract address")
+	}
+
+	resource, err := sm.getNftResourceFromVMStore(ctx, classId, indexed.Nft.TokenId)
+	if err != nil {
+		return errors.Wrap(err, "failed to get token info")
+	}
+	indexed.Nft.Uri = resource.TokenUri
+
+	return nil
 }
 
 func getCosmosAddress(addr common.Address) sdk.AccAddress {

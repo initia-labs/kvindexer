@@ -201,6 +201,10 @@ func (sm EvmNFTSubmodule) getTokensByCollection(ctx context.Context, req *nfttyp
 	res, pageRes, err := query.CollectionPaginate(ctx, sm.tokenMap, req.Pagination,
 		func(k collections.Pair[sdk.AccAddress, string], v nfttypes.IndexedToken) (*nfttypes.IndexedToken, error) {
 			v.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, v.CollectionName)
+			err = sm.setUriIfUnset(ctx, &v)
+			if err != nil {
+				sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
+			}
 			return &v, nil
 		},
 		query.WithCollectionPaginationPairPrefix[sdk.AccAddress, string](colSdkAddr),
@@ -231,6 +235,10 @@ func (sm EvmNFTSubmodule) getTokensByCollectionAndTokenId(ctx context.Context, r
 		return nil, handleCollectionErr(err)
 	}
 	token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+	err = sm.setUriIfUnset(ctx, &token)
+	if err != nil {
+		sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
+	}
 
 	return &nfttypes.QueryTokensResponse{
 		Tokens: []*nfttypes.IndexedToken{&token},
@@ -266,6 +274,11 @@ func (sm EvmNFTSubmodule) getTokensByAccount(ctx context.Context, req *nfttypes.
 			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+		err = sm.setUriIfUnset(ctx, &token)
+		if err != nil {
+			sm.Logger(ctx).Info("failed to set token uri", "token", token, "error", err)
+		}
+
 		res = append(res, &token)
 	}
 
@@ -308,6 +321,10 @@ func (sm EvmNFTSubmodule) getTokensByAccountAndCollection(ctx context.Context, r
 			continue
 		}
 		token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+		err = sm.setUriIfUnset(ctx, &token)
+		if err != nil {
+			sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
+		}
 		res = append(res, &token)
 	}
 
@@ -331,6 +348,12 @@ func (sm EvmNFTSubmodule) getTokensByAccountCollectionAndTokenId(ctx context.Con
 	token, err := sm.tokenMap.Get(ctx, collections.Join(colSdkAddr, req.TokenId))
 	if err != nil {
 		return nil, handleCollectionErr(err)
+	}
+
+	token.CollectionName, _ = sm.getCollectionNameFromPairSubmodule(ctx, token.CollectionName)
+	err = sm.setUriIfUnset(ctx, &token)
+	if err != nil {
+		sm.Logger(ctx).Info("failed to set token uri", "collection", colSdkAddr, "error", err)
 	}
 
 	if token.OwnerAddr != req.Account {
