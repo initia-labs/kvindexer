@@ -95,7 +95,7 @@ func (sm EvmNFTSubmodule) getIndexedNftFromVMStore(ctx context.Context, contract
 	return &indexed, nil
 }
 
-func (sm EvmNFTSubmodule) setNFTURIIfUnset(ctx context.Context, indexed *nfttypes.IndexedToken) error {
+func (sm EvmNFTSubmodule) setUriIfUnset(ctx context.Context, indexed *nfttypes.IndexedToken) error {
 	if indexed.Nft == nil || (indexed.Nft != nil && indexed.Nft.Uri != "") {
 		return nil
 	}
